@@ -393,7 +393,7 @@ const SectionPage = () => {
             })),
           }
         );
-        toast.success("Sections reordered successfully");
+
       } catch (error) {
         console.error("Error reordering sections:", error);
         toast.error("Failed to reorder sections");

@@ -75,7 +75,7 @@ export default function MobileMenu({ menuItems, onClose }: MobileMenuProps) {
               primaryText="Login"
               secondaryText="Login"
               icon={<LogIn className="h-5 w-5" />}
-              href="/login"
+              href="/auth"
               className="w-full shadow shadow-[#ba1c33]"
               variant="filled"
               bgColor="#ba1c33"

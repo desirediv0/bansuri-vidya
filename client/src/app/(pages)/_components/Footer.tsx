@@ -82,10 +82,7 @@ function Footer() {
             {/* Brand Section */}
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                {/* <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e8eb20]">
-                  <div className="h-7 w-7 rounded-full bg-[#2A3630]" />
-                </div>
-                <span className="text-2xl font-bold text-white">Monark FX</span> */}
+
                 <Link href="/">
                   <Image src="/logo.png" alt="logo" width={200} height={100} />
                 </Link>
@@ -196,7 +193,7 @@ function Footer() {
                 </ul>
               </nav>
               <p className="text-gray-400 text-center md:text-left">
-              © 2025 – Bansuri Vidya Mandir™  . All Rights Reserved. Designed with ❤ by {" "}
+                © 2025 – Bansuri Vidya Mandir™  . All Rights Reserved. Designed with ❤ by {" "}
                 <a
                   href="https://desirediv.com"
                   target="_blank"

@@ -14,7 +14,7 @@ import {
   Puzzle,
   School,
   ShoppingBasket,
-  Wallet,
+  // Wallet,
   BookOpen,
   FilePlus,
   FileText,
@@ -63,11 +63,11 @@ const navItems: NavItem[] = [
     href: "/dashboard/purchase",
     icon: ShoppingBasket,
   },
-  {
-    title: "Revenue",
-    href: "/dashboard/fees",
-    icon: Wallet,
-  },
+  // {
+  //   title: "Revenue",
+  //   href: "/dashboard/fees",
+  //   icon: Wallet,
+  // },
 ];
 
 export function Sidenav() {
@@ -140,7 +140,7 @@ function SidenavItems() {
         ))}
       </div>
 
-      <div className="mt-auto space-y-4">
+      <div className="mt-auto space-y-4 absolute bottom-4  w-full left-1/2 -translate-x-1/2">
         <Separator />
         <Link href="/courses">
           <span className="flex items-center rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-red-50 to-red-100/50 text-red-600 hover:from-red-100 hover:to-red-200/50 transition-colors shadow-sm">

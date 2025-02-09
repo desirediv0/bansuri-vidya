@@ -186,6 +186,7 @@ export interface CourseCardsProps {
 
 export interface CourseCardProps {
   course: CourseDataNew;
+  formatPrice?: (price: number) => string;
 }
 
 export interface Chapter {
@@ -636,4 +637,73 @@ export interface FeeFormData {
   isOfflineFee: boolean;
   userId: string;
   gracePeriod?: number;
+}
+
+export interface SocialLinks {
+  facebook?: string;
+  twitter?: string;
+  instagram?: string;
+  linkedin?: string;
+  github?: string;
+  dribbble?: string;
+}
+
+export interface InstructorData {
+  id: number;
+  name: string;
+  role: string;
+  image: string;
+  bio?: string;
+  experience?: string;
+  expertise?: string[];
+  rating?: number;
+  totalStudents?: number;
+  totalCourses?: number;
+  socials: SocialLinks;
+}
+
+export interface Dot {
+  id: number;
+  x: number;
+  y: number;
+}
+
+export interface AnimatedTextProps {
+  text: string;
+  className?: string;
+  delay?: number;
+
+}
+
+export interface Course2 {
+  id: string;
+  title: string;
+  category: CourseCategory;
+  instructor: string;
+  description?: string;
+  price: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  lessons: number;
+  students: number;
+  slug?: string;
+}
+
+export interface CourseCard2Props {
+  course: Course2;
+  formatPrice?: (price: number) => string;
+}
+
+export type CourseCategory =
+  | 'All'
+  | 'DEVELOPMENT'
+  | 'DESIGN'
+  | 'CLOUD'
+  | 'MARKETING'
+  | 'BUSINESS';
+
+export interface CourseListingProps {
+  defaultCategory?: CourseCategory;
+  limit?: number;
 }

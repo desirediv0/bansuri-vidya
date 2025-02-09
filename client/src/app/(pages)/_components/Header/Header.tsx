@@ -165,7 +165,12 @@ export default function Header() {
 
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <MobileMenu menuItems={menuItems} onClose={closeMobileMenu} />
+          <MobileMenu
+            menuItems={menuItems}
+            onClose={closeMobileMenu}
+            headerState={headerState}
+            handleLogout={handleLogout}
+          />
         )}
       </AnimatePresence>
     </motion.header>

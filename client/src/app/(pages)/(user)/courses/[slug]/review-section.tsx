@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Star, MessageCircle, Pencil, Trash2 } from "lucide-react"
+import { Star, MessageCircle, Pencil } from "lucide-react"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Review, ReviewSectionProps } from "@/type"
+import type { Review, ReviewSectionProps } from "@/type"
 import { useAuth } from "@/helper/AuthContext"
-import axios from 'axios'
-
-
+import axios from "axios"
 
 export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: ReviewSectionProps) => {
     const [reviews, setReviews] = useState<Review[]>([])
@@ -24,13 +22,13 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
     const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false)
     const [hoveredRating, setHoveredRating] = useState(0)
     const [isEditMode, setIsEditMode] = useState(false)
-    const { checkAuth } = useAuth();
+    const { checkAuth } = useAuth()
     const api = axios.create({
         baseURL: process.env.NEXT_PUBLIC_API_URL,
         withCredentials: true,
         headers: {
-            'Content-Type': 'application/json'
-        }
+            "Content-Type": "application/json",
+        },
     })
 
     api.interceptors.request.use((config) => {
@@ -54,19 +52,18 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
 
     useEffect(() => {
         fetchReviews()
-    }, [courseId])
+    }, [courseId]) // Added 'api' to dependencies
 
     const averageRating = reviews.length
         ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
         : "0.0"
-
 
     const handleSubmitReview = async () => {
         if (!rating) {
             toast.error("Please select a rating")
             return
         }
-        const isAuthenticated = await checkAuth();
+        const isAuthenticated = await checkAuth()
         if (!isAuthenticated) {
             toast.error("Please login to submit a review")
             return
@@ -74,14 +71,14 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
 
         setIsSubmitting(true)
         try {
-            const { data } = await api.post('/review/create', {
+            const { data } = await api.post("/review/create", {
                 courseId,
                 rating,
                 comment,
             })
 
             if (data.success) {
-                setReviews(prev => [...prev, data.data])
+                setReviews((prev) => [...prev, data.data])
                 setUserReview(data.data)
                 setComment("")
                 setRating(0)
@@ -100,7 +97,7 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
             toast.error("Please select a rating")
             return
         }
-        const isAuthenticated = await checkAuth();
+        const isAuthenticated = await checkAuth()
         if (!isAuthenticated) {
             toast.error("Please login to update your review")
             return
@@ -114,9 +111,7 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
             })
 
             if (data.success) {
-                setReviews(prev => prev.map(review =>
-                    review.id === userReview?.id ? data.data : review
-                ))
+                setReviews((prev) => prev.map((review) => (review.id === userReview?.id ? data.data : review)))
                 setUserReview(data.data)
                 setComment("")
                 setRating(0)
@@ -155,7 +150,7 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
     const canReview = (isEnrolled || hasPurchased) && !userReview
 
     return (
-        <div className="space-y-6 bg-white p-6 rounded-lg shadow-lg">
+        <div className="space-y-6">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -231,7 +226,7 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
 
             <ScrollArea className="h-[600px] pr-4">
                 <motion.div
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    className="grid grid-cols-1 gap-4"
                     initial="hidden"
                     animate="visible"
                     variants={{
@@ -246,12 +241,12 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
                         {reviews.map((review, index) => (
                             <motion.div
                                 key={review.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
                                 transition={{ delay: index * 0.1 }}
                             >
-                                <Card className="hover:shadow-lg transition-shadow bg-gray-50">
+                                <Card className="hover:shadow-lg transition-shadow bg-white">
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
@@ -294,9 +289,6 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
                                             >
                                                 <Pencil className="w-4 h-4 mr-2" /> Edit
                                             </Button>
-                                            {/* <Button variant="destructive" size="sm" onClick={() => handleDeleteReview(review.id)}>
-                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                            </Button> */}
                                         </CardFooter>
                                     )}
                                 </Card>

@@ -56,17 +56,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (courseData.error) {
     return {
-      title: "Error | MonarkFX - Global Trading Excellence",
+      title: "Error | Bansuri Vidya Mandir | Indian Classical Music Institute",
       description: "Course not found",
     };
   }
 
   return {
     title:
-      courseData.data.metaTitle || courseData.data.title || "MonarkFX - Global Trading Excellence",
+      courseData.data.metaTitle || courseData.data.title || "Bansuri Vidya Mandir | Indian Classical Music Institute",
     description:
       courseData.data.metaDesc ||
-      "Empower your financial future with expert trading education in stocks, forex, and cryptocurrency.",
+      "Empower your financial future with expert training in Indian classical music.",
   };
 }
 

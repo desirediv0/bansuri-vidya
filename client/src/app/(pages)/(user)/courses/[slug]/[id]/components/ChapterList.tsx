@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Play, Lock, ChevronRight, CheckCircle } from "lucide-react"
 import type { CourseDataNew, ChapterDataNew } from "@/type"
 import { cn } from "@/lib/utils"
-import { Progress } from "@/components/ui/progress"
+// import { Progress } from "@/components/ui/progress"
 
 interface ChapterListProps {
   course: CourseDataNew
@@ -38,10 +38,10 @@ const ChapterList: React.FC<ChapterListProps> = ({
     <div className="h-full bg-white font-plus-jakarta-sans">
       <div className="p-6 border-b bg-red-600 text-white">
         <h2 className="text-2xl font-bold">Course Content</h2>
-        <div className="mt-2">
+        {/* <div className="mt-2">
           <Progress value={courseProgress} className="w-full" />
           <p className="text-sm mt-1">{Math.round(courseProgress)}% Complete</p>
-        </div>
+        </div> */}
       </div>
       <ScrollArea className="h-[calc(100vh-5rem)]">
         <div className="p-6">
@@ -66,8 +66,8 @@ const ChapterList: React.FC<ChapterListProps> = ({
                           selectedChapter?.id === chapter.id
                             ? "bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 text-red-700"
                             : isChapterCompleted(chapter.id)
-                            ? "bg-green-50"
-                            : "bg-white hover:bg-gray-50",
+                              ? "bg-green-50"
+                              : "bg-white hover:bg-gray-50",
                           !isChapterAccessible(chapter) && "opacity-60",
                           "group",
                         )}
@@ -88,7 +88,7 @@ const ChapterList: React.FC<ChapterListProps> = ({
                           </div>
                           <div className="flex-grow">
                             <span className="text-left font-medium block">{chapter.title}</span>
-                            
+
                             {isChapterCompleted(chapter.id) && (
                               <span className="text-xs text-green-600">Completed</span>
                             )}

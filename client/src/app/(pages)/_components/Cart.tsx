@@ -95,18 +95,23 @@ const Cart: React.FC<{ headerState: string }> = ({ headerState }) => {
                 <Button
                     variant={headerState === "transparent" ? "ghost" : "secondary"}
                     size="sm"
-                    className={`"relative transition-colors duration-200" ${headerState === "transparent" ? "text-white hover:text-red-500" : "text-black hover:text-red-500"}`}
+                    className={`relative ${headerState === "transparent"
+                            ? "text-white hover:text-red-500"
+                            : "text-black hover:text-red-500"
+                        }`}
                 >
-                    <ShoppingCart className="h-5 w-5" />
-                    {isAuthenticated && cartItems.length > 0 && (
-                        <motion.span
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-                        >
-                            {cartItems.length}
-                        </motion.span>
-                    )}
+                    <div className="relative">
+                        <ShoppingCart className="h-5 w-5" />
+                        {isAuthenticated && cartItems.length > 0 && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center"
+                            >
+                                {cartItems.length}
+                            </motion.div>
+                        )}
+                    </div>
                 </Button>
             </SheetTrigger>
             <SheetContent

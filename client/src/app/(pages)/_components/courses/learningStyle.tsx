@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { CourseCategory, CourseListingProps } from "@/type";
 import { SquareCard } from "./squareCard";
 import { courses } from "./courses";
 
@@ -18,27 +16,8 @@ const containerVariants = {
 };
 
 
-const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0,
-    }).format(price);
-};
 
-
-export default function LearningStyle({ defaultCategory = "All", limit }: CourseListingProps) {
-    const [selectedCategory, setSelectedCategory] = useState<CourseCategory>(defaultCategory);
-    const showFilter = !defaultCategory;
-
-    const filteredCourses = courses
-        .filter(
-            (course) =>
-                selectedCategory === "All" ||
-                course.category === selectedCategory
-        )
-        .slice(0, limit || courses.length);
-
+export default function LearningStyle() {
 
     return (
         <div className="relative">
@@ -76,11 +55,10 @@ export default function LearningStyle({ defaultCategory = "All", limit }: Course
                             className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full"
                         >
                             <AnimatePresence mode="popLayout">
-                                {filteredCourses.map((course) => (
+                                {courses.map((course) => (
                                     <SquareCard
                                         key={course.id}
                                         course={course}
-                                        formatPrice={formatPrice}
                                     />
                                 ))}
                             </AnimatePresence>

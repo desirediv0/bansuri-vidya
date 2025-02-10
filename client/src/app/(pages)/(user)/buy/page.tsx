@@ -196,10 +196,10 @@ function BuyPageContent({ courseSlugs }: { courseSlugs: string[] }) {
         key: key,
         amount: order.amount,
         currency: "INR",
-        name: "MonarkFX - Global Trading Excellence",
-        description: "Empower your financial future with expert trading education in stocks, forex, and cryptocurrency.",
+        name: "Bansuri Vidya Mandir | Indian Classical Music Institute",
+        description: "Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship.",
         order_id: order.id,
-        image: "/logo.png", 
+        image: "/logo.png",
         handler: async function (response: RazorpayResponse) {
           try {
             const courseDetails = courses.map((course) => {

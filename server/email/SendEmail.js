@@ -7,7 +7,8 @@ import {
   getFeeNotificationTemplate,
   getPaymentSuccessTemplate,
   getPaymentFailureTemplate,
-  getFeeUpdateTemplate
+  getFeeUpdateTemplate,
+  getCertificateGeneratedTemplate
 } from "../email/temp/EmailTemplate.js";
 
 const transporter = nodemailer.createTransport({
@@ -57,8 +58,13 @@ export const SendEmail = async ({ email, subject, message, emailType, attachment
         subject = subject || "Fee Update Notification - MonarkFX";
         htmlContent = getFeeUpdateTemplate(message);
         break;
+      case "CERTIFICATE_GENERATED":
+        subject = "Course Completion Certificate - MonarkFX";
+        htmlContent = getCertificateGeneratedTemplate(message);
+        break;
       default:
         htmlContent = message;
+
     }
 
     const mailOptions = {

@@ -1,80 +1,213 @@
 import { prisma } from "../config/db.js";
+import { SendEmail } from "../email/SendEmail.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { nanoid } from "nanoid";
 
 export const markChapterComplete = asyncHandler(async (req, res) => {
-  const { chapterId, watchedTime } = req.body;
+  const { chapterId } = req.body;
   const userId = req.user.id;
 
-  // Verify chapter exists
-  const chapter = await prisma.chapter.findUnique({
-    where: { id: chapterId },
-    include: {
-      section: {
-        include: {
-          course: true
+  if (!chapterId) {
+    throw new ApiError(400, "Chapter ID is required");
+  }
+
+  try {
+    // First check if the chapter exists
+    const chapter = await prisma.chapter.findUnique({
+      where: { id: chapterId },
+      include: {
+        section: {
+          include: {
+            course: true
+          }
         }
       }
+    });
+
+    if (!chapter) {
+      throw new ApiError(404, "Chapter not found");
     }
-  });
 
-  if (!chapter) throw new ApiError(404, "Chapter not found");
+    // Mark chapter as complete using upsert to avoid duplicates
+    const progress = await prisma.userProgress.upsert({
+      where: {
+        userId_chapterId: {
+          userId,
+          chapterId
+        }
+      },
+      update: {
+        isCompleted: true,
+        completedAt: new Date(),
+        watchedTime: 100
+      },
+      create: {
+        userId,
+        chapterId,
+        isCompleted: true,
+        completedAt: new Date(),
+        watchedTime: 100,
+        lastAccessed: new Date()
+      }
+    });
 
-  // Update or create progress
-  const userProgress = await prisma.userProgress.upsert({
-    where: {
-      userId_chapterId: { userId, chapterId }
-    },
-    update: {
-      isCompleted: true,
-      watchedTime: watchedTime || 0,
-      lastAccessed: new Date()
-    },
-    create: {
-      userId,
-      chapterId,
-      isCompleted: true,
-      watchedTime: watchedTime || 0
-    }
-  });
+    const courseId = chapter.section.course.id;
+    
+    // Check if course is completed and generate certificate if needed
+    const certificate = await checkAndGenerateCertificate(
+      userId, 
+      courseId,
+      req.user.email,
+      req.user.name
+    );
 
-  // Calculate course completion percentage
-  const courseProgress = await calculateCourseProgress(userId, chapter.section.courseId);
+    const response = {
+      progress,
+      ...(certificate && {
+        certificate: {
+          id: certificate.certificateId,
+          courseTitle: chapter.section.course.title
+        }
+      })
+    };
 
-  return res.status(200).json(
-    new ApiResponsive(200, {
-      message: "Chapter marked as complete",
-      progress: userProgress,
-      courseProgress
-    })
-  );
+    return res.status(200).json(
+      new ApiResponsive(
+        200, 
+        response,
+        certificate ? "Chapter completed and certificate generated" : "Chapter marked as complete"
+      )
+    );
+  } catch (error) {
+    console.error("Error marking chapter complete:", error);
+    throw new ApiError(500, error.message || "Failed to mark chapter as complete");
+  }
 });
 
 export const updateProgress = asyncHandler(async (req, res) => {
   const { chapterId, watchedTime } = req.body;
   const userId = req.user.id;
 
-  const progress = await prisma.userProgress.upsert({
+  if (!chapterId) {
+    throw new ApiError(400, "Chapter ID is required");
+  }
+
+  try {
+    // First check if the chapter exists
+    const chapter = await prisma.chapter.findUnique({
+      where: { id: chapterId }
+    });
+
+    if (!chapter) {
+      throw new ApiError(404, "Chapter not found");
+    }
+
+    // Now update or create progress
+    const progress = await prisma.userProgress.upsert({
+      where: {
+        userId_chapterId: {
+          userId,
+          chapterId
+        }
+      },
+      update: {
+        watchedTime: parseFloat(watchedTime || 0),
+        lastAccessed: new Date()
+      },
+      create: {
+        userId,
+        chapterId,
+        watchedTime: parseFloat(watchedTime || 0),
+        isCompleted: false,
+        lastAccessed: new Date()
+      }
+    });
+
+    // If watched more than 90%, mark as completed
+    if (parseFloat(watchedTime) >= 90 && !progress.isCompleted) {
+      await prisma.userProgress.update({
+        where: { id: progress.id },
+        data: {
+          isCompleted: true,
+          completedAt: new Date()
+        }
+      });
+    }
+
+    return res.status(200).json(
+      new ApiResponsive(200, progress, "Progress updated successfully")
+    );
+  } catch (error) {
+    console.error("Progress update error:", error);
+    throw new ApiError(500, error.message || "Failed to update progress");
+  }
+});
+
+// Helper function to check course completion and generate certificate
+const checkAndGenerateCertificate = async (userId, courseId, userEmail, userName) => {
+  const totalChapters = await prisma.chapter.count({
     where: {
-      userId_chapterId: { userId, chapterId }
-    },
-    update: {
-      watchedTime: parseFloat(watchedTime),
-      lastAccessed: new Date()
-    },
-    create: {
-      userId,
-      chapterId,
-      watchedTime: parseFloat(watchedTime),
-      isCompleted: false
+      section: {
+        courseId
+      }
     }
   });
 
-  return res.status(200).json(
-    new ApiResponsive(200, progress, "Progress updated successfully")
-  );
-});
+  const completedChapters = await prisma.userProgress.count({
+    where: {
+      userId,
+      chapter: {
+        section: {
+          courseId
+        }
+      },
+      isCompleted: true
+    }
+  });
+
+  if (totalChapters === completedChapters) {
+    const existingCertificate = await prisma.courseCompletion.findFirst({
+      where: {
+        userId,
+        courseId
+      }
+    });
+
+    if (!existingCertificate) {
+      const certificate = await prisma.courseCompletion.create({
+        data: {
+          userId,
+          courseId,
+          certificateId: nanoid(10),
+          grade: "Pass"
+        },
+        include: {
+          user: true,
+          course: true
+        }
+      });
+
+      // Send email notification
+      if (userEmail && userName) {
+        await SendEmail({
+          email: userEmail,
+          subject: "Course Completion Certificate - MonarkFX",
+          emailType: "CERTIFICATE_GENERATED",
+          message: {
+            userName: userName,
+            courseName: certificate.course.title,
+            certificateId: certificate.certificateId
+          }
+        });
+      }
+
+      return certificate;
+    }
+  }
+  return null;
+};
 
 export const getCourseProgress = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -83,10 +216,14 @@ export const getCourseProgress = asyncHandler(async (req, res) => {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
-      chapters: {
+      sections: {
         include: {
-          userProgress: {
-            where: { userId }
+          chapters: {
+            include: {
+              userProgress: {
+                where: { userId }
+              }
+            }
           }
         }
       }
@@ -95,31 +232,28 @@ export const getCourseProgress = asyncHandler(async (req, res) => {
 
   if (!course) throw new ApiError(404, "Course not found");
 
-  const totalChapters = course.chapters.length;
-  const completedChapters = course.chapters.filter(
-    chapter => chapter.userProgress[0]?.isCompleted
-  ).length;
+  // Get all chapters
+  const allChapters = course.sections.flatMap(section => section.chapters);
+  const totalChapters = allChapters.length;
+
+  // Get completed chapters
+  const completedChapters = allChapters.filter(
+    chapter => chapter.userProgress.some(progress => progress.isCompleted)
+  );
+
+  const completedChapterIds = completedChapters.map(chapter => chapter.id);
+  const completedCount = completedChapters.length;
+  const percentage = totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
 
   const progress = {
-    courseId,
+    percentage,
+    completedChapters: completedChapterIds,
     totalChapters,
-    completedChapters,
-    percentage: Math.round((completedChapters / totalChapters) * 100),
-    lastAccessed: course.chapters
-      .map(ch => ch.userProgress[0]?.lastAccessed)
-      .filter(Boolean)
-      .sort((a, b) => b - a)[0],
-    chapterProgress: course.chapters.map(chapter => ({
-      chapterId: chapter.id,
-      title: chapter.title,
-      isCompleted: chapter.userProgress[0]?.isCompleted || false,
-      watchedTime: chapter.userProgress[0]?.watchedTime || 0,
-      lastAccessed: chapter.userProgress[0]?.lastAccessed
-    }))
+    completedCount
   };
 
   return res.status(200).json(
-    new ApiResponsive(200, progress, "Course progress retrieved")
+    new ApiResponsive(200, progress, "Course progress retrieved successfully")
   );
 });
 

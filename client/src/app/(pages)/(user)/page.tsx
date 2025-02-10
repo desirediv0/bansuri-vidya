@@ -44,17 +44,17 @@ export default function Home() {
         }
         stats={[
           { number: "260+", label: "Tutors", endValue: 260 },
-          { number: "0000+", label: "Students", endValue: 9000 },
-          { number: "000+", label: "Courses", endValue: 500 },
+          { number: "9000+", label: "Students", endValue: 9000 },
+          { number: "500+", label: "Courses", endValue: 500 }
         ]}
       />
       <LearningLanding />
       <main className="min-h-screen bg-[#F3F8F8] px-5 py-10">
-       <LearningStyle defaultCategory="All" limit={3}/>
+        <LearningStyle />
       </main>
       <CourseHero />
       <TestimonialsSection />
-      <TablaTanpura/>
+      <TablaTanpura />
     </>
   );
 }

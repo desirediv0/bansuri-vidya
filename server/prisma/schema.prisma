@@ -48,6 +48,10 @@ model User {
   // payments
   payments Payment[]
 
+  courseCompletions CourseCompletion[]
+
+  certificates Certificate[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -113,6 +117,10 @@ model Course {
   couponUsage       CouponUsage[]
   applicableCoupons Coupon[] // Coupons specific to this course
 
+  completions CourseCompletion[]
+
+  certificates Certificate[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -134,17 +142,23 @@ model CourseVisibility {
 }
 
 model Fee {
-  id          String    @id @default(uuid())
-  amount      Float
-  dueDate     DateTime
-  description String?
-  status      FeeStatus @default(PENDING)
-  type        FeeType   @default(MONTHLY)
-
+  id            String    @id @default(uuid())
+  amount        Float
+  dueDate       DateTime
+  description   String?
+  status        FeeStatus @default(PENDING)
+  type          FeeType   @default(MONTHLY)
   title         String
   lateFeeDate   DateTime?
   lateFeeAmount Float?
   isOfflineFee  Boolean   @default(false)
+
+  // New fields
+  recurringDuration Int? // Number of months/quarters/years to recur
+  recurringEndDate  DateTime? // When to stop recurring
+  gracePeriod       Int? // Number of days for grace period
+  nextDueDate       DateTime? // Next due date after payment
+  isRecurring       Boolean   @default(false)
 
   // Relations
   user     User         @relation(fields: [userId], references: [id])
@@ -227,9 +241,9 @@ model Coupon {
 
 model Enrollment {
   id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  course    Course   @relation(fields: [courseId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
@@ -288,18 +302,15 @@ model Chapter {
 }
 
 model UserProgress {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
-  chapter      Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapter      Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   chapterId    String
-  isCompleted  Boolean  @default(false)
-  watchedTime  Float    @default(0)
-  lastAccessed DateTime @default(now())
-  notes        String?
-  bookmarked   Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
+  isCompleted  Boolean   @default(false)
+  completedAt  DateTime?
+  watchedTime  Float     @default(0) // Keep this as watchedTime
+  lastAccessed DateTime  @default(now())
 
   @@unique([userId, chapterId])
   @@index([userId])
@@ -309,7 +320,7 @@ model UserProgress {
 model Purchase {
   id String @id @default(uuid())
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -425,4 +436,31 @@ model CouponUsage {
   course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([couponId, userId, courseId])
+}
+
+model CourseCompletion {
+  id            String   @id @default(uuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId      String
+  completedAt   DateTime @default(now())
+  certificateId String   @unique
+  grade         String?
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Certificate {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String
+  course         Course   @relation(fields: [courseId], references: [id])
+  courseId       String
+  issuedAt       DateTime @default(now())
+  certificateUrl String?
+
+  @@unique([userId, courseId])
 }

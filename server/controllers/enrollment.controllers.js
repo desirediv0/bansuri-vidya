@@ -72,7 +72,11 @@ export const getUserEnrollments = asyncHandler(async (req, res) => {
     where: { userId },
     orderBy: { createdAt: "desc" },
     include: {
-      course: true,
+      course: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 

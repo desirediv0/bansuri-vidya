@@ -1,9 +1,13 @@
 "use client";
 
+import { Course2 } from "@/type";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { CourseCardProps } from "@/type";
 import Link from "next/link";
+
+interface CourseCardProps {
+    course: Course2
+}
 
 const cardVariants = {
     hidden: {
@@ -61,7 +65,9 @@ export function SquareCard({ course }: CourseCardProps) {
                     <h3 className="text-lg md:text-xl lg:text-2xl font-semibold leading-tight line-clamp-2">
                         {course.title}
                     </h3>
-                    <p className="text-md leading-tight">Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus velit quam voluptatum beatae commodi quae quis.</p>
+                    <p className="text-md leading-tight">
+                        {course.description}
+                    </p>
                 </div>
             </motion.div>
         </Link>

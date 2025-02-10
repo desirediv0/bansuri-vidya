@@ -121,9 +121,9 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
           router.push("/auth")
           return;
         }
-        
+
         const hasPurchased = await checkPurchaseStatus()
-        
+
         if (course.paid && !hasPurchased) {
           router.push(`/courses/${slug}`)
           toast.error("Please purchase this course to access the content")
@@ -168,8 +168,8 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       console.log("Course Progress Data:", data);
       setCourseProgress({
         percentage: data.data.percentage || 0,
-        completedChapters: Array.isArray(data.data.completedChapters) 
-          ? data.data.completedChapters 
+        completedChapters: Array.isArray(data.data.completedChapters)
+          ? data.data.completedChapters
           : [],
         isCompleted: data.data.percentage === 100
       });
@@ -221,11 +221,16 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
             method: "POST",
             body: JSON.stringify({
               chapterId: selectedChapter.id,
-              watchedTime: selectedChapter.duration,
+              watchedTime: selectedChapter.duration || 100
             }),
           }
         );
-        setChapterProgress({ isCompleted: true, watchedTime: selectedChapter.duration || 0 });
+
+        setChapterProgress({
+          isCompleted: true,
+          watchedTime: selectedChapter.duration || 100
+        });
+
         await fetchCourseProgress();
 
         if (courseProgress.percentage === 100) {
@@ -246,6 +251,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
         }
       } catch (err) {
         console.error("Failed to mark chapter as complete:", err);
+        toast.error("Failed to mark chapter as complete");
       }
     }
   };
@@ -264,7 +270,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
     if (currentChapterIndex < currentSection.chapters.length - 1) {
       return currentSection.chapters[currentChapterIndex + 1];
     }
-    
+
     if (currentSectionIndex < course.sections.length - 1) {
       return course.sections[currentSectionIndex + 1].chapters[0];
     }
@@ -279,10 +285,10 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
     }
 
     if (!chapterProgress?.isCompleted) {
-      const currentSection = course.sections.find(section => 
+      const currentSection = course.sections.find(section =>
         section.chapters.some(ch => ch.id === selectedChapter?.id)
       );
-      const targetSection = course.sections.find(section => 
+      const targetSection = course.sections.find(section =>
         section.chapters.some(ch => ch.id === chapter.id)
       );
 
@@ -341,9 +347,8 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       <div className="flex flex-1 overflow-hidden">
         {isDesktop ? (
           <div
-            className={`${
-              isSidebarOpen ? "w-[300px]" : "w-0"
-            } transition-all duration-300 ease-in-out overflow-hidden border-r shadow-xl bg-white`}
+            className={`${isSidebarOpen ? "w-[300px]" : "w-0"
+              } transition-all duration-300 ease-in-out overflow-hidden border-r shadow-xl bg-white`}
           >
             <ScrollArea className="h-full">{SidebarContent}</ScrollArea>
           </div>
@@ -362,13 +367,13 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
                 videoUrl={videoUrl}
                 isLoading={isVideoLoading}
                 onProgress={handleVideoProgress}
-                onDuration={() => {}}
+                onDuration={() => { }}
                 onEnded={handleVideoEnded}
-                className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out ${
-                  isSidebarOpen ? "aspect-[21/9]" : "aspect-video"
-                }`}
+                className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out ${isSidebarOpen ? "aspect-[21/9]" : "aspect-video"
+                  }`}
                 initialProgress={chapterProgress?.watchedTime || 0}
                 isCompleted={chapterProgress?.isCompleted || false}
+                chapterId={selectedChapter?.id || ''}
               />
               <div className="bg-white rounded-lg shadow-md p-6">
                 <ChapterDetails chapter={selectedChapter} />

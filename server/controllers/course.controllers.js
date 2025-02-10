@@ -384,47 +384,32 @@ export const getCourse = asyncHandler(async (req, res) => {
 export const deleteCourse = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
+  // First, get the course to access its thumbnail
   const course = await prisma.course.findUnique({
     where: { slug },
-    include: {
-      sections: {
-        include: {
-          chapters: true,
-        },
-      },
-    },
+    select: { thumbnail: true } // Only select the thumbnail
   });
 
   if (!course) {
     throw new ApiError(404, "Course not found");
   }
 
-  // Delete all related data
-  await prisma.$transaction(async (tx) => {
-    // Delete chapters
-    for (const section of course.sections) {
-      await tx.chapter.deleteMany({
-        where: { sectionId: section.id },
-      });
-    }
-
-    // Delete sections
-    await tx.section.deleteMany({
-      where: { courseId: course.id },
-    });
-
-    // Delete enrollments
-    await tx.enrollment.deleteMany({
-      where: { courseId: course.id },
-    });
-
-    // Delete the course
-    await tx.course.delete({
-      where: { id: course.id },
-    });
+  // First, delete related enrollments
+  await prisma.enrollment.deleteMany({
+    where: { courseId: slug }
   });
 
-  // Delete thumbnail
+  // Then, delete related course completions
+  await prisma.courseCompletion.deleteMany({
+    where: { courseId: slug }
+  });
+
+  // Now, delete the course
+  await prisma.course.delete({
+    where: { slug },
+  });
+
+  // Delete thumbnail if it exists
   if (course.thumbnail) {
     await deleteFile(course.thumbnail);
   }
@@ -432,7 +417,7 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponsive(200, "Course and related data deleted successfully")
+      new ApiResponsive(200, "Course and related enrollments deleted successfully")
     );
 });
 
@@ -489,8 +474,6 @@ export const updateCourseImage = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to update course thumbnail");
   }
 });
-
-
 
 export const coursePublishToggle = asyncHandler(async (req, res) => {
   const { slug } = req.params;
@@ -816,12 +799,9 @@ export const getAllCourseForSEO = asyncHandler(async (req, res) => {
     .json(new ApiResponsive(200, courses, "Courses retrieved successfully"));
 });
 
-
 export const getFeaturedSections = asyncHandler(async (req, res) => {
   try {
     const [featured, popular, trending, bestseller, free] = await Promise.all([
-
-
       // Featured Courses
       prisma.course.findMany({
         where: {
@@ -840,6 +820,7 @@ export const getFeaturedSections = asyncHandler(async (req, res) => {
           isFeatured: true,
           price: true,
           salePrice: true,
+          language: true,
           category: {
             select: {
               name: true
@@ -866,6 +847,7 @@ export const getFeaturedSections = asyncHandler(async (req, res) => {
           isPopular: true,
           price: true,
           salePrice: true,
+          language: true,
           category: {
             select: {
               name: true
@@ -892,6 +874,7 @@ export const getFeaturedSections = asyncHandler(async (req, res) => {
           isTrending: true,
           price: true,
           salePrice: true,
+          language: true,
           category: {
             select: {
               name: true
@@ -918,6 +901,7 @@ export const getFeaturedSections = asyncHandler(async (req, res) => {
           isBestseller: true,
           price: true,
           salePrice: true,
+          language: true,
           category: {
             select: {
               name: true
@@ -942,6 +926,7 @@ export const getFeaturedSections = asyncHandler(async (req, res) => {
           description: true,
           price: true,
           salePrice: true,
+          language: true,
           category: {
             select: {
               name: true
@@ -958,7 +943,6 @@ export const getFeaturedSections = asyncHandler(async (req, res) => {
         trending: trending.length > 0 ? trending : null,
         bestseller: bestseller.length > 0 ? bestseller : null,
         free: free.length > 0 ? free : null
-
       })
     );
   } catch (error) {

@@ -16,6 +16,7 @@ import {
   Lock,
   Folder,
   Check,
+  MessageCircle,
 } from "lucide-react"
 import parse from "html-react-parser"
 import { Element } from "domhandler"
@@ -379,26 +380,8 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
               </motion.div>
 
               {/* Course Meta Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {/* Chapters Count */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm border border-white/10 hover:bg-white/20 transition-all duration-300"
-                >
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="p-2 bg-white/10 rounded-lg">
-                      <Book className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
-                    </div>
-                    <div className="space-y-0.5 md:space-y-1">
-                      <span className="text-xl md:text-2xl font-bold">
-                        {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)}
-                      </span>
-                      <p className="text-xs md:text-sm text-white/70">Chapters</p>
-                    </div>
-                  </div>
-                </motion.div>
+              <div className="grid grid-cols-1 sm:grid-cols-2  gap-4 md:gap-6">
+
                 {/* Language */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -515,10 +498,44 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
             <Card>
               <CardContent className="p-0">
                 <Tabs defaultValue="description" className="w-full">
-                  <TabsList className="w-full justify-start rounded-none border-b">
-                    <TabsTrigger value="description">Description</TabsTrigger>
-                    <TabsTrigger value="content">Course Content</TabsTrigger>
-                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
+
+
+                  <TabsList className="w-full justify-start rounded-none border-b bg-white p-1">
+                    <TabsTrigger
+                      value="description"
+                      className="flex items-center gap-2 px-6 py-3 data-[state=active]:bg-red-50 
+                      data-[state=active]:text-red-600 data-[state=active]:border-b-2 
+                      data-[state=active]:border-red-600 transition-all duration-200"
+                    >
+                      <Book className="w-4 h-4" />
+                      <span>Description</span>
+                    </TabsTrigger>
+
+                    <TabsTrigger
+                      value="content"
+                      className="flex items-center gap-2 px-6 py-3 data-[state=active]:bg-red-50 
+                      data-[state=active]:text-red-600 data-[state=active]:border-b-2 
+                      data-[state=active]:border-red-600 transition-all duration-200"
+                    >
+                      <PlayCircle className="w-4 h-4" />
+                      <span>Course Content</span>
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-red-100 text-red-600 hover:bg-red-200"
+                      >
+                        {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)}
+                      </Badge>
+                    </TabsTrigger>
+
+                    <TabsTrigger
+                      value="reviews"
+                      className="flex items-center gap-2 px-6 py-3 data-[state=active]:bg-red-50 
+                      data-[state=active]:text-red-600 data-[state=active]:border-b-2 
+                      data-[state=active]:border-red-600 transition-all duration-200"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Reviews</span>
+                    </TabsTrigger>
                   </TabsList>
                   <TabsContent value="description" className="p-6">
                     <div className="prose prose-lg dark:prose-invert">
@@ -635,67 +652,151 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
 
           {/* Price Card */}
           <div className="md:col-span-1 order-1 md:order-none">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>
-                  {(course.paid && hasPurchased) || (!course.paid && isEnrolled) ? (
-                    <div className="space-y-2">
-                      <Badge variant="outline" className="bg-green-100 text-green-800 text-base px-4 py-1">
-                        <Check className="w-4 h-4 mr-2" />
-                        Continue Learning
-                      </Badge>
+            <Card className="sticky top-28 overflow-hidden border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+              {/* Price Header Section */}
+              <div className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10" />
+                <CardHeader className="space-y-4 relative">
+                  <CardTitle className="space-y-4">
+                    {(course.paid && hasPurchased) || (!course.paid && isEnrolled) ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex flex-col items-center gap-3 p-4"
+                      >
+                        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                          <Check className="w-8 h-8 text-green-600" />
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 text-base px-6 py-2 rounded-full border-green-200"
+                        >
+                          Enrolled Successfully
+                        </Badge>
+                      </motion.div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3 p-4">
+                        {course.paid ? (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center"
+                          >
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              {course.salePrice ? (
+                                <>
+                                  {/* Sale Price */}
+                                  <span className="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                                    {formatPrice(course.salePrice)}
+                                  </span>
+                                  {/* Original Price */}
+                                  <span className="text-lg text-gray-500 line-through ml-2">
+                                    {formatPrice(course.price)}
+                                  </span>
+                                  {/* Discount Badge */}
+                                  <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                    Save {Math.round(((course.price - course.salePrice) / course.price) * 100)}%
+                                  </Badge>
+                                </>
+                              ) : (
+                                <>
+                                  {/* Regular Price */}
+                                  <span className="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                                    {formatPrice(course.price)}
+                                  </span>
+                                  <Badge variant="secondary" className="bg-red-100 text-red-700 uppercase text-xs">
+                                    Premium
+                                  </Badge>
+                                </>
+                              )}
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center"
+                          >
+                            <span className="text-4xl font-bold text-green-600">FREE</span>
+                            <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700">
+                              Limited Time
+                            </Badge>
+                          </motion.div>
+                        )}
+                      </div>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+              </div>
+
+              <CardContent className="space-y-6">
+                {/* Enrollment Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {renderEnrollmentButton()}
+                </motion.div>
+
+                {/* Course Features */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-4"
+                >
+                  {(!course.paid && isEnrolled) || (course.paid && hasPurchased) ? (
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-gray-800">Course Progress</h3>
+                      <ul className="space-y-3">
+                        <li className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                          <Book className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="font-medium text-green-800">Course Enrolled</p>
+                            <p className="text-sm text-green-600">Start learning now</p>
+                          </div>
+                        </li>
+                        <li className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                          <Award className="w-5 h-5 text-blue-600" />
+                          <div>
+                            <p className="font-medium text-blue-800">Certificate Available</p>
+                            <p className="text-sm text-blue-600">Complete to earn</p>
+                          </div>
+                        </li>
+                      </ul>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-start gap-2">
-                      {course.paid ? (
-                        <div>
-                          <span className="text-3xl font-bold text-red-600">{formatPrice(course.price)}</span>
-                          <Badge variant="secondary" className="text-sm ml-2">
-                            PAID
-                          </Badge>
-                        </div>
-                      ) : (
-                        <span className="text-3xl font-bold text-green-600">FREE</span>
-                      )}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-gray-800">Course Includes</h3>
+                      <ul className="space-y-3">
+                        <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                          <PlayCircle className="w-5 h-5 text-red-600" />
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)} Chapters
+                            </p>
+                            <p className="text-sm text-gray-600">Comprehensive content</p>
+                          </div>
+                        </li>
+                        <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                          <Book className="w-5 h-5 text-red-600" />
+                          <div>
+                            <p className="font-medium text-gray-800">Lifetime Access</p>
+                            <p className="text-sm text-gray-600">Learn at your pace</p>
+                          </div>
+                        </li>
+                        <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                          <Award className="w-5 h-5 text-red-600" />
+                          <div>
+                            <p className="font-medium text-gray-800">Completion Certificate</p>
+                            <p className="text-sm text-gray-600">Verify your achievement</p>
+                          </div>
+                        </li>
+                      </ul>
                     </div>
                   )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {renderEnrollmentButton()}
-                {(!course.paid && isEnrolled) || (course.paid && hasPurchased) ? (
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Your Progress</h3>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-2 text-gray-600">
-                        <Book className="w-5 h-5 text-green-600" />
-                        Enrolled Course
-                      </li>
-                      <li className="flex items-center gap-2 text-gray-600">
-                        <Award className="w-5 h-5 text-green-600" />
-                        Certificate Available on Completion
-                      </li>
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">This course includes:</h3>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-2 text-gray-600">
-                        <PlayCircle className="w-5 h-5 text-red-600" />
-                        {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)} chapters
-                      </li>
-                      <li className="flex items-center gap-2 text-gray-600">
-                        <Book className="w-5 h-5 text-red-600" />
-                        Full lifetime access
-                      </li>
-                      <li className="flex items-center gap-2 text-gray-600">
-                        <Award className="w-5 h-5 text-red-600" />
-                        Certificate of completion
-                      </li>
-                    </ul>
-                  </div>
-                )}
+                </motion.div>
               </CardContent>
             </Card>
           </div>

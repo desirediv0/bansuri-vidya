@@ -1,5 +1,6 @@
 import { Method } from "axios";
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 import { FieldErrors, RegisterOptions, UseFormRegister } from "react-hook-form";
 
 export interface RequestOptions {
@@ -678,15 +679,8 @@ export interface AnimatedTextProps {
 export interface Course2 {
   id: string;
   title: string;
-  category: CourseCategory;
-  instructor: string;
   description?: string;
-  price: number;
   image: string;
-  rating: number;
-  reviews: number;
-  lessons: number;
-  students: number;
   slug?: string;
 }
 
@@ -706,4 +700,79 @@ export type CourseCategory =
 export interface CourseListingProps {
   defaultCategory?: CourseCategory;
   limit?: number;
+}
+
+
+export interface CustomButtonProps {
+  primaryText: string;
+  secondaryText: string;
+  icon?: ReactNode;
+  href?: string;
+  className?: string;
+  variant?: 'filled' | 'outlined';
+  bgColor?: string;
+  textColor?: string;
+  hoverBgColor?: string;
+  hoverTextColor?: string;
+  onClick?: () => void;
+}
+
+export interface ImageType {
+  src: string;
+  alt: string;
+}
+
+export interface StatType {
+  label: string;
+  endValue: number;
+  number?: string;
+}
+
+export interface HeroSectionProps {
+  smallText?: string;
+  title: string;
+  description?: string;
+  image?: ImageType;
+  backgroundColor?: string;
+  buttons?: ReactNode;
+  stats?: StatType[];
+  className?: string;
+  variant?: 'home' | 'page';
+}
+
+export interface Testimonial {
+  id: number;
+  name: string;
+  role: string;
+  image: string;
+  content: string;
+  rating: number;
+  videoUrl: string;
+}
+
+export interface CompanyLogo {
+  name: string;
+  image: string;
+}
+
+export interface VideoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  videoUrl: string;
+  title: string;
+  content: string;
+}
+
+export interface AccordionItemProps {
+  title: string;
+  content: string;
+  icon: React.ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export interface InfiniteTextScrollProps {
+  text: string;
+  speed?: number;
+  content: string;
 }

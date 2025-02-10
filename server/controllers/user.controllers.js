@@ -835,26 +835,45 @@ export const AdminDeleteUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Please provide user ID");
   }
 
+  // Fetch the user to ensure it exists
   const user = await prisma.user.findUnique({
     where: { slug },
-    include: {
-      _count: {
-        select: {
-          Purchase: true,
-          Enrollment: true,
-          UserProgress: true,
-          BillingDetails: true,
-          Review: true,
-          Cart: true,
-        },
-      },
-    },
   });
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
+  // Delete related records
+  await prisma.payment.deleteMany({
+    where: { userId: user.id },
+  });
+
+  await prisma.billingDetails.deleteMany({
+    where: { userId: user.id },
+  });
+
+  await prisma.cart.deleteMany({
+    where: { userId: user.id },
+  });
+
+  await prisma.review.deleteMany({
+    where: { userId: user.id },
+  });
+
+  // Delete related fee payments
+  await prisma.feePayment.deleteMany({
+    where: { userId: user.id },
+  });
+
+  // Delete related fees
+  await prisma.fee.deleteMany({
+    where: { userId: user.id },
+  });
+
+  // Add any other related records you need to delete here...
+
+  // Finally, delete the user
   await prisma.user.delete({
     where: { slug },
   });

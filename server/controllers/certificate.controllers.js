@@ -36,7 +36,7 @@ const generateCertificatePDF = async (certificateData) => {
     doc.fontSize(36)
         .font('Times-Bold')
         .fillColor('#002366')
-        .text('MONARK FX-FINANCE MARKET INSTITUTE', {
+        .text('Bansuri Vidya Mandir', {
             align: 'center'
         })
         .moveDown(0.5);
@@ -95,7 +95,7 @@ const generateCertificatePDF = async (certificateData) => {
     doc.fontSize(10)
         .fillColor('#666666')
         .text(
-            `Verify at: ${process.env.FRONTEND_URL}/verify-certificate/${certificateData.certificateId}`,
+            `Verify at: ${process.env.FRONTEND_URL}/verify/${certificateData.certificateId}`,
             doc.page.width - 200,
             doc.y
         );
@@ -183,7 +183,7 @@ export const shareCertificate = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Not authorized to share this certificate");
     }
 
-    const shareUrl = `${process.env.FRONTEND_URL}/verify-certificate/${certificateId}`;
+    const shareUrl = `${process.env.FRONTEND_URL}/verify/${certificateId}`;
 
     return res.status(200).json(
         new ApiResponsive(200, { shareUrl }, "Share URL generated successfully")

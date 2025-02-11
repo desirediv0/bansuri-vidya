@@ -30,8 +30,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Trash2, Upload, Loader2 } from "lucide-react"
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false })
-import "react-quill/dist/quill.snow.css"
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false })
 
 import type { CourseDataNew, Category } from "@/type"
 import { toast } from "@/hooks/use-toast"
@@ -306,9 +305,14 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Course Status */}
             <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <Label htmlFor="isPublished" className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                Course Status
-              </Label>
+              <div className="flex flex-col">
+                <Label htmlFor="isPublished" className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                  Publication Status
+                </Label>
+                <span className="text-sm text-gray-500">
+                  {watch("isPublished") ? "Published - Visible to students" : "Draft - Not visible to students"}
+                </span>
+              </div>
               <Controller
                 name="isPublished"
                 control={control}
@@ -331,7 +335,8 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
                       <TooltipContent>
                         {field.value
                           ? "Course is live and visible to students"
-                          : "Course is not yet visible to students"}
+                          : "Course is not yet visible to students"
+                        }
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -340,10 +345,15 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
             </div>
 
             {/* Course Type */}
-            <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <Label htmlFor="paid" className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                Course Type
-              </Label>
+            <div className="flex items-center justify-between bg-gray-100  p-4 rounded-lg">
+              <div className="flex flex-col">
+                <Label htmlFor="paid" className="text-lg font-semibold text-gray-700">
+                  Payment Type
+                </Label>
+                <span className="text-sm text-gray-500">
+                  {watch("paid") ? "Premium Course (Paid Access)" : "Free Course (Open Access)"}
+                </span>
+              </div>
               <Controller
                 name="paid"
                 control={control}
@@ -400,7 +410,7 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
                   <div className="flex flex-col space-y-2">
                     <Label
                       htmlFor="description"
-                      className="text-sm font-medium text-gray-700 dark:text-gray-200"
+                      className="text-sm font-medium text-gray-700"
                     >
                       Description
                     </Label>
@@ -410,21 +420,49 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
                         control={control}
                         rules={{ required: "Description is required" }}
                         render={({ field }) => (
-                          <ReactQuill
-                            theme="snow"
+                          <JoditEditor
                             value={field.value}
-                            onChange={field.onChange}
-                            className="h-[350px] bg-white dark:bg-gray-800"
-                            modules={{
-                              toolbar: [
-                                [{ 'header': [1, 2, 3, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                ['link', 'blockquote'],
-                                [{ 'color': [] }, { 'background': [] }],
-                                ['clean']
-                              ]
+                            config={{
+                              readonly: false,
+                              height: 350,
+                              toolbarSticky: false,
+                              toolbarAdaptive: false,
+                              buttons: [
+                                'source', '|',
+                                'bold', 'strikethrough', 'underline', 'italic', '|',
+                                'superscript', 'subscript', '|',
+                                'ul', 'ol', '|',
+                                'outdent', 'indent', '|',
+                                'font', 'fontsize', 'brush', 'paragraph', '|',
+                                'image', 'video', 'table', 'link', '|',
+                                'align', 'undo', 'redo', '|',
+                                'hr', 'eraser', 'copyformat', '|',
+                                'symbol', 'fullsize', 'print', 'about'
+                              ],
+                              uploader: {
+                                insertImageAsBase64URI: true
+                              },
+                              removeButtons: [],
+                              showCharsCounter: true,
+                              showWordsCounter: true,
+                              showXPathInStatusbar: false,
+                              askBeforePasteHTML: false,
+                              askBeforePasteFromWord: false,
+                              defaultActionOnPaste: 'insert_clear_html',
+                              width: '100%',
+                              enableDragAndDropFileToEditor: true,
+                              colors: {
+                                greyscale: ['#000000', '#434343', '#666666', '#999999', '#B7B7B7', '#CCCCCC', '#D9D9D9', '#EFEFEF', '#F3F3F3', '#FFFFFF'],
+                                palette: ['#980000', '#FF0000', '#FF9900', '#FFFF00', '#00F0F0', '#00FFFF', '#4A86E8', '#0000FF', '#9900FF', '#FF00FF'],
+                                full: ['#E6B8AF', '#F4CCCC', '#FCE5CD', '#FFF2CC', '#D9EAD3', '#D0E0E3', '#C9DAF8', '#CFE2F3', '#D9D2E9', '#EAD1DC',
+                                  '#DD7E6B', '#EA9999', '#F9CB9C', '#FFE599', '#B6D7A8', '#A2C4C9', '#A4C2F4', '#9FC5E8', '#B4A7D6', '#D5A6BD',
+                                  '#CC4125', '#E06666', '#F6B26B', '#FFD966', '#93C47D', '#76A5AF', '#6D9EEB', '#6FA8DC', '#8E7CC3', '#C27BA0',
+                                  '#A61C00', '#CC0000', '#E69138', '#F1C232', '#6AA84F', '#45818E', '#3C78D8', '#3D85C6', '#674EA7', '#A64D79',
+                                  '#85200C', '#990000', '#B45F06', '#BF9000', '#38761D', '#134F5C', '#1155CC', '#0B5394', '#351C75', '#741B47',
+                                  '#5B0F00', '#660000', '#783F04', '#7F6000', '#274E13', '#0C343D', '#1C4587', '#073763', '#20124D', '#4C1130']
+                              },
                             }}
+                            onBlur={(newContent) => field.onChange(newContent)}
                           />
                         )}
                       />

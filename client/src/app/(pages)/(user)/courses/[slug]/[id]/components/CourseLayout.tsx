@@ -73,7 +73,6 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       }
 
       const data = await response.json()
-      console.log("API Response:", data); // Add this for debugging
 
       if (!data.success) {
         throw new Error(data.message || "Request failed")
@@ -94,7 +93,6 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
     try {
       if (course.paid) {
         const data = await makeAuthenticatedRequest(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${course.id}`)
-        console.log("Purchase status:", data);
         const hasPurchased = data.message?.purchased;
         setIsPurchased(hasPurchased)
         setIsPurchaseChecked(true)
@@ -165,7 +163,6 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       const data = await makeAuthenticatedRequest(
         `${process.env.NEXT_PUBLIC_API_URL}/user-progress/course/${course.id}`
       );
-      console.log("Course Progress Data:", data);
       setCourseProgress({
         percentage: data.data.percentage || 0,
         completedChapters: Array.isArray(data.data.completedChapters)
@@ -235,6 +232,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
 
         if (courseProgress.percentage === 100) {
           toast.success("🎉 Congratulations! You've completed the entire course!");
+          router.push("/user-profile");
         } else {
           const nextChapter = getNextChapter();
           if (nextChapter) {

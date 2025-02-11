@@ -13,13 +13,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const courseData = await getCourse(params.slug);
     return {
-      title: courseData.metaTitle || `${courseData.title} | Monark FX`,
+      title: courseData.metaTitle || `${courseData.title} | Bansuri Vidya Mandir `,
       description:
-        courseData.metaDesc || `Learn ${courseData.title} on Monark FX`,
+        courseData.metaDesc || `Learn ${courseData.title} on Bansuri Vidya Mandir `,
     };
   } catch {
     return {
-      title: "Course Not Found | Monark FX",
+      title: "Course Not Found | Bansuri Vidya Mandir ",
       description: "The requested course could not be found",
     };
   }

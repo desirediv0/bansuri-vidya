@@ -1,6 +1,14 @@
 import { Metadata } from "next";
-import CourseClient from "./course-client";
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { AlertTriangle } from "lucide-react";
+import CourseLoading from "./loading";
+
+// Import client component dynamically with ssr disabled
+const CourseClient = dynamic(() => import("./course-client"), {
+  ssr: false,
+  loading: () => <CourseLoading />
+});
 
 async function getCourse(slug: string) {
   try {
@@ -11,8 +19,7 @@ async function getCourse(slug: string) {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/course/get-course-page/${slug}`,
       {
-        next: { revalidate: 0 },
-        method: "GET",
+        cache: 'no-store',
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -21,86 +28,81 @@ async function getCourse(slug: string) {
     );
 
     if (!res.ok) {
-      console.error("API Error:", {
-        status: res.status,
-        statusText: res.statusText,
-        url: res.url
-      });
       throw new Error(`Failed to fetch course: ${res.status}`);
     }
 
     const data = await res.json();
-
-    if (!data || !data.data) {
-      console.error("Invalid API response:", data);
-      throw new Error("Invalid response format");
-    }
-
     return data;
   } catch (error) {
     console.error("Error fetching course:", error);
     return {
       error: true,
       message: "Failed to fetch course",
-      data: {}
+      data: null
     };
   }
 }
 
-type Props = {
-  params: { slug: string };
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const courseData = await getCourse(params.slug);
 
-  if (courseData.error) {
+  if (courseData.error || !courseData.data) {
     return {
-      title: "Error | Bansuri Vidya Mandir | Indian Classical Music Institute",
-      description: "Course not found",
+      title: "Course Not Found | Bansuri Vidya Mandir",
+      description: "The requested course could not be found.",
     };
   }
 
+  const { data } = courseData;
+
   return {
-    title:
-      courseData.data.metaTitle || courseData.data.title || "Bansuri Vidya Mandir | Indian Classical Music Institute",
-    description:
-      courseData.data.metaDesc ||
-      "Empower your financial future with expert training in Indian classical music.",
+    title: data.metaTitle || data.title || "Bansuri Vidya Mandir",
+    description: data.metaDesc || data.subheading || "Learn Indian Classical Music",
+    openGraph: {
+      title: data.title,
+      description: data.subheading || data.metaDesc,
+      images: [`${process.env.NEXT_PUBLIC_IMAGE_URL}/${data.thumbnail}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: data.title,
+      description: data.subheading || data.metaDesc,
+      images: [`${process.env.NEXT_PUBLIC_IMAGE_URL}/${data.thumbnail}`],
+    },
   };
 }
 
-export default async function CoursePage({ params }: Props) {
+export default async function CoursePage({ params }: { params: { slug: string } }) {
   const courseData = await getCourse(params.slug);
 
-  if (courseData.error) {
+  if (courseData.error || !courseData.data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 font-plus-jakarta-sans">
-        <div className="max-w-md w-full space-y-8 text-center">
-          <div className="flex flex-col items-center justify-center">
-            <AlertTriangle className="h-16 w-16 text-yellow-400 animate-bounce" />
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-              Oops! Course Not Found
-            </h2>
-            <p className="mt-2 text-sm text-gray-600 font-inter">
-              We couldn&apos;t find the course you&apos;re looking for. It might
-              have been moved or deleted.
-            </p>
-            <div className="mt-6">
-              <a
-                href="/courses"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm bg-red-600 hover:bg-red-700 hover:text-white text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Browse All Courses
-              </a>
-            </div>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full text-center space-y-6">
+          <AlertTriangle className="h-16 w-16 text-yellow-400 mx-auto" />
+          <h1 className="text-3xl font-bold text-gray-900">
+            Course Not Found
+          </h1>
+          <p className="text-gray-600">
+            We couldn&apos;t find the course you&apos;re looking for.
+          </p>
+          <a
+            href="/courses"
+            className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Browse Courses
+          </a>
         </div>
       </div>
     );
   }
 
   return (
-    <CourseClient initialCourseData={courseData.data} slug={params.slug} />
+    <Suspense fallback={<CourseLoading />}>
+      <CourseClient
+        initialCourseData={courseData.data}
+        slug={params.slug}
+      />
+    </Suspense>
   );
 }

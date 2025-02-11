@@ -14,12 +14,13 @@ import {
   Puzzle,
   School,
   ShoppingBasket,
-  Wallet,
+  // Wallet,
   BookOpen,
   FilePlus,
   FileText,
   MessageSquare,
   Award,
+  Folder,
   // Eye
 } from "lucide-react";
 import { NavItem } from "@/type";
@@ -29,6 +30,11 @@ const navItems: NavItem[] = [
     title: "My Courses",
     href: "/dashboard",
     icon: BookOpen,
+  },
+  {
+    title: "Categories",
+    href: "/dashboard/categories",
+    icon: Folder,
   },
   {
     title: "Student List",
@@ -70,11 +76,11 @@ const navItems: NavItem[] = [
     href: "/dashboard/purchase",
     icon: ShoppingBasket,
   },
-  {
-    title: "Revenue",
-    href: "/dashboard/fees",
-    icon: Wallet,
-  },
+  // {
+  //   title: "Revenue",
+  //   href: "/dashboard/fees",
+  //   icon: Wallet,
+  // },
   {
     title: "Certificates",
     href: "/dashboard/certificates",

@@ -100,30 +100,12 @@ export const getVerificationTemplate = (verificationLink) => `
         <div class="content">
             <h2>Begin Your Journey</h2>
             <p>Dear Valued Trader,</p>
-            <p>Welcome to Bansuri Vidya Mandir ,Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship., please verify your email address:</p>
+            <p>Welcome to Bansuri Vidya Mandir. Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship. Please verify your email address:</p>
             <a href="${verificationLink}" class="button">Verify Email & Start</a>
-            <p>Once verified, you'll gain access to:</p>
-            <div class="features">
-                <div class="feature-item">
-                    Real-time market analysis and signals
-                </div>
-                <div class="feature-item">
-                    Advanced tools and indicators
-                </div>
-                <div class="feature-item">
-                    Professional strategies
-                </div>
-                <div class="feature-item">
-                    Expert market insights and research
-                </div>
-                <div class="feature-item">
-                    24/7 support and guidance
-                </div>
-            </div>
-            <p>If you didn't create an account with Bansuri Vidya Mandir , please disregard this email.</p>
+            <p>If you didn't create an account with Bansuri Vidya Mandir, please disregard this email.</p>
         </div>
         <div class="footer">
-            © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
+            © 2021 Bansuri Vidya Mandir | Terms of Service | Privacy Policy<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -254,16 +236,13 @@ export const getDeleteTemplate = (deletionLink) => `
                     Temporarily deactivate your account
                 </div>
                 <div class="alternative-item">
-                    Adjust your preferences and alerts
-                </div>
-                <div class="alternative-item">
                     Consult with our experts
                 </div>
                 <div class="alternative-item">
                     Contact our 24/7 support team
                 </div>
             </div>
-            <p>If you didn't request this deletion, please contact our support team immediately at support@Bansuri Vidya Mandir .com.</p>
+            <p>If you didn't request this deletion, please contact our support team immediately at support@bansurividyamandir.com.</p>
         </div>
         <div class="footer">
             © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
@@ -359,7 +338,7 @@ export const getResetTemplate = (resetLink) => `
             <p>Dear Valued Trader,</p>
             <p>We received a request to reset the password for your Bansuri Vidya Mandir  account. To ensure the security of your account and maintain uninterrupted access to your activities, please click the button below:</p>
             <a href="${resetLink}" class="button">Reset Password</a>
-            <p>If you didn't request this password reset, please contact our security team immediately at security@Bansuri Vidya Mandir .com.</p>
+            <p>If you didn't request this password reset, please contact our security team immediately at support@bansurividyamandir.com</p>
         </div>
         <div class="footer">
             © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>

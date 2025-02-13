@@ -49,9 +49,9 @@ export function HeroSection({
       )}
       style={{ backgroundColor }}
     >
-      
-        <AnimatedDots />
-    
+
+      <AnimatedDots />
+
       <div className="container relative mx-auto px-4 h-full xl:px-20">
         <div
           className={cn(
@@ -89,11 +89,11 @@ export function HeroSection({
               />
             )}
             <h1 className={cn(
-                "font-bold text-white leading-tight mt-10 md:mt-20",
-                variant === "home"
-                  ? "text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
-                  : "text-3xl md:text-5xl lg:text-6xl"
-              )}>{title}</h1>
+              "font-bold text-white leading-tight mt-10 md:mt-20",
+              variant === "home"
+                ? "text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+                : "text-3xl md:text-5xl lg:text-6xl"
+            )}>{title}</h1>
             {description && (
               <p className="mt-6 text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto lg:mx-0">{description}</p>
             )}
@@ -126,10 +126,7 @@ export function HeroSection({
             )}
           </div>
           {image && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+            <div
               className={cn(
                 "w-full relative",
                 variant === "home"
@@ -163,7 +160,7 @@ export function HeroSection({
                   priority
                 />
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>

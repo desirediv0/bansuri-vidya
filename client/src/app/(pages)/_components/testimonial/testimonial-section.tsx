@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, ChevronLeft, ChevronRight, Star, Play } from 'lucide-react';
-import { companyLogos, testimonials } from "./data";
+import { testimonials } from "./data";
 import Image from "next/image";
 import { AnimatedText } from "../AnimatedText";
 import { VideoModal } from "./VideoModal";
@@ -32,7 +32,7 @@ export default function TestimonialsSection() {
 
   return (
     <div className="bg-[#4b131c] px-4 py-20 md:pt-40 md:pb-10 overflow-hidden border-b-4 border-[#e9ec3b] relative">
-      <VideoModal 
+      <VideoModal
         isOpen={isVideoModalOpen}
         onClose={() => {
           setIsVideoModalOpen(false);
@@ -177,9 +177,8 @@ export default function TestimonialsSection() {
                   <button
                     key={i}
                     onClick={() => setCurrentIndex(i)}
-                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                      i === currentIndex ? "bg-white" : "bg-gray-600"
-                    }`}
+                    className={`w-2.5 h-2.5 rounded-full transition-colors ${i === currentIndex ? "bg-white" : "bg-gray-600"
+                      }`}
                   />
                 ))}
               </div>

@@ -269,7 +269,7 @@ const AdminUsersPage: React.FC = () => {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Email</TableHead>
                                     <TableHead>Role</TableHead>
-                                    <TableHead>User Type</TableHead>
+                                    {/* <TableHead>User Type</TableHead> */}
                                     <TableHead>Verified</TableHead>
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
@@ -314,7 +314,7 @@ const AdminUsersPage: React.FC = () => {
                                         </TableCell>
 
                                         {/* User Type Cell */}
-                                        <TableCell>
+                                        {/* <TableCell>
                                             {editingUser === user.id ? (
                                                 <Select
                                                     value={user.usertype}
@@ -331,7 +331,7 @@ const AdminUsersPage: React.FC = () => {
                                             ) : (
                                                 user.usertype
                                             )}
-                                        </TableCell>
+                                        </TableCell> */}
 
                                         {/* Verification Status Cell */}
                                         <TableCell>

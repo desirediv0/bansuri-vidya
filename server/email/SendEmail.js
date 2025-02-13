@@ -27,39 +27,39 @@ export const SendEmail = async ({ email, subject, message, emailType, attachment
 
     switch (emailType) {
       case "VERIFY":
-        subject = "Verify your email - MonarkFX";
+        subject = "Verify your email - Bansuri Vidya Mandir ";
         htmlContent = getVerificationTemplate(message);
         break;
       case "DELETE":
-        subject = "Delete your account - MonarkFX";
+        subject = "Delete your account - Bansuri Vidya Mandir ";
         htmlContent = getDeleteTemplate(message);
         break;
       case "RESET":
-        subject = "Reset your password - MonarkFX";
+        subject = "Reset your password - Bansuri Vidya Mandir ";
         htmlContent = getResetTemplate(message);
         break;
       case "FEE_RECEIPT":
-        subject = subject || "Fee Payment Receipt - MonarkFX";
+        subject = subject || "Fee Payment Receipt - Bansuri Vidya Mandir ";
         htmlContent = getFeeReceiptTemplate(message);
         break;
       case "FEE_NOTIFICATION":
-        subject = subject || "New Fee Assignment - MonarkFX";
+        subject = subject || "New Fee Assignment - Bansuri Vidya Mandir ";
         htmlContent = getFeeNotificationTemplate(message);
         break;
       case "PAYMENT_SUCCESS":
-        subject = subject || "Payment Successful - MonarkFX";
+        subject = subject || "Payment Successful - Bansuri Vidya Mandir ";
         htmlContent = getPaymentSuccessTemplate(message);
         break;
       case "PAYMENT_FAILURE":
-        subject = subject || "Payment Failed - MonarkFX";
+        subject = subject || "Payment Failed - Bansuri Vidya Mandir ";
         htmlContent = getPaymentFailureTemplate(message);
         break;
       case "FEE_UPDATE":
-        subject = subject || "Fee Update Notification - MonarkFX";
+        subject = subject || "Fee Update Notification - Bansuri Vidya Mandir ";
         htmlContent = getFeeUpdateTemplate(message);
         break;
       case "CERTIFICATE_GENERATED":
-        subject = "Course Completion Certificate - MonarkFX";
+        subject = "Course Completion Certificate - Bansuri Vidya Mandir ";
         htmlContent = getCertificateGeneratedTemplate(message);
         break;
       default:

@@ -4,7 +4,7 @@ export const getVerificationTemplate = (verificationLink) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Your Email - MonarkFX Trading Platform</title>
+    <title>Verify Your Email - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -95,35 +95,35 @@ export const getVerificationTemplate = (verificationLink) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>Welcome to MonarkFX!</h1>
+            <h1>Welcome to Bansuri Vidya Mandir </h1>
         </div>
         <div class="content">
-            <h2>Begin Your Trading Journey</h2>
+            <h2>Begin Your Journey</h2>
             <p>Dear Valued Trader,</p>
-            <p>Welcome to MonarkFX, your premier platform for stock market trading and financial success. To activate your trading account and ensure security, please verify your email address:</p>
-            <a href="${verificationLink}" class="button">Verify Email & Start Trading</a>
+            <p>Welcome to Bansuri Vidya Mandir ,Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship., please verify your email address:</p>
+            <a href="${verificationLink}" class="button">Verify Email & Start</a>
             <p>Once verified, you'll gain access to:</p>
             <div class="features">
                 <div class="feature-item">
-                    Real-time market analysis and trading signals
+                    Real-time market analysis and signals
                 </div>
                 <div class="feature-item">
-                    Advanced trading tools and indicators
+                    Advanced tools and indicators
                 </div>
                 <div class="feature-item">
-                    Professional trading strategies
+                    Professional strategies
                 </div>
                 <div class="feature-item">
                     Expert market insights and research
                 </div>
                 <div class="feature-item">
-                    24/7 trading support and guidance
+                    24/7 support and guidance
                 </div>
             </div>
-            <p>If you didn't create an account with MonarkFX, please disregard this email.</p>
+            <p>If you didn't create an account with Bansuri Vidya Mandir , please disregard this email.</p>
         </div>
         <div class="footer">
-            © 2021 MonarkFX Trading Platform | Terms of Service | Privacy Policy<br>
+            © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -137,7 +137,7 @@ export const getDeleteTemplate = (deletionLink) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Deletion Request - MonarkFX Trading Platform</title>
+    <title>Account Deletion Request - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -237,36 +237,36 @@ export const getDeleteTemplate = (deletionLink) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>We Value Your Trading Journey</h1>
+            <h1>We Value Your Journey</h1>
         </div>
         <div class="content">
             <h2>Account Deletion Request</h2>
             <p>Dear Valued Trader,</p>
-            <p>We've received a request to delete your MonarkFX trading account. Before proceeding, we want to ensure this is your intended action, as it will affect your trading access and history.</p>
+            <p>We've received a request to delete your Bansuri Vidya Mandir  account. Before proceeding, we want to ensure this is your intended action, as it will affect your access and history.</p>
             <p>If you're certain about deleting your account, please click the button below:</p>
             <a href="${deletionLink}" class="button">Confirm Account Deletion</a>
             <div class="warning">
-                <strong>Warning:</strong> This action is irreversible. Once deleted, all your trading history, analysis settings, and personal data will be permanently removed from our systems.
+                <strong>Warning:</strong> This action is irreversible. Once deleted, all your history, analysis settings, and personal data will be permanently removed from our systems.
             </div>
             <div class="alternatives">
                 <h3>Consider these alternatives:</h3>
                 <div class="alternative-item">
-                    Temporarily deactivate your trading account
+                    Temporarily deactivate your account
                 </div>
                 <div class="alternative-item">
-                    Adjust your trading preferences and alerts
+                    Adjust your preferences and alerts
                 </div>
                 <div class="alternative-item">
-                    Consult with our trading experts
+                    Consult with our experts
                 </div>
                 <div class="alternative-item">
                     Contact our 24/7 support team
                 </div>
             </div>
-            <p>If you didn't request this deletion, please contact our support team immediately at support@monarkfx.com.</p>
+            <p>If you didn't request this deletion, please contact our support team immediately at support@Bansuri Vidya Mandir .com.</p>
         </div>
         <div class="footer">
-            © 2021 MonarkFX Trading Platform | Terms of Service | Privacy Policy<br>
+            © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -280,7 +280,7 @@ export const getResetTemplate = (resetLink) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Your Password - MonarkFX Trading Platform</title>
+    <title>Reset Your Password - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -352,17 +352,17 @@ export const getResetTemplate = (resetLink) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>Secure Your Trading Account</h1>
+            <h1>Secure Your Account</h1>
         </div>
         <div class="content">
             <h2>Reset Your Password</h2>
             <p>Dear Valued Trader,</p>
-            <p>We received a request to reset the password for your MonarkFX trading account. To ensure the security of your account and maintain uninterrupted access to your trading activities, please click the button below:</p>
+            <p>We received a request to reset the password for your Bansuri Vidya Mandir  account. To ensure the security of your account and maintain uninterrupted access to your activities, please click the button below:</p>
             <a href="${resetLink}" class="button">Reset Password</a>
-            <p>If you didn't request this password reset, please contact our security team immediately at security@monarkfx.com.</p>
+            <p>If you didn't request this password reset, please contact our security team immediately at security@Bansuri Vidya Mandir .com.</p>
         </div>
         <div class="footer">
-            © 2021 MonarkFX Trading Platform | Terms of Service | Privacy Policy<br>
+            © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -376,7 +376,7 @@ export const getFeeReceiptTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fee Payment Receipt - MonarkFX</title>
+    <title>Fee Payment Receipt - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -462,7 +462,7 @@ export const getFeeReceiptTemplate = (data) => `
             <p>Please find your receipt attached to this email.</p>
         </div>
         <div class="footer">
-            © ${new Date().getFullYear()} MonarkFX Trading Platform<br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir <br>
             This is an automated message. Please do not reply.
         </div>
     </div>
@@ -476,7 +476,7 @@ export const getFeeNotificationTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Fee Assignment - MonarkFX</title>
+    <title>New Fee Assignment - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -580,7 +580,7 @@ export const getFeeNotificationTemplate = (data) => `
             <a href="${process.env.FRONTEND_URL}/dashboard/fees" class="btn">View Fee Details</a>
         </div>
         <div class="footer">
-            <p>© ${new Date().getFullYear()} MonarkFX Trading Platform</p>
+            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir </p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
@@ -594,7 +594,7 @@ export const getPaymentSuccessTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - MonarkFX</title>
+    <title>Payment Successful - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -698,8 +698,8 @@ export const getPaymentSuccessTemplate = (data) => `
             <p>Thank you for your prompt payment!</p>
         </div>
         <div class="footer">
-            <p>© ${new Date().getFullYear()} MonarkFX Trading Platform</p>
-            <p>For any queries, please contact our support team at support@monarkfx.com</p>
+            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir </p>
+            <p>For any queries, please contact our support team at support@Bansuri Vidya Mandir .com</p>
         </div>
     </div>
 </body>
@@ -712,7 +712,7 @@ export const getPaymentFailureTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Failed - MonarkFX</title>
+    <title>Payment Failed - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -801,8 +801,8 @@ export const getPaymentFailureTemplate = (data) => `
             </a>
         </div>
         <div class="footer">
-            <p>© ${new Date().getFullYear()} MonarkFX Trading Platform</p>
-            <p>Need help? Contact our support team at support@monarkfx.com</p>
+            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir </p>
+            <p>Need help? Contact our support team at support@Bansuri Vidya Mandir .com</p>
         </div>
     </div>
 </body>
@@ -856,7 +856,7 @@ export const getCertificateGeneratedTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Generated - MonarkFX</title>
+    <title>Certificate Generated - Bansuri Vidya Mandir </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -964,7 +964,7 @@ export const getCertificateGeneratedTemplate = (data) => `
             <p>This certificate validates your dedication and commitment to learning. Keep up the excellent work!</p>
         </div>
         <div class="footer">
-            © ${new Date().getFullYear()} MonarkFX Trading Platform<br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir <br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>

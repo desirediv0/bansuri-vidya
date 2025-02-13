@@ -54,10 +54,10 @@ export const markChapterComplete = asyncHandler(async (req, res) => {
     });
 
     const courseId = chapter.section.course.id;
-    
+
     // Check if course is completed and generate certificate if needed
     const certificate = await checkAndGenerateCertificate(
-      userId, 
+      userId,
       courseId,
       req.user.email,
       req.user.name
@@ -75,7 +75,7 @@ export const markChapterComplete = asyncHandler(async (req, res) => {
 
     return res.status(200).json(
       new ApiResponsive(
-        200, 
+        200,
         response,
         certificate ? "Chapter completed and certificate generated" : "Chapter marked as complete"
       )
@@ -193,7 +193,7 @@ const checkAndGenerateCertificate = async (userId, courseId, userEmail, userName
       if (userEmail && userName) {
         await SendEmail({
           email: userEmail,
-          subject: "Course Completion Certificate - MonarkFX",
+          subject: "Course Completion Certificate - Bansuri Vidya Mandir ",
           emailType: "CERTIFICATE_GENERATED",
           message: {
             userName: userName,

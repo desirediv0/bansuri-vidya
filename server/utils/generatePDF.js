@@ -18,7 +18,7 @@ export const generatePDF = async (data) => {
             // Header
             doc.fontSize(20)
                 .fillColor('#ef4444')
-                .text('MonarkFX Trading Platform', { align: 'center' })
+                .text('Bansuri Vidya Mandir ', { align: 'center' })
                 .moveDown();
 
             // Receipt title
@@ -65,7 +65,7 @@ export const generatePDF = async (data) => {
                     align: 'center',
                     width: doc.page.width - 100
                 })
-                .text('For any queries, please contact support@monarkfx.com', {
+                .text('For any queries, please contact support@Bansuri Vidya Mandir .com', {
                     align: 'center',
                     width: doc.page.width - 100
                 });

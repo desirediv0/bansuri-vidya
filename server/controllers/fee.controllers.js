@@ -262,7 +262,7 @@ export const updateFee = asyncHandler(async (req, res) => {
 
         await SendEmail({
             email: existingFee.user.email,
-            subject: "Fee Details Updated - MonarkFX",
+            subject: "Fee Details Updated - Bansuri Vidya Mandir ",
             message: {
                 name: existingFee.user.name,
                 feeTitle: updatedFee.title,
@@ -412,7 +412,7 @@ export const verifyFeePayment = asyncHandler(async (req, res) => {
             email: req.user.email,
             subject: "Payment Confirmation",
             message: {
-                title: "Payment Successful - MonarkFX",
+                title: "Payment Successful - Bansuri Vidya Mandir ",
                 userName: req.user.name,
                 amount: amount,
                 feeTitle: currentFee.title,

@@ -68,14 +68,14 @@ export default function AuthPage({
       </div>
 
       {/* Right Section */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-tr from-red-50 to-red-100">
+      <div className="flex-1 flex items-center justify-center md:p-6 bg-gradient-to-tr from-red-50 to-red-100">
         <motion.div
           className="w-full max-w-lg"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className=" p-8 ">
+          <div className=" p-4 md:p-8 ">
             <AuthComponent courseSlug={courseSlug} />
           </div>
         </motion.div>

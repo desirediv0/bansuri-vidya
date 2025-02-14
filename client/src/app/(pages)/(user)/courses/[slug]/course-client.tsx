@@ -329,7 +329,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
         </div>
 
         <div className="container mx-auto px-4 py-12 md:py-16 max-w-7xl relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
             {/* Course Info */}
             <div className="order-2 md:order-1 space-y-6">
               {/* Badges */}
@@ -363,9 +363,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
                 className="space-y-4 md:space-y-6"
               >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-bold capitalize leading-tight tracking-tight">
-                  <span className="inline-block">
-                    {course.title}
-                  </span>
+                  <span className="inline-block">{course.title}</span>
                 </h1>
                 {course.subheading && (
                   <motion.p
@@ -380,8 +378,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
               </motion.div>
 
               {/* Course Meta Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2  gap-4 md:gap-6">
-
+              <div className="grid grid-cols-2  gap-4 md:gap-6">
                 {/* Language */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -394,9 +391,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
                       <Languages className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
                     </div>
                     <div className="space-y-0.5 md:space-y-1">
-                      <span className="text-xl md:text-2xl font-bold capitalize truncate">
-                        {course.language}
-                      </span>
+                      <span className="text-xl md:text-2xl font-bold capitalize truncate">{course.language}</span>
                       <p className="text-xs md:text-sm text-white/70">Language</p>
                     </div>
                   </div>
@@ -407,30 +402,24 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.2 }}
-                    className="bg-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm border border-white/10 hover:bg-white/20 transition-all duration-300 col-span-1 sm:col-span-2 lg:col-span-1"
+                    className="bg-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm border border-white/10 hover:bg-white/20 transition-all duration-300"
                   >
                     <div className="flex items-center gap-2 md:gap-3">
                       <div className="p-2 bg-white/10 rounded-lg">
                         <Folder className="w-5 h-5 md:w-6 md:h-6 text-green-400" />
                       </div>
                       <div className="space-y-0.5 md:space-y-1">
-                        <span className="text-xl md:text-2xl font-bold truncate">
-                          {course.category.name}
-                        </span>
+                        <span className="text-xl md:text-2xl font-bold truncate">{course.category.name}</span>
                         <p className="text-xs md:text-sm text-white/70">Category</p>
                       </div>
                     </div>
                   </motion.div>
                 )}
               </div>
-
-
-
-
             </div>
 
             {/* Video/Thumbnail */}
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20">
+            <div className="relative w-full max-w-md mx-auto md:max-w-[50%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20">
               {/* Thumbnail Image - Always visible when not playing */}
               <div
                 className={`absolute inset-0 transition-opacity duration-300 ${isPlaying ? "opacity-0" : "opacity-100"
@@ -492,49 +481,44 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
 
       {/* Course Content */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Course Description, Content, and Reviews */}
-          <div className="md:col-span-2 order-2 md:order-none">
+          <div className="lg:col-span-2 order-2 lg:order-none">
             <Card>
               <CardContent className="p-0">
                 <Tabs defaultValue="description" className="w-full">
-
-
-                  <TabsList className="w-full justify-start rounded-none border-b bg-white p-1">
+                  <TabsList className="w-full justify-start rounded-none border-b bg-white p-1 overflow-x-auto flex-nowrap">
                     <TabsTrigger
                       value="description"
-                      className="flex items-center gap-2 px-6 py-3 data-[state=active]:bg-red-50 
+                      className="flex-shrink-0 flex items-center gap-2 px-4 sm:px-6 py-3 data-[state=active]:bg-red-50 
                       data-[state=active]:text-red-600 data-[state=active]:border-b-2 
                       data-[state=active]:border-red-600 transition-all duration-200"
                     >
                       <Book className="w-4 h-4" />
-                      <span>Description</span>
+                      <span className="hidden sm:inline">Description</span>
                     </TabsTrigger>
 
                     <TabsTrigger
                       value="content"
-                      className="flex items-center gap-2 px-6 py-3 data-[state=active]:bg-red-50 
+                      className="flex-shrink-0 flex items-center gap-2 px-4 sm:px-6 py-3 data-[state=active]:bg-red-50 
                       data-[state=active]:text-red-600 data-[state=active]:border-b-2 
                       data-[state=active]:border-red-600 transition-all duration-200"
                     >
                       <PlayCircle className="w-4 h-4" />
-                      <span>Course Content</span>
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-red-100 text-red-600 hover:bg-red-200"
-                      >
+                      <span className="hidden sm:inline">Course Content</span>
+                      <Badge variant="secondary" className="ml-2 bg-red-100 text-red-600 hover:bg-red-200">
                         {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)}
                       </Badge>
                     </TabsTrigger>
 
                     <TabsTrigger
                       value="reviews"
-                      className="flex items-center gap-2 px-6 py-3 data-[state=active]:bg-red-50 
+                      className="flex-shrink-0 flex items-center gap-2 px-4 sm:px-6 py-3 data-[state=active]:bg-red-50 
                       data-[state=active]:text-red-600 data-[state=active]:border-b-2 
                       data-[state=active]:border-red-600 transition-all duration-200"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      <span>Reviews</span>
+                      <span className="hidden sm:inline">Reviews</span>
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="description" className="p-6">
@@ -651,8 +635,8 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
           </div>
 
           {/* Price Card */}
-          <div className="md:col-span-1 order-1 md:order-none">
-            <Card className="sticky top-28 overflow-hidden border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+          <div className="lg:col-span-1 order-1 lg:order-none">
+            <Card className="sticky top-28 overflow-hidden border-0 shadow-xl bg-white/95 backdrop-blur-sm mb-8 lg:mb-0">
               {/* Price Header Section */}
               <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10" />
@@ -731,11 +715,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
 
               <CardContent className="space-y-6">
                 {/* Enrollment Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                   {renderEnrollmentButton()}
                 </motion.div>
 
@@ -767,34 +747,37 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
                       </ul>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-gray-800">Course Includes</h3>
-                      <ul className="space-y-3">
-                        <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                          <PlayCircle className="w-5 h-5 text-red-600" />
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)} Chapters
-                            </p>
-                            <p className="text-sm text-gray-600">Comprehensive content</p>
-                          </div>
-                        </li>
-                        <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                          <Book className="w-5 h-5 text-red-600" />
-                          <div>
-                            <p className="font-medium text-gray-800">Lifetime Access</p>
-                            <p className="text-sm text-gray-600">Learn at your pace</p>
-                          </div>
-                        </li>
-                        <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                          <Award className="w-5 h-5 text-red-600" />
-                          <div>
-                            <p className="font-medium text-gray-800">Completion Certificate</p>
-                            <p className="text-sm text-gray-600">Verify your achievement</p>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
+                    (
+
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-gray-800">Course Includes</h3>
+                        <ul className="space-y-3">
+                          <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                            <PlayCircle className="w-5 h-5 text-red-600" />
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {sectionsWithChapters.reduce((total, section) => total + section.chapters.length, 0)} Chapters
+                              </p>
+                              <p className="text-sm text-gray-600">Comprehensive content</p>
+                            </div>
+                          </li>
+                          <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                            <Book className="w-5 h-5 text-red-600" />
+                            <div>
+                              <p className="font-medium text-gray-800">Lifetime Access</p>
+                              <p className="text-sm text-gray-600">Learn at your pace</p>
+                            </div>
+                          </li>
+                          <li className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                            <Award className="w-5 h-5 text-red-600" />
+                            <div>
+                              <p className="font-medium text-gray-800">Completion Certificate</p>
+                              <p className="text-sm text-gray-600">Verify your achievement</p>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+                    )
                   )}
                 </motion.div>
               </CardContent>

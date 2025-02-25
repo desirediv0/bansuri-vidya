@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 import { createSlug } from "../helper/Slug.js";
 import axios from "axios";
 import { SendEmail } from "../email/SendEmail.js";
+import xlsx from 'xlsx';
 
 const SALT_ROUNDS = 12;
 const TOKEN_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
@@ -871,7 +872,6 @@ export const AdminDeleteUser = asyncHandler(async (req, res) => {
     where: { userId: user.id },
   });
 
-  // Add any other related records you need to delete here...
 
   // Finally, delete the user
   await prisma.user.delete({
@@ -887,4 +887,91 @@ export const AdminDeleteUser = asyncHandler(async (req, res) => {
         "User and all associated data deleted successfully"
       )
     );
+});
+
+
+export const ImportDataFromExcel = asyncHandler(async (req, res) => {
+  try {
+    if (!req.file) {
+      throw new ApiError(400, "Please upload an Excel file");
+    }
+
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = xlsx.utils.sheet_to_json(worksheet);
+
+    const results = {
+      successful: 0,
+      failed: 0,
+      errors: []
+    };
+
+    for (const row of jsonData) {
+      try {
+        // Validate required fields
+        if (!row.name || !row.email || !row.password) {
+          results.errors.push(`Row with email ${row.email || 'unknown'}: Missing required fields`);
+          results.failed++;
+          continue;
+        }
+
+        // Check if user already exists
+        const existingUser = await prisma.user.findFirst({
+          where: { email: row.email }
+        });
+
+        if (existingUser) {
+          results.errors.push(`User with email ${row.email} already exists`);
+          results.failed++;
+          continue;
+        }
+
+        // Create unique slug
+        let uniqueSlug = createSlug(row.name);
+        let existingSlug = await prisma.user.findUnique({
+          where: { slug: uniqueSlug },
+        });
+        let counter = 1;
+
+        while (existingSlug) {
+          uniqueSlug = `${createSlug(row.name)}-${counter}`;
+          existingSlug = await prisma.user.findUnique({
+            where: { slug: uniqueSlug },
+          });
+          counter++;
+        }
+
+
+
+        // Create user
+        await prisma.user.create({
+          data: {
+            name: row.name,
+            email: row.email,
+            password: row.password,
+            slug: uniqueSlug,
+            isVerified: true,
+            provider: "credentials",
+            role: "STUDENT"
+          }
+        });
+
+        results.successful++;
+      } catch (error) {
+        results.errors.push(`Error processing ${row.email}: ${error.message}`);
+        results.failed++;
+      }
+    }
+
+    return res.status(200).json(
+      new ApiResponsive(
+        200,
+        { results },
+        `Import completed. Successfully imported ${results.successful} users. Failed: ${results.failed}`
+      )
+    );
+
+  } catch (error) {
+    throw new ApiError(500, "Failed to process Excel file: " + error.message);
+  }
 });

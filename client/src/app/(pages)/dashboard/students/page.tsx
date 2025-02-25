@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Eye, EyeOff, Pencil, Trash2 } from "lucide-react"
 import axios from "axios"
 import { toast } from "@/hooks/use-toast"
+import Link from "next/link"
 
 
 interface NewUser {
@@ -253,7 +254,16 @@ const AdminUsersPage: React.FC = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-8 text-center">User Management</h1>
+            <div
+                className="flex justify-between items-center mb-8"
+            >
+                <h1 className="text-3xl font-bold mb-8 text-center">User Management</h1>
+                <Link href="/dashboard/students/import-users">
+                    <Button variant="outline" size="sm">
+                        Import Users
+                    </Button>
+                </Link>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>User List</CardTitle>

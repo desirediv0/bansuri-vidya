@@ -34,7 +34,8 @@
     "razorpay": "^2.9.5",
     "sharp": "^0.33.5",
     "url": "^0.11.4",
-    "uuid": "^11.0.4"
+    "uuid": "^11.0.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "prisma": "^6.1.0"

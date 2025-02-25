@@ -21,6 +21,7 @@ import {
   MessageSquare,
   Award,
   Folder,
+  KeyRound,
   // Eye
 } from "lucide-react";
 import { NavItem } from "@/type";
@@ -30,6 +31,11 @@ const navItems: NavItem[] = [
     title: "My Courses",
     href: "/dashboard",
     icon: BookOpen,
+  },
+  {
+    title: "Course Access",
+    href: "/dashboard/access-course",
+    icon: KeyRound,
   },
   {
     title: "Categories",

@@ -20,9 +20,12 @@ import {
   AdminGetUserBySlug,
   AdminUpdateUser,
   AdminDeleteUser,
+  ImportDataFromExcel,
 } from "../controllers/user.controllers.js";
 import { verifyJWTToken } from "../middlewares/auth.middleware.js";
 import { verifyAdmin } from "../middlewares/admin.middleware.js";
+import multer from 'multer';
+
 
 const router = Router();
 
@@ -62,5 +65,21 @@ router
 router
   .route("/admin-delete-user/:slug")
   .delete(verifyJWTToken, verifyAdmin, AdminDeleteUser);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+router
+  .route("/import-users")
+  .post(
+    verifyJWTToken,
+    verifyAdmin,
+    upload.single('file'),
+    ImportDataFromExcel
+  );
 
 export default router;

@@ -57,8 +57,8 @@ export const createChapter = asyncHandler(async (req, res) => {
 
   const chapter = await prisma.chapter.create({
     data: {
-      title: title.toLowerCase(),
-      description: description.toLowerCase(),
+      title: title,
+      description: description,
       slug: uniqueSlug,
       sectionId: section.id,
       videoUrl,

@@ -328,7 +328,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
           />
         </div>
 
-        <div className="container mx-auto px-4 py-12 md:py-16 max-w-7xl relative z-10">
+        <div className="container mx-auto px-4 py-12 md:py-16 max-w-7xl relative z-10 mt-14">
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
             {/* Course Info */}
             <div className="order-2 md:order-1 space-y-6">
@@ -487,7 +487,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
             <Card>
               <CardContent className="p-0">
                 <Tabs defaultValue="description" className="w-full">
-                  <TabsList className="w-full justify-start rounded-none border-b bg-white p-1 overflow-x-auto flex-nowrap">
+                  <TabsList className="w-full justify-start rounded-none border-b bg-white p-1 flex-nowrap">
                     <TabsTrigger
                       value="description"
                       className="flex-shrink-0 flex items-center gap-2 px-4 sm:px-6 py-3 data-[state=active]:bg-red-50 

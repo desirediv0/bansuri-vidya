@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Space_Grotesk } from "next/font/google";
 import ClientProviders from "@/helper/Providers";
 
 const geistSans = localFont({
@@ -15,10 +14,16 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const SpaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  weight: ["300", "400", "500", "600", "700"],
+const brawley = localFont({
+  src: "./fonts/Branley.otf",
+  variable: "--font-brawley",
+  weight: "100 900",
+});
+
+const libreFranklin = localFont({
+  src: "./fonts/LibreFranklin-VariableFont_wght.ttf",
+  variable: "--font-libre-franklin",
+  weight: "300 700",
 });
 
 export const metadata: Metadata = {
@@ -70,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${SpaceGrotesk.variable} antialiased font-space-grotesk`}
+        className={`${geistSans.variable} ${geistMono.variable} ${libreFranklin.variable} ${brawley.variable} antialiased font-libre-franklin`}
       >
         <ClientProviders>{children}</ClientProviders>
       </body>

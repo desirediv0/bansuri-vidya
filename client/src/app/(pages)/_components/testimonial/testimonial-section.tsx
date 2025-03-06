@@ -25,7 +25,7 @@ export default function TestimonialsSection() {
 
   useEffect(() => {
     if (autoPlay) {
-      const interval = setInterval(next, 3000);
+      const interval = setInterval(next, 5000);
       return () => clearInterval(interval);
     }
   }, [autoPlay]);
@@ -90,7 +90,7 @@ export default function TestimonialsSection() {
             <div className="hidden md:block z-10">
               <button
                 onClick={prev}
-                className="absolute -left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white text-gray-800 hover:bg-gray-100 transition-all shadow-md"
+                className="absolute -left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white text-gray-800 hover:bg-gray-100 transition-all shadow-md z-10"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -155,9 +155,9 @@ export default function TestimonialsSection() {
                       <h3 className="font-semibold text-lg sm:text-xl text-gray-900">
                         {testimonials[currentIndex].name}
                       </h3>
-                      <p className="text-gray-500 text-sm sm:text-base">
+                      {/* <p className="text-gray-500 text-sm sm:text-base">
                         {testimonials[currentIndex].role}
-                      </p>
+                      </p> */}
                     </div>
                   </div>
                 </div>

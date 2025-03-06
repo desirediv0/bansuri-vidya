@@ -80,14 +80,14 @@ export default function AboutPage() {
                 <Award size={24} color="#fff" />
               </div>
               <AnimatedText
-                text="Know about classes"
+                text="About Us"
                 className="text-lg font-medium text-[#107D6C]"
                 delay={0.5}
               />
             </motion.div>
 
             <AnimatedText
-              text="We providing the best online courses."
+              text="Harmonizing Tradition with Melody"
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[var(--custom-green-11)]"
               delay={0.2}
             />
@@ -111,20 +111,20 @@ export default function AboutPage() {
             />
             <div className="flex flex-col space-y-6 md:space-y-8">
               <AnimatedText
-                text="Online courses from the world's leading experts."
+                text="Welcome to Bansuri Vidya Mandir"
                 className="text-2xl md:text-3xl font-semibold text-gray-800"
                 delay={0.4}
               />
 
               <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+              Bansuri Vidya Mandir is a sacred space where the timeless tunes of the Indian flute meet the rhythm of education. Our institution is dedicated to nurturing musical talent and imparting the profound art of bansuri playing, blending academic excellence, cultural heritage, and spiritual growth.
               </p>
           
             </div>
           </motion.div>
         </div>
       </div>
-      <div className="w-full max-w-7xl mx-auto">
+      {/* <div className="w-full max-w-7xl mx-auto">
       <div className="flex flex-wrap px-4 md:px-8 xl:px-20 py-12">
         {data.map((item, index) => (
           <motion.div
@@ -173,7 +173,7 @@ export default function AboutPage() {
           </motion.div>
         ))}
       </div>
-    </div>
+    </div> */}
     </div>
   )
 }

@@ -56,7 +56,7 @@ export function SquareCard({ course }: CourseCardProps) {
                         alt={course.title}
                         width={1000}
                         height={500}
-                        className="object-fill"
+                        className="object-fill hover:scale-105 transition-transform duration-300"
                     />
                 </div>
 

@@ -53,13 +53,13 @@ export default function MobileMenu({
             <Image
               src="/logo.png"
               alt="logo"
-              width={100}
+              width={240}
               height={40}
               className="object-contain"
             />
           </Link>
           <div className="flex items-center gap-4">
-            <Cart headerState={headerState} />
+            <Cart headerState={headerState}/>
             <button
               onClick={onClose}
               className="w-10 h-10 rounded-full bg-[#ba1c33] flex items-center justify-center text-white hover:bg-[#ba1c33]/90 hover:scale-105 transition-all duration-300"

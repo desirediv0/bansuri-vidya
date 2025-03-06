@@ -15,10 +15,10 @@ import Cart from "../Cart"
 
 const menuItems = [
   { name: "Home", href: "/" },
+  { name: "Online Courses", href: "/online-courses" },
+  { name: "Live Classes", href: "/live-classes" },
+  { name: "Offline Batches", href: "/offline-batches" },
   { name: "About", href: "/about" },
-  { name: "Courses", href: "/courses" },
-  { name: "Instructors", href: "/instructors" },
-  { name: "Testimonial", href: "/testimonial" },
   { name: "Contact", href: "/contact" },
 ];
 

@@ -134,24 +134,24 @@ body {
   }
 }
 
-h1, h2, h3, h4, h5, h6 {
+/* h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-brawley), serif;
-}
+} */
 
 .font-space-grotesk {
   font-family: var(--font-libre-franklin);
 }
 
-.font-brawley {
+/* .font-brawley {
   font-family: var(--font-brawley);
-}
+} */
 
 .prose {
   @apply max-w-none text-base leading-relaxed;
 
-  h1, h2, h3, h4 {
+  /* h1, h2, h3, h4 {
     font-family: var(--font-brawley), serif;
-  }
+  } */
 
   h1 {
     @apply text-3xl font-bold text-gray-900 mb-6 mt-8;
@@ -270,4 +270,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 .scale-200{
   transform: scale(1.8);
+}
+
+.rotate-y-180{
+transform: rotateY(180deg);
 }

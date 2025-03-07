@@ -3,7 +3,8 @@ import { createSlug } from "../helper/Slug.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import fs from "fs/promises";
+import { getFileUrl, deleteFile } from "../middlewares/multer.middlerware.js";
+import { deleteFromS3 } from "../utils/deleteFromS3.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -32,7 +33,7 @@ const findCourseBySlug = async (slug) => {
 };
 
 const handleFileUpload = (file) => {
-  if (!file?.filename) {
+  if (!file) {
     throw new ApiError(400, "Invalid file upload");
   }
 
@@ -49,14 +50,6 @@ const handleFileUpload = (file) => {
   }
 
   return file.filename;
-};
-
-const deleteFile = async (filename) => {
-  try {
-    await fs.unlink(path.join(UPLOAD_DIR, filename));
-  } catch (error) {
-    console.error("Failed to delete file:", error);
-  }
 };
 
 const createMetaDescription = (description) => {
@@ -76,8 +69,8 @@ const createMetaDescription = (description) => {
 export const createCourse = asyncHandler(async (req, res) => {
   let uploadedThumbnail = null;
   try {
-    if (req.file) {
-      uploadedThumbnail = handleFileUpload(req.file);
+    if (req.files && req.files.thumbnail && req.files.thumbnail[0]) {
+      uploadedThumbnail = req.files.thumbnail[0].filename;
     }
 
     const {
@@ -362,6 +355,8 @@ export const getCourse = asyncHandler(async (req, res) => {
               isPublished: true,
               isFree: true,
               slug: true,
+              pdfUrl: true,
+              audioUrl: true,
               sectionId: true,
               createdAt: true,
               updatedAt: true,
@@ -384,40 +379,81 @@ export const getCourse = asyncHandler(async (req, res) => {
 export const deleteCourse = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  // First, get the course to access its thumbnail
+  // First, get the course with all its sections and chapters to access their files
   const course = await prisma.course.findUnique({
     where: { slug },
-    select: { thumbnail: true } // Only select the thumbnail
+    select: {
+      id: true,
+      thumbnail: true,
+      sections: {
+        select: {
+          id: true,
+          chapters: {
+            select: {
+              id: true,
+              videoUrl: true,
+              pdfUrl: true,
+              audioUrl: true
+            }
+          }
+        }
+      }
+    }
   });
 
   if (!course) {
     throw new ApiError(404, "Course not found");
   }
 
-  // First, delete related enrollments
-  await prisma.enrollment.deleteMany({
-    where: { courseId: slug }
-  });
+  // Collection of all files to delete
+  const filesToDelete = [];
 
-  // Then, delete related course completions
-  await prisma.courseCompletion.deleteMany({
-    where: { courseId: slug }
-  });
-
-  // Now, delete the course
-  await prisma.course.delete({
-    where: { slug },
-  });
-
-  // Delete thumbnail if it exists
+  // Add course thumbnail if exists
   if (course.thumbnail) {
-    await deleteFile(course.thumbnail);
+    filesToDelete.push(course.thumbnail);
+  }
+
+  // Add all chapter files
+  for (const section of course.sections) {
+    for (const chapter of section.chapters) {
+      if (chapter.videoUrl) filesToDelete.push(chapter.videoUrl);
+      if (chapter.pdfUrl) filesToDelete.push(chapter.pdfUrl);
+      if (chapter.audioUrl) filesToDelete.push(chapter.audioUrl);
+    }
+  }
+
+  // Delete database records
+  await prisma.$transaction(async (tx) => {
+    // First, delete related enrollments
+    await tx.enrollment.deleteMany({
+      where: { courseId: course.id }
+    });
+
+    // Then, delete related course completions
+    await tx.courseCompletion.deleteMany({
+      where: { courseId: course.id }
+    });
+
+    // Delete certificates
+    await tx.certificate.deleteMany({
+      where: { courseId: course.id }
+    });
+
+    // Delete the course (will cascade delete sections and chapters)
+    await tx.course.delete({
+      where: { id: course.id },
+    });
+  });
+
+  // Delete all files from storage
+  for (const file of filesToDelete) {
+    await deleteFile(file).catch(err => console.error(`Error deleting file ${file}:`, err));
   }
 
   return res
     .status(200)
     .json(
-      new ApiResponsive(200, "Course and related enrollments deleted successfully")
+      new ApiResponsive(200, "Course and all related content deleted successfully")
     );
 });
 
@@ -425,7 +461,7 @@ export const updateCourseImage = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
   // Check if file exists
-  if (!req.file) {
+  if (!req.files || !req.files.thumbnail || !req.files.thumbnail[0]) {
     throw new ApiError(400, "No image file provided");
   }
 
@@ -450,8 +486,8 @@ export const updateCourseImage = asyncHandler(async (req, res) => {
         await deleteFile(existingCourse.thumbnail);
       }
 
-      // Handle new file upload
-      const thumbnail = handleFileUpload(req.file);
+      // Get new thumbnail filename
+      const thumbnail = req.files.thumbnail[0].filename;
 
       // Update course with new thumbnail
       return await tx.course.update({
@@ -468,8 +504,8 @@ export const updateCourseImage = asyncHandler(async (req, res) => {
 
   } catch (error) {
     // Clean up uploaded file if transaction fails
-    if (req.file?.filename) {
-      await deleteFile(req.file.filename);
+    if (req.files?.thumbnail?.[0]?.filename) {
+      await deleteFile(req.files.thumbnail[0].filename);
     }
     throw new ApiError(500, "Failed to update course thumbnail");
   }

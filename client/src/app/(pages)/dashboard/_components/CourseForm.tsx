@@ -42,8 +42,15 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
   onUpdateSuccess?: (updatedData: CourseDataNew) => void,
 }) => {
   const [thumbnail, setThumbnail] = useState<File | null>(null)
+
+  const getImageUrl = (image: string | null | undefined) => {
+    if (!image) return 'https://placehold.co/600x400?text=No+Image';
+    if (image.startsWith('http')) return image;
+    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+  };
+
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
-    initialData?.thumbnail ? `${process.env.NEXT_PUBLIC_IMAGE_URL}/${initialData.thumbnail}` : null,
+    initialData?.thumbnail ? getImageUrl(initialData.thumbnail) : null,
   )
   const [isLoading, setIsLoading] = useState(false)
   const [courseData, setCourseData] = useState<CourseDataNew | null>(initialData)
@@ -248,7 +255,7 @@ const CourseForm = ({ isEditing, initialData, courseSlug, onUpdateSuccess }: {
           },
         },
       )
-      setThumbnailPreview(`${process.env.NEXT_PUBLIC_IMAGE_URL}/${response.data.message.thumbnail}`)
+      setThumbnailPreview(getImageUrl(response.data.message.thumbnail))
       toast({
         title: "Success",
         description: "Thumbnail updated successfully",

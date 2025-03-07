@@ -30,6 +30,12 @@ export default function EnhancedCourseCard({ course, hidePrice = false }: Course
     totalChapters: 0
   });
 
+  const getImageUrl = (image: string | null | undefined) => {
+    if (!image) return 'https://placehold.co/600x400?text=No+Image';
+    if (image.startsWith('http')) return image;
+    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+  };
+
   useEffect(() => {
     if (hidePrice) {
       const fetchCourseProgress = async () => {
@@ -72,7 +78,7 @@ export default function EnhancedCourseCard({ course, hidePrice = false }: Course
         {/* Thumbnail with Overlay */}
         <div className="relative h-48 overflow-hidden">
           <Image
-            src={course.thumbnail ? `${process.env.NEXT_PUBLIC_IMAGE_URL}/${course.thumbnail}` : "/placeholder.jpeg"}
+            src={getImageUrl(course.thumbnail)}
             alt={course.title}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"

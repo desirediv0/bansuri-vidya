@@ -282,6 +282,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       return;
     }
 
+    // Only check for section completion when the chapter is in a different section
     if (!chapterProgress?.isCompleted) {
       const currentSection = course.sections.find(section =>
         section.chapters.some(ch => ch.id === selectedChapter?.id)
@@ -290,6 +291,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
         section.chapters.some(ch => ch.id === chapter.id)
       );
 
+      // Only enforce section completion if moving to a different section
       if (currentSection && targetSection && currentSection.id !== targetSection.id) {
         const allCurrentSectionCompleted = currentSection.chapters.every(
           ch => courseProgress.completedChapters.includes(ch.id)
@@ -304,14 +306,15 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
 
     setSelectedChapter(chapter);
     if (!course.paid || chapter.isFree || isPurchased) {
-      await loadVideoUrl(chapter.slug);
       try {
+        await loadVideoUrl(chapter.slug);
         const data = await makeAuthenticatedRequest(
           `${process.env.NEXT_PUBLIC_API_URL}/user-progress/chapter/${chapter.id}`
         );
         setChapterProgress(data.data);
       } catch (err) {
-        console.error("Failed to fetch chapter progress:", err);
+        console.error("Failed to fetch chapter data:", err);
+        toast.error("Failed to load chapter content. Please try again.");
       }
     } else {
       setIsDialogOpen(true);

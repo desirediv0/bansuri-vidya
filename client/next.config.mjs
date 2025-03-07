@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: "http",
         hostname: "localhost",
       },
+      {
+        protocol: "https",
+        hostname: "desirediv-storage.blr1.digitaloceanspaces.com",
+      },
     ],
   },
 };

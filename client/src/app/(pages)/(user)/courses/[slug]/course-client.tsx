@@ -312,6 +312,13 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
     }
   }
 
+  // Add this helper function to handle image URLs
+  const getImageUrl = (image: string | null | undefined) => {
+    if (!image) return 'https://placehold.co/600x400?text=No+Image';
+    if (image.startsWith('http')) return image;
+    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+  };
+
   if (isLoading) return <LoadingSkeleton />
   if (error) return <ErrorComponent error={error} />
 
@@ -426,10 +433,10 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
                   }`}
               >
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${course.thumbnail}`}
+                  src={getImageUrl(course.thumbnail)}
                   alt={course.title}
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  style={{ objectFit: "cover" }}
                   className="transition-transform duration-300 hover:scale-105"
                 />
               </div>

@@ -285,6 +285,8 @@ model Chapter {
   title       String
   description String?
   videoUrl    String?
+  pdfUrl      String?
+  audioUrl    String?
   position    Int     @default(1)
   isPublished Boolean @default(false)
   isFree      Boolean @default(false)

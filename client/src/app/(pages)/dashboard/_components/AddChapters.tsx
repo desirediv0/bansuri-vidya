@@ -28,18 +28,168 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChapterFormData, ChapterFormPropsSecond } from "@/type";
+import { ChapterFormData } from "@/type";
+
+interface ChapterFormPropsSecond {
+  onSubmit: (data: FormData) => Promise<any>;
+  submitButtonText: string;
+  isSubmitting: boolean;
+}
+import FileUpload from "./chapters/FileUpload";
+
+// ChapterFormItem component for individual chapter forms
+function ChapterFormItem({
+  index,
+  register,
+  errors,
+  control,
+  remove,
+  setValue,
+  watch,
+  filesState,
+  onFileChange,
+}: any) {
+
+  return (
+    <div key={index} className="space-y-4 p-4 border rounded-lg">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Chapter {index + 1}</h3>
+        {index > 0 && (
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            onClick={() => remove(index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`chapters.${index}.title`}>Title</Label>
+        <Input
+          id={`chapters.${index}.title`}
+          {...register(`chapters.${index}.title` as const, {
+            required: "Title is required",
+          })}
+        />
+        {errors.chapters?.[index]?.title && (
+          <p className="text-sm text-destructive">
+            {errors.chapters[index]?.title?.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`chapters.${index}.description`}>Description</Label>
+        <Textarea
+          id={`chapters.${index}.description`}
+          {...register(`chapters.${index}.description` as const, {
+            required: "Description is required",
+          })}
+        />
+        {errors.chapters?.[index]?.description && (
+          <p className="text-sm text-destructive">
+            {errors.chapters[index]?.description?.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`chapters.${index}.videoUrl`}>Video URL</Label>
+        <Input
+          id={`chapters.${index}.videoUrl`}
+          type="text"
+          placeholder="Enter video URL"
+          {...register(`chapters.${index}.videoUrl` as const, {
+            required: "Video URL is required",
+          })}
+        />
+        {errors.chapters?.[index]?.videoUrl && (
+          <p className="text-sm text-destructive">
+            {errors.chapters[index]?.videoUrl?.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>PDF Document</Label>
+        <FileUpload
+          accept={{ "application/pdf": [".pdf"] }}
+          value={filesState[index]?.pdf || null}
+          onChange={(file) => onFileChange(index, "pdf", file)}
+          onRemove={() => onFileChange(index, "pdf", null)}
+          fileType="pdf"
+          existingFileUrl={null}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Audio File</Label>
+        <FileUpload
+          accept={{ "audio/*": [".mp3", ".wav"] }}
+          value={filesState[index]?.audio || null}
+          onChange={(file) => onFileChange(index, "audio", file)}
+          onRemove={() => onFileChange(index, "audio", null)}
+          fileType="audio"
+          existingFileUrl={null}
+        />
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+        <div className="flex items-center space-x-2">
+          <Controller
+            name={`chapters.${index}.isFree`}
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id={`chapters.${index}.isFree`}
+                checked={field.value}
+                onCheckedChange={(checked) => setValue(`chapters.${index}.isFree`, !!checked)}
+              />
+            )}
+          />
+          <Label htmlFor={`chapters.${index}.isFree`}>Free Chapter</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Controller
+            name={`chapters.${index}.isPublished`}
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id={`chapters.${index}.isPublished`}
+                checked={field.value}
+                onCheckedChange={(checked) => setValue(`chapters.${index}.isPublished`, !!checked)}
+              />
+            )}
+          />
+          <Label htmlFor={`chapters.${index}.isPublished`}>
+            Publish Chapter
+          </Label>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ChapterForm({
   onSubmit,
   submitButtonText,
   isSubmitting,
 }: ChapterFormPropsSecond) {
+  const [filesState, setFilesState] = useState<Array<{ pdf: File | null, audio: File | null }>>([
+    { pdf: null, audio: null }
+  ]);
+
   const {
     register,
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch
   } = useForm<{ chapters: ChapterFormData[] }>({
     defaultValues: {
       chapters: [
@@ -59,127 +209,85 @@ function ChapterForm({
     name: "chapters",
   });
 
-  const onSubmitForm = (data: { chapters: ChapterFormData[] }) => {
-    onSubmit(data.chapters);
+  const handleFileChange = (index: number, type: "pdf" | "audio", file: File | null) => {
+    setFilesState(prev => {
+      // Make sure the files array is at least as long as the current index+1
+      const newState = [...prev];
+      while (newState.length <= index) {
+        newState.push({ pdf: null, audio: null });
+      }
+
+      newState[index] = {
+        ...newState[index],
+        [type]: file
+      };
+
+      return newState;
+    });
+  };
+
+  const onSubmitForm = async (data: { chapters: ChapterFormData[] }) => {
+    // Process each chapter with its files
+    for (let i = 0; i < data.chapters.length; i++) {
+      // Create FormData for each chapter
+      const formData = new FormData();
+      formData.append("title", data.chapters[i].title || "");
+      formData.append("description", data.chapters[i].description || "");
+      formData.append("videoUrl", data.chapters[i].videoUrl || "");
+
+      // Explicitly convert boolean values to strings
+      formData.append("isFree", data.chapters[i].isFree ? "true" : "false");
+      formData.append("isPublished", data.chapters[i].isPublished ? "true" : "false");
+
+      // Add files if they exist
+      if (filesState[i]?.pdf) {
+        formData.append("pdf", filesState[i].pdf as Blob);
+      }
+      if (filesState[i]?.audio) {
+        formData.append("audio", filesState[i].audio as Blob);
+      }
+
+      // Submit the chapter data
+      try {
+        await onSubmit(formData);
+      } catch (error) {
+        console.error("Error creating chapter:", error);
+        throw error; // Re-throw so parent component can handle it
+      }
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-8">
       {fields.map((field, index) => (
-        <div key={field.id} className="space-y-4 p-4 border rounded-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Chapter {index + 1}</h3>
-            {index > 0 && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => remove(index)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`chapters.${index}.title`}>Title</Label>
-            <Input
-              id={`chapters.${index}.title`}
-              {...register(`chapters.${index}.title` as const, {
-                required: "Title is required",
-              })}
-            />
-            {errors.chapters?.[index]?.title && (
-              <p className="text-sm text-destructive">
-                {errors.chapters[index]?.title?.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`chapters.${index}.description`}>Description</Label>
-            <Textarea
-              id={`chapters.${index}.description`}
-              {...register(`chapters.${index}.description` as const, {
-                required: "Description is required",
-              })}
-            />
-            {errors.chapters?.[index]?.description && (
-              <p className="text-sm text-destructive">
-                {errors.chapters[index]?.description?.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`chapters.${index}.videoUrl`}>Video URL</Label>
-            <Input
-              id={`chapters.${index}.videoUrl`}
-              type="text"
-              placeholder="Enter video URL"
-              {...register(`chapters.${index}.videoUrl` as const, {
-                required: "Video URL is required",
-                pattern: {
-                  value: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/,
-                  message: "Invalid URL format",
-                },
-              })}
-            />
-            {errors.chapters?.[index]?.videoUrl && (
-              <p className="text-sm text-destructive">
-                {errors.chapters[index]?.videoUrl?.message}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-2">
-              <Controller
-                name={`chapters.${index}.isFree`}
-                control={control}
-                render={({ field }) => (
-                  <Checkbox
-                    id={`chapters.${index}.isFree`}
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-              <Label htmlFor={`chapters.${index}.isFree`}>Free Chapter</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Controller
-                name={`chapters.${index}.isPublished`}
-                control={control}
-                render={({ field }) => (
-                  <Checkbox
-                    id={`chapters.${index}.isPublished`}
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-              <Label htmlFor={`chapters.${index}.isPublished`}>
-                Publish Chapter
-              </Label>
-            </div>
-          </div>
-        </div>
+        <ChapterFormItem
+          key={field.id}
+          index={index}
+          register={register}
+          errors={errors}
+          control={control}
+          remove={remove}
+          setValue={setValue}
+          watch={watch}
+          filesState={filesState}
+          onFileChange={handleFileChange}
+        />
       ))}
 
       <Button
         type="button"
         variant="outline"
-        onClick={() =>
+        onClick={() => {
           append({
             title: "",
             description: "",
             videoUrl: "",
             isFree: false,
             isPublished: false,
-          })
-        }
+          });
+          // Extend files state with empty values for the new chapter
+          setFilesState(prev => [...prev, { pdf: null, audio: null }]);
+        }}
       >
         <Plus className="h-4 w-4 mr-2" />
         Add Chapter
@@ -204,37 +312,37 @@ export default function AddChapters({ params }: { params: { slug: string } }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (chapters: ChapterFormData[]) => {
+  const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
-    let allChaptersCreated = true;
-
     try {
-      for (const chapter of chapters) {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/chapter/create/${params.slug}`,
-          {
-            title: chapter.title,
-            description: chapter.description,
-            slug: params.slug,
-            videoUrl: chapter.videoUrl,
-            isFree: chapter.isFree,
-            isPublished: chapter.isPublished,
-          }
-        );
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/chapter/create/${params.slug}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
 
-        if (response.status !== 201) {
-          allChaptersCreated = false;
-          toast.error(`Failed to create chapter: ${chapter.title}`);
-        }
+      if (response.status !== 201) {
+        throw new Error(`Failed to create chapter: ${response.statusText}`);
       }
 
-      if (allChaptersCreated) {
-        setShowSuccessDialog(true);
-        toast.success("All chapters created successfully");
-      }
+      return response;
+    } catch (error: any) {
+      console.error("Error creating chapter:", error);
+      toast.error(`Failed to create chapter: ${error.message || "Unknown error"}`);
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChaptersSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await handleSubmit(formData);
+      setShowSuccessDialog(true);
+      toast.success("Chapter created successfully");
     } catch (error) {
-      console.error("Error creating chapters:", error);
-      toast.error("An unexpected error occurred while creating chapters");
+      // Error is already handled in handleSubmit
     } finally {
       setIsSubmitting(false);
     }
@@ -249,7 +357,7 @@ export default function AddChapters({ params }: { params: { slug: string } }) {
         </CardHeader>
         <CardContent>
           <ChapterForm
-            onSubmit={handleSubmit}
+            onSubmit={handleChaptersSubmit}
             submitButtonText="Create Chapters"
             isSubmitting={isSubmitting}
           />

@@ -18,11 +18,11 @@ import {
   getFreeChapterVideo,
   getFeaturedSections,
 } from "../controllers/course.controllers.js";
-import { compressImage, upload } from "../middlewares/multer.middlerware.js";
+import { processFiles, uploadFiles } from "../middlewares/multer.middlerware.js";
 
 const router = Router();
 
-
+// Public routes
 router.route("/featured-sections").get(getFeaturedSections);
 router.route("/get-courses-for-seo").get(getAllCourseForSEO);
 router.route("/get-courses").get(getCourses);
@@ -41,8 +41,8 @@ router
   .post(
     verifyJWTToken,
     verifyAdmin,
-    upload.single("thumbnail"),
-    compressImage,
+    uploadFiles.fields([{ name: 'thumbnail', maxCount: 1 }]),
+    processFiles,
     createCourse
   );
 
@@ -54,8 +54,8 @@ router
   .put(
     verifyJWTToken,
     verifyAdmin,
-    upload.single("thumbnail"),
-    compressImage,
+    uploadFiles.fields([{ name: 'thumbnail', maxCount: 1 }]),
+    processFiles,
     updateCourseImage
   );
 

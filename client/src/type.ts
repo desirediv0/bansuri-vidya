@@ -126,6 +126,8 @@ export type ChapterFormData = {
   isFree: boolean;
   isPublished: boolean;
   videoUrl?: string;
+  pdfUrl?: string | null;
+  audioUrl?: string | null;
 };
 
 export type ChapterFormProps = {
@@ -565,6 +567,8 @@ export interface ChapterDataNew {
   progress?: {
     watchedTime: number
   }
+  pdfUrl?: string;
+  audioUrl?: string;
 }
 
 export interface CourseSeo {

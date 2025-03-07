@@ -93,21 +93,18 @@ export default function CourseChapters({ sectionSlug }: CourseChaptersProps) {
   ) => {
     try {
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/chapter/${slug}/${
-          field === "isPublished" ? "publish" : "free"
+        `${process.env.NEXT_PUBLIC_API_URL}/chapter/${slug}/${field === "isPublished" ? "publish" : "free"
         }`
       );
       toast.success(
-        `Chapter ${
-          field === "isPublished" ? "publication" : "access"
+        `Chapter ${field === "isPublished" ? "publication" : "access"
         } status updated`
       );
       fetchCourse();
     } catch (error) {
       console.error(`Error toggling chapter ${field}:`, error);
       toast.error(
-        `Failed to update chapter ${
-          field === "isPublished" ? "publication" : "access"
+        `Failed to update chapter ${field === "isPublished" ? "publication" : "access"
         } status`
       );
     }
@@ -155,12 +152,13 @@ export default function CourseChapters({ sectionSlug }: CourseChaptersProps) {
     }
   };
 
-  const handleCreate = async (data: Omit<ChapterDataNew, "id" | "slug">) => {
+  const handleCreate = async (formData: FormData) => {
     setIsSubmitting(true);
     try {
-      await axios.post<ApiResponse>(
+      const response = await axios.post<ApiResponse>(
         `${process.env.NEXT_PUBLIC_API_URL}/chapter/create/${sectionSlug}`,
-        data
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       toast.success("Chapter created successfully");
       fetchCourse();
@@ -168,6 +166,29 @@ export default function CourseChapters({ sectionSlug }: CourseChaptersProps) {
     } catch (error) {
       console.error("Error creating chapter:", error);
       toast.error("Failed to create chapter");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdate = async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      if (!editingChapter?.slug) throw new Error("Chapter slug is missing");
+
+      const response = await axios.put<ApiResponse>(
+        `${process.env.NEXT_PUBLIC_API_URL}/chapter/${editingChapter.slug}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      toast.success("Chapter updated successfully");
+      fetchCourse();
+      setIsEditDialogOpen(false);
+      setEditingChapter(null);
+    } catch (error) {
+      console.error("Error updating chapter:", error);
+      toast.error("Failed to update chapter");
     } finally {
       setIsSubmitting(false);
     }
@@ -215,24 +236,7 @@ export default function CourseChapters({ sectionSlug }: CourseChaptersProps) {
           </DialogHeader>
           <ChapterForm
             chapter={editingChapter}
-            onSubmit={async (data: Omit<ChapterDataNew, "id" | "slug">) => {
-              setIsSubmitting(true);
-              try {
-                await axios.put<ApiResponse>(
-                  `${process.env.NEXT_PUBLIC_API_URL}/chapter/${editingChapter?.slug}`,
-                  data
-                );
-                toast.success("Chapter updated successfully");
-                fetchCourse();
-                setIsEditDialogOpen(false);
-                setEditingChapter(null);
-              } catch (error) {
-                console.error("Error updating chapter:", error);
-                toast.error("Failed to update chapter");
-              } finally {
-                setIsSubmitting(false);
-              }
-            }}
+            onSubmit={handleUpdate}
             isSubmitting={isSubmitting}
           />
         </DialogContent>

@@ -16,8 +16,16 @@ import {
 
 import { verifyJWTToken } from "../middlewares/auth.middleware.js";
 import { verifyAdmin } from "../middlewares/admin.middleware.js";
+import { uploadFiles, processFiles } from "../middlewares/multer.middlerware.js";
 
 const router = Router();
+
+// Configure multer for file uploads - for routes that need file uploads
+const fileUploadConfig = uploadFiles.fields([
+  { name: 'thumbnail', maxCount: 1 },
+  { name: 'pdf', maxCount: 1 },
+  { name: 'audio', maxCount: 1 }
+]);
 
 router.route("/url/:slug").post(getChapterVideoUrl);
 
@@ -26,7 +34,7 @@ router.route("/").get(verifyJWTToken, getChapters);
 router
   .route("/:slug")
   .get(verifyJWTToken, getChapter)
-  .put(verifyJWTToken, verifyAdmin, updateChapter)
+  .put(verifyJWTToken, verifyAdmin, fileUploadConfig, processFiles, updateChapter)
   .delete(verifyJWTToken, verifyAdmin, deleteChapter);
 
 router
@@ -44,7 +52,8 @@ router
 
 router
   .route("/create/:sectionSlug")
-  .post(verifyJWTToken, verifyAdmin, createChapter);
+  .post(verifyJWTToken, verifyAdmin, fileUploadConfig, processFiles, createChapter);
+
 router.route("/get/:sectionSlug").get(verifyJWTToken, getChapters);
 router
   .route("/reorder/:sectionSlug")

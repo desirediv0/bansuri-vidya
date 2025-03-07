@@ -3,13 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { createSlug } from "../helper/Slug.js";
-
-// Helper functions
-const validateRequiredFields = (fields, errorMessage) => {
-  if (Object.values(fields).some((field) => !field?.trim())) {
-    throw new ApiError(400, errorMessage);
-  }
-};
+import { deleteFile } from "../middlewares/multer.middlerware.js";
+import { deleteFromS3 } from "../utils/deleteFromS3.js";
 
 const findChapter = async (slug) => {
   const chapter = await prisma.chapter.findUnique({
@@ -25,52 +20,91 @@ const findChapter = async (slug) => {
 
 // Controllers
 export const createChapter = asyncHandler(async (req, res) => {
-  const { title, description, videoUrl, isFree, isPublished } = req.body;
+  const { title, description, videoUrl } = req.body;
   const { sectionSlug } = req.params;
+  let pdfUrl = null;
+  let audioUrl = null;
 
-  if (!title || !description || !sectionSlug || !videoUrl) {
-    throw new ApiError(400, "All fields are required");
+  try {
+    if (!title || !description || !sectionSlug) {
+      throw new ApiError(400, "Title, description, and section are required");
+    }
+
+    // Find section
+    const section = await prisma.section.findUnique({
+      where: { slug: sectionSlug },
+    });
+
+    if (!section) {
+      throw new ApiError(404, "Section not found");
+    }
+
+    // Get last position in this section
+    const lastChapter = await prisma.chapter.findFirst({
+      where: { sectionId: section.id },
+      orderBy: { position: "desc" },
+    });
+
+    // Create slug
+    let baseSlug = createSlug(title);
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+    while (await prisma.chapter.findUnique({ where: { slug: uniqueSlug } })) {
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    // Handle file uploads
+    if (req.files) {
+      // Process PDF if uploaded
+      if (req.files.pdf && req.files.pdf[0]) {
+        pdfUrl = req.files.pdf[0].filename;
+      }
+
+      // Process audio if uploaded
+      if (req.files.audio && req.files.audio[0]) {
+        audioUrl = req.files.audio[0].filename;
+      }
+    }
+
+    // Handle direct URLs from request body
+    if (req.body.pdfUrl && !pdfUrl) {
+      pdfUrl = req.body.pdfUrl;
+    }
+
+    if (req.body.audioUrl && !audioUrl) {
+      audioUrl = req.body.audioUrl;
+    }
+
+    // Parse boolean values correctly
+    const isFree = req.body.isFree === "true";
+    const isPublished = req.body.isPublished === "true";
+
+    // Create chapter
+    const chapter = await prisma.chapter.create({
+      data: {
+        title,
+        description,
+        slug: uniqueSlug,
+        sectionId: section.id,
+        videoUrl: videoUrl || null,
+        pdfUrl,
+        audioUrl,
+        position: lastChapter ? lastChapter.position + 1 : 1,
+        isFree,
+        isPublished,
+      },
+    });
+
+    return res
+      .status(201)
+      .json(new ApiResponsive(201, "Chapter created successfully", chapter));
+  } catch (error) {
+    // Clean up uploaded files in case of error
+    if (pdfUrl) await deleteFile(pdfUrl);
+    if (audioUrl) await deleteFile(audioUrl);
+    throw error;
   }
-
-  // Find section instead of course
-  const section = await prisma.section.findUnique({
-    where: { slug: sectionSlug },
-  });
-
-  if (!section) {
-    throw new ApiError(404, "Section not found");
-  }
-
-  // Get last position in this section
-  const lastChapter = await prisma.chapter.findFirst({
-    where: { sectionId: section.id },
-    orderBy: { position: "desc" },
-  });
-
-  let baseSlug = createSlug(title);
-  let uniqueSlug = baseSlug;
-  let counter = 1;
-  while (await prisma.chapter.findUnique({ where: { slug: uniqueSlug } })) {
-    uniqueSlug = `${baseSlug}-${counter}`;
-    counter++;
-  }
-
-  const chapter = await prisma.chapter.create({
-    data: {
-      title: title,
-      description: description,
-      slug: uniqueSlug,
-      sectionId: section.id,
-      videoUrl,
-      position: lastChapter ? lastChapter.position + 1 : 1,
-      isFree: Boolean(isFree),
-      isPublished: Boolean(isPublished),
-    },
-  });
-
-  return res
-    .status(201)
-    .json(new ApiResponsive(201, "Chapter created successfully", chapter));
 });
 
 export const getChapters = asyncHandler(async (req, res) => {
@@ -122,32 +156,88 @@ export const getChapter = asyncHandler(async (req, res) => {
 export const updateChapter = asyncHandler(async (req, res) => {
   const { slug } = req.params;
   const { title, description, videoUrl } = req.body;
+  let pdfUrl = null;
+  let audioUrl = null;
+  let filesToDelete = [];
 
-  if (!slug) {
-    throw new ApiError(400, "Please provide slug");
+  try {
+    if (!slug) {
+      throw new ApiError(400, "Please provide slug");
+    }
+
+    // Get existing chapter
+    const existingChapter = await findChapter(slug);
+
+    // Build update data
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null;
+
+    // Parse boolean values correctly
+    if (req.body.isFree !== undefined) updateData.isFree = req.body.isFree === "true";
+    if (req.body.isPublished !== undefined) updateData.isPublished = req.body.isPublished === "true";
+
+    // Handle file uploads
+    if (req.files) {
+      // Process PDF if uploaded
+      if (req.files.pdf && req.files.pdf[0]) {
+        pdfUrl = req.files.pdf[0].filename;
+        updateData.pdfUrl = pdfUrl;
+        if (existingChapter.pdfUrl) {
+          filesToDelete.push(existingChapter.pdfUrl);
+        }
+      }
+
+      // Process audio if uploaded
+      if (req.files.audio && req.files.audio[0]) {
+        audioUrl = req.files.audio[0].filename;
+        updateData.audioUrl = audioUrl;
+        if (existingChapter.audioUrl) {
+          filesToDelete.push(existingChapter.audioUrl);
+        }
+      }
+    }
+
+    // Handle direct URLs from request body
+    if (req.body.pdfUrl !== undefined) {
+      if (req.body.pdfUrl === null && existingChapter.pdfUrl) {
+        filesToDelete.push(existingChapter.pdfUrl);
+      }
+      updateData.pdfUrl = req.body.pdfUrl;
+    }
+
+    if (req.body.audioUrl !== undefined) {
+      if (req.body.audioUrl === null && existingChapter.audioUrl) {
+        filesToDelete.push(existingChapter.audioUrl);
+      }
+      updateData.audioUrl = req.body.audioUrl;
+    }
+
+    // Update chapter
+    const updatedChapter = await prisma.chapter.update({
+      where: { slug },
+      data: updateData,
+    });
+
+    // Delete old files if they were replaced - use deleteFromS3 instead of deleteFile
+    for (const fileUrl of filesToDelete) {
+      await deleteFromS3(fileUrl).catch(err =>
+        console.error(`Error deleting file ${fileUrl} from S3:`, err)
+      );
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponsive(200, "Chapter updated successfully", updatedChapter)
+      );
+  } catch (error) {
+    // Clean up newly uploaded files in case of error
+    if (pdfUrl) await deleteFile(pdfUrl);
+    if (audioUrl) await deleteFile(audioUrl);
+    throw error;
   }
-
-  const updateData = {};
-  if (title) updateData.title = title;
-  if (description) updateData.description = description;
-  if (videoUrl) updateData.videoUrl = videoUrl;
-
-  if (Object.keys(updateData).length === 0) {
-    throw new ApiError(400, "Please provide fields to update");
-  }
-
-  await findChapter(slug);
-
-  const updatedChapter = await prisma.chapter.update({
-    where: { slug },
-    data: updateData,
-  });
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponsive(200, "Chapter updated successfully", updatedChapter)
-    );
 });
 
 export const chapterPublishToggle = asyncHandler(async (req, res) => {
@@ -290,12 +380,18 @@ export const deleteChapter = asyncHandler(async (req, res) => {
   // Find chapter with correct relationship name
   const chapter = await prisma.chapter.findUnique({
     where: { slug },
-    include: { section: true }, // Changed from Section to section
+    include: { section: true },
   });
 
   if (!chapter) {
     throw new ApiError(404, "Chapter not found");
   }
+
+  // Get files to delete
+  const filesToDelete = [];
+  if (chapter.videoUrl) filesToDelete.push(chapter.videoUrl);
+  if (chapter.pdfUrl) filesToDelete.push(chapter.pdfUrl);
+  if (chapter.audioUrl) filesToDelete.push(chapter.audioUrl);
 
   // Start transaction for delete and reorder
   await prisma.$transaction(async (tx) => {
@@ -322,6 +418,13 @@ export const deleteChapter = asyncHandler(async (req, res) => {
     }
   });
 
+  // Delete files from storage using deleteFromS3 instead of deleteFile
+  for (const fileUrl of filesToDelete) {
+    await deleteFromS3(fileUrl).catch(err =>
+      console.error(`Error deleting file ${fileUrl} from S3:`, err)
+    );
+  }
+
   return res
     .status(200)
     .json(
@@ -331,6 +434,26 @@ export const deleteChapter = asyncHandler(async (req, res) => {
       )
     );
 });
+
+// Add this function to cascade delete for course
+export const cleanupChapterFiles = async (chapterId) => {
+  try {
+    const chapter = await prisma.chapter.findUnique({
+      where: { id: chapterId },
+      select: { videoUrl: true, pdfUrl: true, audioUrl: true }
+    });
+
+    if (!chapter) return;
+
+    // Delete all associated files using deleteFromS3
+    if (chapter.videoUrl) await deleteFromS3(chapter.videoUrl).catch(console.error);
+    if (chapter.pdfUrl) await deleteFromS3(chapter.pdfUrl).catch(console.error);
+    if (chapter.audioUrl) await deleteFromS3(chapter.audioUrl).catch(console.error);
+
+  } catch (error) {
+    console.error(`Error cleaning up chapter ${chapterId} files:`, error);
+  }
+};
 
 export const reorderChapters = asyncHandler(async (req, res) => {
   const { sectionSlug } = req.params;

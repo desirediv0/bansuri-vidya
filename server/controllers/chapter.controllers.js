@@ -199,33 +199,38 @@ export const updateChapter = asyncHandler(async (req, res) => {
       }
     }
 
-    // Handle direct URLs from request body
+    // Handle direct URLs from request body - ensure old files are deleted first
     if (req.body.pdfUrl !== undefined) {
-      if (req.body.pdfUrl === null && existingChapter.pdfUrl) {
+      // If pdfUrl is changing, delete the old one
+      if (existingChapter.pdfUrl && existingChapter.pdfUrl !== req.body.pdfUrl) {
         filesToDelete.push(existingChapter.pdfUrl);
       }
       updateData.pdfUrl = req.body.pdfUrl;
     }
 
     if (req.body.audioUrl !== undefined) {
-      if (req.body.audioUrl === null && existingChapter.audioUrl) {
+      // If audioUrl is changing, delete the old one
+      if (existingChapter.audioUrl && existingChapter.audioUrl !== req.body.audioUrl) {
         filesToDelete.push(existingChapter.audioUrl);
       }
       updateData.audioUrl = req.body.audioUrl;
     }
 
-    // Update chapter
+    // Delete old files from S3 before updating the database
+    for (const fileUrl of filesToDelete) {
+      try {
+        await deleteFromS3(fileUrl);
+        console.log(`Successfully deleted file from S3: ${fileUrl}`);
+      } catch (err) {
+        console.error(`Error deleting file ${fileUrl} from S3:`, err);
+      }
+    }
+
+    // Update chapter in database after files are deleted from S3
     const updatedChapter = await prisma.chapter.update({
       where: { slug },
       data: updateData,
     });
-
-    // Delete old files if they were replaced - use deleteFromS3 instead of deleteFile
-    for (const fileUrl of filesToDelete) {
-      await deleteFromS3(fileUrl).catch(err =>
-        console.error(`Error deleting file ${fileUrl} from S3:`, err)
-      );
-    }
 
     return res
       .status(200)

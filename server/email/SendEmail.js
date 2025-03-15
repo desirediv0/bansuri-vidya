@@ -8,7 +8,8 @@ import {
   getPaymentSuccessTemplate,
   getPaymentFailureTemplate,
   getFeeUpdateTemplate,
-  getCertificateGeneratedTemplate
+  getCertificateGeneratedTemplate,
+  getContactFormTemplate
 } from "../email/temp/EmailTemplate.js";
 
 const transporter = nodemailer.createTransport({
@@ -62,9 +63,12 @@ export const SendEmail = async ({ email, subject, message, emailType, attachment
         subject = "Course Completion Certificate - Bansuri Vidya Mandir ";
         htmlContent = getCertificateGeneratedTemplate(message);
         break;
+      case "CONTACT_FORM":
+        subject = subject || "New Contact Form Submission - Bansuri Vidya Mandir";
+        htmlContent = getContactFormTemplate(message);
+        break;
       default:
         htmlContent = message;
-
     }
 
     const mailOptions = {

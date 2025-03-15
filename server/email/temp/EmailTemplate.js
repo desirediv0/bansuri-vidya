@@ -950,3 +950,115 @@ export const getCertificateGeneratedTemplate = (data) => `
 </body>
 </html>
 `;
+
+// New contact form email template
+export const getContactFormTemplate = (data) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Contact Form Submission - Bansuri Vidya Mandir</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            color: #ffffff;
+            text-align: center;
+            padding: 30px;
+        }
+        .content {
+            padding: 30px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        h2 {
+            color: #1a1a1a;
+            font-size: 22px;
+            margin-top: 0;
+        }
+        .message-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .contact-details {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #666666;
+            background-color: #f8f8f8;
+        }
+        .detail-row {
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Contact Form Submission</h1>
+        </div>
+        <div class="content">
+            <h2>${data.subject || 'Website Contact Form'}</h2>
+            
+            <div class="message-box">
+                <p>${data.message}</p>
+            </div>
+            
+            <div class="contact-details">
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span>${data.name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email:</span>
+                    <span>${data.email}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Phone:</span>
+                    <span>${data.phone}</span>
+                </div>
+            </div>
+            
+            <p>Please respond to this inquiry at your earliest convenience.</p>
+        </div>
+        <div class="footer">
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir<br>
+            This is an automated message from your website contact form.
+        </div>
+    </div>
+</body>
+</html>
+`;

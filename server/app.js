@@ -19,7 +19,7 @@ import feeRoutes from "./routes/fee.routes.js";
 import certificateRoutes from "./routes/certificate.routes.js";
 import visibilityRoutes from "./routes/visibility.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
-
+import contactRoutes from "./routes/contactRoutes.js";
 
 const app = express();
 
@@ -98,6 +98,7 @@ app.use("/api/v1/fees", feeRoutes);
 app.use("/api/v1/certificates", certificateRoutes);
 app.use("/api/v1/visibility", visibilityRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

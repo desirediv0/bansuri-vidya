@@ -122,7 +122,7 @@ model Course {
   certificates Certificate[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([categoryId])
 }
@@ -166,7 +166,7 @@ model Fee {
   payments FeePayment[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([userId])
   @@index([dueDate])
@@ -192,7 +192,7 @@ model FeePayment {
   userId String
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([userId])
   @@index([feeId])
@@ -465,4 +465,16 @@ model Certificate {
   certificateUrl String?
 
   @@unique([userId, courseId])
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

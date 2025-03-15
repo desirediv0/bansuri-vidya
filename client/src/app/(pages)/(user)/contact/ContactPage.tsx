@@ -19,7 +19,7 @@ const greetings = [
 ]
 
 export default function ContactPage() {
-  const [isHovered, setIsHovered] = useState(false); 
+  const [isHovered, setIsHovered] = useState(false);
   const [currentGreeting, setCurrentGreeting] = useState(0)
   const [formData, setFormData] = useState({
     name: '',
@@ -43,16 +43,16 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <motion.section 
+      <motion.section
         className="container mx-auto px-4 py-16 md:py-24"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-               <div className="max-w-7xl mx-auto px-4 mb-16">
+        <div className="max-w-7xl mx-auto px-4 mb-16">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             {/* Left Column */}
-            <motion.div 
+            <motion.div
               className="flex items-center gap-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -76,9 +76,9 @@ export default function ContactPage() {
                   </span>
                 </motion.h1>
               </AnimatePresence>
-                  <Smile className="w-8 h-8 md:w-12 md:h-12 " />
+              <Smile className="w-8 h-8 md:w-12 md:h-12 " />
             </motion.div>
-        
+
             {/* Right Column */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -93,14 +93,14 @@ export default function ContactPage() {
         </div>
 
         {/* Map Section */}
-        <motion.div 
+        <motion.div
           className="relative rounded-2xl overflow-hidden mb-16 max-w-6xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <div className="aspect-[16/9] md:aspect-[21/9] w-full relative  rounded-2xl overflow-hidden">
-            <iframe 
+            <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14013.255277853348!2d77.04031040582618!3d28.590360911001277!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1bd8f405bcf1%3A0x9e601372145832d0!2sDesire%20Div%20-%20Website%20Designing%20Company%20in%20Dwarka!5e0!3m2!1sen!2sin!4v1736687419817!5m2!1sen!2sin"
               className="absolute inset-0 w-full h-full"
               style={{ border: 0 }}
@@ -109,12 +109,12 @@ export default function ContactPage() {
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
-          
+
           <div className="absolute bottom-0 right-0 p-6 md:p-8 bg-white rounded-tl-2xl max-w-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Desire Div - Dwarka</h2>
             <p className="text-gray-600 mb-1">Website Designing Company</p>
             <p className="text-gray-600 mb-4">Dwarka, New Delhi, India</p>
-            
+
             <div className="space-y-2">
               <p className="text-gray-600">
                 <span className="font-semibold">T:</span> +91 123 456 7890
@@ -123,8 +123,8 @@ export default function ContactPage() {
                 <span className="font-semibold">E:</span> info@desirediv.com
               </p>
             </div>
-            
-                        <motion.a
+
+            <motion.a
               href="https://www.google.com/maps?q=Desire+Div+-+Website+Designing+Company+in+Dwarka,+New+Delhi,+India"
               target="_blank"
               rel="noopener noreferrer"
@@ -139,7 +139,7 @@ export default function ContactPage() {
         </motion.div>
 
         {/* Contact Form */}
-        <motion.div 
+        <motion.div
           className="max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,10 +161,10 @@ export default function ContactPage() {
                   placeholder="What's your good name?"
                   className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
                   whileFocus={{ scale: 1.01 }}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   YOUR EMAIL ADDRESS*
@@ -175,7 +175,7 @@ export default function ContactPage() {
                   placeholder="Enter your email address"
                   className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
                   whileFocus={{ scale: 1.01 }}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
             </div>
@@ -191,10 +191,10 @@ export default function ContactPage() {
                   placeholder="Enter your phone number"
                   className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
                   whileFocus={{ scale: 1.01 }}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   YOUR SUBJECT
@@ -204,7 +204,7 @@ export default function ContactPage() {
                   placeholder="How can we help you?"
                   className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
                   whileFocus={{ scale: 1.01 }}
-                  onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 />
               </div>
             </div>
@@ -218,49 +218,49 @@ export default function ContactPage() {
                 placeholder="Describe about your message"
                 className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all resize-none border-t-0 border-l-0 border-r-0"
                 whileFocus={{ scale: 1.01 }}
-                onChange={(e) => setFormData({...formData, message: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               />
             </div>
 
-          <div className="flex items-center md:justify-between md:flex-row flex-col gap-4">
-          <p className="text-sm text-gray-500 w-full md:w-1/2">
-              We are committed to protecting your privacy. We will never collect information about you without your explicit consent.
-            </p>
+            <div className="flex items-center md:justify-between md:flex-row flex-col gap-4">
+              <p className="text-sm text-gray-500 w-full md:w-1/2">
+                We are committed to protecting your privacy. We will never collect information about you without your explicit consent.
+              </p>
 
-            <motion.button
-              type="submit"
-              className="inline-flex items-center gap-2 bg-gray-800 text-white px-8 py-4 rounded-full  transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onHoverStart={() => setIsHovered(true)}
-              onHoverEnd={() => setIsHovered(false)}
-            >
-              <Send className="w-4 h-4" />
-              <AnimatePresence mode="wait">
-                {isHovered ? (
-                  <motion.span
-                    key="lets-talk"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    Let's Talk
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="send-message"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    Send message
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          </div>
+              <motion.button
+                type="submit"
+                className="inline-flex items-center gap-2 bg-gray-800 text-white px-8 py-4 rounded-full  transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onHoverStart={() => setIsHovered(true)}
+                onHoverEnd={() => setIsHovered(false)}
+              >
+                <Send className="w-4 h-4" />
+                <AnimatePresence mode="wait">
+                  {isHovered ? (
+                    <motion.span
+                      key="lets-talk"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      Let's Talk
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="send-message"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      Send message
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
           </form>
         </motion.div>
       </motion.section>

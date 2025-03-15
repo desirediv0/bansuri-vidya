@@ -54,7 +54,7 @@ export const setCookies = (res, accessToken, refreshToken) => {
     httpOnly: true,
     secure: true,
     sameSite: "strict",
-    domain: ".universalyogi.com",
+    domain: "bansurividyamandir.com",
     path: "/",
     expires: new Date(Date.now() + COOKIE_EXPIRY),
   };

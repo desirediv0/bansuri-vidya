@@ -7,18 +7,21 @@ import TestimonialsSection from "../../_components/testimonial/testimonial-secti
 import TablaTanpura from "../../_components/TablaTanpura";
 import LearningStyle from "../../_components/courses/learningStyle";
 import { HeroSection } from "../../_components/HeroSectionProps";
+import OnlineCourseSection from "../../_components/courses/OnlineCourseSection";
 
 export default function OnlineCourses() {
+
   return (
     <>
       <HeroSection
         title="Online Courses"
-        description="Embark on your journey to flute mastery with our pre-recorded courses, interactive live classes, and immersive offline batches designed to suit every learner's needs."
+        description="At Bansuri Vidya Mandir, we believe in making quality education accessible to everyone, anytime, anywhere. Our Online Courses are designed to provide a flexible and engaging learning experience, ensuring that students receive the best education from the comfort of their homes."
         variant="home"
         image={{
-          src: "/rupak-sir.webp",
+          src: "/online-course-banner.png",
           alt: "Hero image",
         }}
+        scale={125}
         buttons={
           <>
             <CustomButton
@@ -43,15 +46,16 @@ export default function OnlineCourses() {
           </>
         }
         stats={[
-          { number: "260+", label: "Tutors", endValue: 260 },
-          { number: "9000+", label: "Students", endValue: 9000 },
-          { number: "500+", label: "Courses", endValue: 500 }
+          { number: "1200+", label: "Students Enrolled", endValue: 1200 },
+          { number: "240+", label: "5 Star Google Reviews", endValue: 240 },
+          { number: "20", label: "Years of Experience", endValue: 20 }
         ]}
       />
-      <LearningLanding />
+      {/* <LearningLanding /> */}
       <main className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
-        <LearningStyle />
+        <OnlineCourseSection/>
       </main>
+      {/* <CoursesSection/> */}
       <CourseHero />
       <TestimonialsSection />
       <TablaTanpura />

@@ -1,11 +1,11 @@
 "use client";
 
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { SquareCard } from "./squareCard";
-import { courses } from "./courses";
+import { motion, LayoutGroup } from "framer-motion";
 import { AnimatedText } from "../AnimatedText";
-import { Award } from "lucide-react";
+import { ArrowRight, Award } from "lucide-react";
 import Image from "next/image";
+import CustomButton from "../CustomButton";
+import CoursesSection from "../../(user)/online-courses/CoursesSection";
 
 
 
@@ -21,7 +21,7 @@ const containerVariants = {
 
 
 
-export default function LearningStyle() {
+export default function OnlineCourseSection() {
 
     return (
         <div className="relative overflow-hidden">
@@ -53,7 +53,7 @@ export default function LearningStyle() {
 
             <div className="max-w-7xl mx-auto px-4 py-12 overflow-x-hidden relative z-10 overflow-y-hidden">
                 <LayoutGroup>
-                    <div className="flex flex-col items-center space-y-8">
+                    <div className="flex flex-col items-center space-y-2">
 
                         <div className="flex flex-col w-full gap-6">
                             {/* <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-6"> */}
@@ -63,7 +63,7 @@ export default function LearningStyle() {
                                     <Award size={24} color="#fff" />
                                 </div>
                                 <AnimatedText
-                                    text="Learning Style"
+                                    text="Online Courses"
                                     className="text-lg font-medium text-[#107D6C]"
                                     delay={0.5}
                                 />
@@ -75,27 +75,23 @@ export default function LearningStyle() {
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                             >
-                                Choose your Learning Style
+                                Choose Your Course
                             </motion.h2>
                         </div>
 
                         {/* Course Grid */}
-                        <motion.div
-                            layout
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full"
-                        >
-                            <AnimatePresence mode="popLayout">
-                                {courses.map((course) => (
-                                    <SquareCard
-                                        key={course.id}
-                                        course={course}
-                                    />
-                                ))}
-                            </AnimatePresence>
-                        </motion.div>
+                        <CoursesSection />
+                        <CustomButton
+                            primaryText="View All Courses"
+                            secondaryText="View All Courses"
+                            bgColor="#ba1c33"
+                            hoverBgColor="#111827"
+                            hoverTextColor="white"
+                            textColor="white"
+                            className="!w-52"
+                            href="/courses"
+                            icon={<ArrowRight className="w-5 h-5" />}
+                        />
                     </div>
                 </LayoutGroup>
             </div>

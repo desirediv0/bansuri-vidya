@@ -74,7 +74,7 @@ export default function EnhancedCourseCard({ course, hidePrice = false }: Course
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative w-full max-w-md mx-auto overflow-hidden bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+      <div className="relative w-full max-w-md mx-auto overflow-hidden bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full">
         {/* Thumbnail with Overlay */}
         <div className="relative h-48 overflow-hidden">
           <Image

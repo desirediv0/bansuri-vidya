@@ -80,8 +80,8 @@ export default function TablaTanpura() {
               </div> */}
 
               <CustomButton
-                primaryText="Practice Now"
-                secondaryText="Practice Now"
+                primaryText="Coming Soon"
+                secondaryText="Coming Soon"
                 bgColor="#ba1c33"
                 hoverBgColor="#111827"
                 hoverTextColor="white"

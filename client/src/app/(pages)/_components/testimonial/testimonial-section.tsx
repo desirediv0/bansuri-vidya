@@ -68,9 +68,8 @@ export default function TestimonialsSection() {
                 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white"
               />
 
-              <p className="text-gray-400 text-base sm:text-lg">
-                Lorem ipsum dolor sit amet consectetur adipiscing elit
-                venentatis dictum nec.
+              <p className="text-gray-300 text-base sm:text-lg">
+              We take pride in the impact we have on our students' lives. View heartfelt experiences shared by students, who have been part of our journey.
               </p>
               {/* <div className="flex items-center gap-6">
                 <div className="text-white">

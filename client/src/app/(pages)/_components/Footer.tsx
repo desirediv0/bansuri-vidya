@@ -15,25 +15,31 @@ import { AnimatedText } from "./AnimatedText";
 import Image from "next/image";
 
 const socialLinks = [
-  { icon: Facebook, href: "/facebook" },
-  { icon: Instagram, href: "/instagram" },
-  { icon: Twitter, href: "/twitter" },
-  { icon: Youtube, href: "/youtube" },
+  // { icon: Facebook, href: "/facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/bansurividyamandir/" },
+  // { icon: Twitter, href: "/twitter" },
+  { icon: Youtube, href: "https://www.youtube.com/@bansurividya" },
 ];
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Courses", href: "/courses" },
-  { name: "Instructors", href: "/instructors" },
-  { name: "Testimonial", href: "/testimonial" },
+  { name: "Terms & Conditions", href: "/" },
+  { name: "Refund Policy", href: "/refund" },
+  { name: "Privacy Policy", href: "/privacy-policy" },
+  { name: "Sitemap", href: "/" }
 ];
 
 const popularCourses = [
-  { name: "Refund", href: "/refund" },
-  { name: "Privacy Policy", href: "/privacy-policy" },
-  { name: "Support", href: "/support" },
-  { name: "Contact", href: "/contact" },
+  { name: "Bansuri Basics", href: "/courses/introduction-to-bansuri-basics" },
+  { name: "Bansuri Beginners", href: "/courses/bansuri-swara-a-beginners-journey" },
+  { name: "Bansuri Intermidiate", href: "/courses/bansuri-tarang-intermediate-course" },
+  // { name: "Contact", href: "/contact" },
+];
+const usefullLinks = [
+  { name: "Home", href: "/" },
+  { name: "About Us", href: "/about" },
+  { name: "Contact Us", href: "/contact" },
+  { name: "All Courses", href: "/courses" },
+  { name: "My Account", href: "/login" },
 ];
 
 function Footer() {
@@ -62,11 +68,12 @@ function Footer() {
                   hoverTextColor="#fff"
                   textColor="#ba1c32"
                   className="w-48"
+                  href="/contact"
                 />
                 <div className="flex items-center gap-2">
                   <Phone className="h-5 w-5 text-[#fff]" />
                   <span className="text-base font-medium text-[#fff]">
-                    +1234 567 8910
+                    +91 9999041001
                   </span>
                 </div>
               </div>
@@ -88,7 +95,7 @@ function Footer() {
                 </Link>
               </div>
               <p className="text-gray-400">
-                We are providing high-quality courses for about ten years.
+              Our institution is dedicated to nurturing musical talent and imparting the profound art of bansuri playing.
               </p>
               <div className="flex gap-4">
                 {socialLinks.map((social) => {
@@ -125,6 +132,25 @@ function Footer() {
               </ul>
             </div>
 
+            {/* Usefull Links */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-white">
+              Usefull Links
+              </h3>
+              <ul className="space-y-4">
+                {usefullLinks.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-400 hover:text-[#ba1c32] transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* Need Help Section */}
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-white">Need help?</h3>
@@ -132,7 +158,7 @@ function Footer() {
                 <p className="text-gray-400">Call us directly?</p>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-white">
-                    +1 234 567 8910
+                    +91 9999041001
                   </span>
                   <span className="rounded-full bg-[#ba1c32] px-2 py-0.5 text-xs font-medium text-[#fff]">
                     FREE
@@ -145,13 +171,13 @@ function Footer() {
                   href="mailto:help@domain.com"
                   className="text-white underline hover:text-[#ba1c32] transition-colors"
                 >
-                  help@domain.com
+                  bansurividya@gmail.com
                 </Link>
               </div>
             </div>
 
             {/* Newsletter Section */}
-            <div className="space-y-6">
+            {/* <div className="space-y-6">
               <h3 className="text-xl font-semibold text-white">
                 Subscribe our newsletter
               </h3>
@@ -172,7 +198,7 @@ function Footer() {
                 <Handshake className="h-5 w-5" />
                 <span>Protecting your privacy</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Bottom Navigation */}

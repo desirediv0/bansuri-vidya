@@ -45,6 +45,7 @@ export default function LearningLanding() {
               hoverTextColor="#fff"
               textColor="#fff"
               className="w-fit"
+              href="/about"
             />
 
             {/* <div className="flex items-center gap-4">

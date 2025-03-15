@@ -119,6 +119,7 @@ export default function CourseHero() {
                 hoverTextColor="white"
                 textColor="white"
                 className="!w-52"
+                href="https://www.manjeetsinghflute.com"
                 icon={<ArrowRight className="w-5 h-5" />}
               />
             </motion.div>

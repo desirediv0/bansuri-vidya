@@ -199,7 +199,7 @@ function BuyPageContent({ courseSlugs }: { courseSlugs: string[] }) {
         name: "Bansuri Vidya Mandir | Indian Classical Music Institute",
         description: "Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship.",
         order_id: order.id,
-        image: "/logo.png",
+        image: "/logo-black.png",
         handler: async function (response: RazorpayResponse) {
           try {
             const courseDetails = courses.map((course) => {

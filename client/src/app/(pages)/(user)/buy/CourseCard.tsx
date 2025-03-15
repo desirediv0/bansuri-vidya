@@ -17,12 +17,18 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   const displayPrice = (course.salePrice ?? 0) > 0 ? course.salePrice! : course.price;
   const showOriginalPrice = (course.salePrice ?? 0) > 0 && (course.salePrice ?? 0) < course.price;
 
+  const getImageUrl = (image: string | null | undefined) => {
+    if (!image) return 'https://placehold.co/600x400?text=No+Image';
+    if (image.startsWith('http')) return image;
+    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+  };
+
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg bg-white border border-red-100/50 rounded-lg">
       {/* Image Container with Overlay */}
       <div className="relative h-32 overflow-hidden">
         <Image
-          src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${course.thumbnail}`}
+          src={getImageUrl(course.thumbnail)}
           alt={course.title}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-110"

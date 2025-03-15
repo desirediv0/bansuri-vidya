@@ -88,6 +88,12 @@ const Cart: React.FC<{ headerState: string }> = ({ headerState }) => {
 
     const hasSalePrice = cartItems.some((item) => item.course.salePrice);
 
+    const getImageUrl = (image: string | null | undefined) => {
+        if (!image) return 'https://placehold.co/600x400?text=No+Image';
+        if (image.startsWith('http')) return image;
+        return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+    };
+
 
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -96,8 +102,8 @@ const Cart: React.FC<{ headerState: string }> = ({ headerState }) => {
                     variant={headerState === "transparent" ? "ghost" : "secondary"}
                     size="sm"
                     className={`relative ${headerState === "transparent"
-                            ? "text-white hover:text-red-500"
-                            : "text-black hover:text-red-500"
+                        ? "text-white hover:text-red-500"
+                        : "text-black hover:text-red-500"
                         }`}
                 >
                     <div className="relative">
@@ -190,7 +196,7 @@ const Cart: React.FC<{ headerState: string }> = ({ headerState }) => {
                                                 <div className="flex gap-4">
                                                     <div className="relative w-[80px] h-[80px] flex-shrink-0">
                                                         <Image
-                                                            src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${item.course.thumbnail}`}
+                                                            src={getImageUrl(item.course.thumbnail)}
                                                             alt={item.course.title}
                                                             fill
                                                             className="rounded-lg object-cover"

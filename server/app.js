@@ -32,12 +32,7 @@ app.use(cookieParser());
 // CORS Configuration
 app.use(
   cors({
-    origin: [
-      process.env.CORS_ORIGIN,
-      "https://www.googleapis.com",
-      "https://oauth2.googleapis.com",
-      "https://accounts.google.com",
-    ],
+    origin: process.env.CORS_ORIGIN.split(','),
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [

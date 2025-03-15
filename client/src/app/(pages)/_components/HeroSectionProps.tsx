@@ -8,6 +8,7 @@ import { HeroSectionProps } from "@/type";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatedText } from "./AnimatedText";
+import { log } from "console";
 
 export function HeroSection({
   smallText,
@@ -18,6 +19,7 @@ export function HeroSection({
   buttons,
   stats,
   className,
+  scale,
   variant = "page",
 }: HeroSectionProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -29,6 +31,8 @@ export function HeroSection({
     const y = (e.clientY - rect.top) / rect.height;
     setMousePosition({ x, y });
   };
+  console.log("test", scale);
+  
 
   const calculateTilt = () => {
     const tiltX = (mousePosition.y - 0.5) * 20;
@@ -154,7 +158,7 @@ export function HeroSection({
                   width={900}
                   height={900}
                   className={cn(
-                    "object-contain w-full h-full scale-200",
+                    `object-contain w-full h-full scale-${scale}`,
                     variant === "home" && "transition-all duration-300"
                   )}
                   priority

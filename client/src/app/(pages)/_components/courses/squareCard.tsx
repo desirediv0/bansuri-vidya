@@ -39,7 +39,7 @@ const cardVariants = {
 
 export function SquareCard({ course }: CourseCardProps) {
     return (
-        <Link href={`/courses`}>
+        <Link href={`/${course.slug}`}>
             <motion.div
                 layoutId={course.id}
                 variants={cardVariants}

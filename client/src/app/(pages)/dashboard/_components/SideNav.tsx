@@ -92,6 +92,11 @@ const navItems: NavItem[] = [
     href: "/dashboard/certificates",
     icon: Award
   },
+  {
+    title: "Contact Messages",
+    href: "/dashboard/contacts",
+    icon: MessageSquare,
+  }
 ];
 
 export function Sidenav() {

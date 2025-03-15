@@ -81,3 +81,23 @@ export const submitContactForm = async (req, res) => {
         });
     }
 };
+
+
+export const getContactFormSubmissions = async (req, res) => {
+    try {
+        const contactSubmissions = await prisma.contact.findMany({
+            orderBy: { createdAt: "desc" },
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: contactSubmissions,
+        });
+    } catch (error) {
+        console.error("Get contact form submissions error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong. Please try again later.",
+        });
+    }
+}

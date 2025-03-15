@@ -1,17 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Handshake,
   Phone,
-  Send,
-  Facebook,
   Instagram,
-  Twitter,
   Youtube,
 } from "lucide-react";
 import CustomButton from "./CustomButton";
 import Link from "next/link";
-import { AnimatedText } from "./AnimatedText";
 import Image from "next/image";
 
 const socialLinks = [
@@ -50,12 +43,6 @@ function Footer() {
         <div className="mx-auto md:max-w-6xl md:px-4 ">
           <div className="md:rounded-lg bg-[#ba1c32] shadow-lg">
             <div className="flex flex-col items-center justify-between gap-4 px-6 py-8 md:flex-row">
-              {/* <AnimatedText
-                text="Still Confused ? "
-                className="text-xl font-semibold text-[#fff]"
-              /> */}
-              {/* <div> */}
-              {/* <p className="text-2xl font-semibold text-[#fff] block pb-3">Still Confused ?</p> */}
               <p className="text-xl font-semibold text-[#fff] block">Still Confused ? Contact us today to know more about us </p>
               {/* </div> */}
 
@@ -95,7 +82,7 @@ function Footer() {
                 </Link>
               </div>
               <p className="text-gray-400">
-              Our institution is dedicated to nurturing musical talent and imparting the profound art of bansuri playing.
+                Our institution is dedicated to nurturing musical talent and imparting the profound art of bansuri playing.
               </p>
               <div className="flex gap-4">
                 {socialLinks.map((social) => {
@@ -135,7 +122,7 @@ function Footer() {
             {/* Usefull Links */}
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-white">
-              Usefull Links
+                Usefull Links
               </h3>
               <ul className="space-y-4">
                 {usefullLinks.map((link) => (
@@ -175,30 +162,6 @@ function Footer() {
                 </Link>
               </div>
             </div>
-
-            {/* Newsletter Section */}
-            {/* <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-white">
-                Subscribe our newsletter
-              </h3>
-              <div className="relative w-full">
-                <Input
-                  type="email"
-                  placeholder="Enter your email..."
-                  className="w-full bg-transparent text-white placeholder:text-gray-400 border-gray-700 focus:border-[#ba1c32] pr-12"
-                />
-                <Button
-                  size="icon"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#fff] text-[#2A3342] hover:text-[#fff] hover:bg-[#ba1c32]/90 h-7 w-7"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <Handshake className="h-5 w-5" />
-                <span>Protecting your privacy</span>
-              </div>
-            </div> */}
           </div>
 
           {/* Bottom Navigation */}

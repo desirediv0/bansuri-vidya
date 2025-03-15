@@ -2,8 +2,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { Smile, MapPin, Send } from 'lucide-react'
-import CustomButton from '../../_components/CustomButton'
+import { Smile, MapPin, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import axios from 'axios'
 
 const greetings = [
   { text: "Hello!", lang: "English" },
@@ -28,6 +28,15 @@ export default function ContactPage() {
     subject: '',
     message: ''
   })
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<null | 'success' | 'error'>(null)
+  const [statusMessage, setStatusMessage] = useState('')
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,9 +45,74 @@ export default function ContactPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    let isValid = true
+    const newErrors = { name: '', email: '', phone: '', message: '' }
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required'
+      isValid = false
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!formData.email.trim() || !emailRegex.test(formData.email)) {
+      newErrors.email = 'Valid email is required'
+      isValid = false
+    }
+
+    const phoneRegex = /^[0-9]{10}$/
+    if (!formData.phone.trim() || !phoneRegex.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Valid 10-digit phone number is required'
+      isValid = false
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required'
+      isValid = false
+    }
+
+    setErrors(newErrors)
+    return isValid
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log(formData)
+
+    if (!validateForm()) return
+
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/contact/submit`, formData)
+
+      if (response.data.success) {
+        setSubmitStatus('success')
+        setStatusMessage(response.data.message)
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        })
+      } else {
+        setSubmitStatus('error')
+        setStatusMessage(response.data.message || 'Something went wrong. Please try again.')
+      }
+    } catch (error: any) {
+      setSubmitStatus('error')
+      setStatusMessage(error.response?.data?.message || 'Failed to submit the form. Please try again later.')
+    } finally {
+      setIsSubmitting(false)
+
+      // Clear status after 5 seconds
+      if (submitStatus === 'success') {
+        setTimeout(() => {
+          setSubmitStatus(null)
+        }, 5000)
+      }
+    }
   }
 
   return (
@@ -149,6 +223,23 @@ export default function ContactPage() {
             How we can help you?
           </h2>
 
+          {submitStatus && (
+            <motion.div
+              className={`mb-8 p-4 rounded-lg ${submitStatus === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-2">
+                {submitStatus === 'success' ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5" />
+                )}
+                <p>{statusMessage}</p>
+              </div>
+            </motion.div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -159,10 +250,12 @@ export default function ContactPage() {
                   type="text"
                   required
                   placeholder="What's your good name?"
-                  className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
+                  className={`w-full px-4 py-3 border focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                   whileFocus={{ scale: 1.01 }}
+                  value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
@@ -173,10 +266,12 @@ export default function ContactPage() {
                   type="email"
                   required
                   placeholder="Enter your email address"
-                  className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
+                  className={`w-full px-4 py-3 border focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                   whileFocus={{ scale: 1.01 }}
+                  value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
             </div>
 
@@ -189,10 +284,12 @@ export default function ContactPage() {
                   type="tel"
                   required
                   placeholder="Enter your phone number"
-                  className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
+                  className={`w-full px-4 py-3 border focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0 ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
                   whileFocus={{ scale: 1.01 }}
+                  value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
               </div>
 
               <div className="space-y-2">
@@ -204,6 +301,7 @@ export default function ContactPage() {
                   placeholder="How can we help you?"
                   className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all border-t-0 border-l-0 border-r-0"
                   whileFocus={{ scale: 1.01 }}
+                  value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 />
               </div>
@@ -216,10 +314,12 @@ export default function ContactPage() {
               <motion.textarea
                 rows={6}
                 placeholder="Describe about your message"
-                className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all resize-none border-t-0 border-l-0 border-r-0"
+                className={`w-full px-4 py-3 border focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all resize-none border-t-0 border-l-0 border-r-0 ${errors.message ? 'border-red-500' : 'border-gray-300'}`}
                 whileFocus={{ scale: 1.01 }}
+                value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               />
+              {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
             </div>
 
             <div className="flex items-center md:justify-between md:flex-row flex-col gap-4">
@@ -229,15 +329,30 @@ export default function ContactPage() {
 
               <motion.button
                 type="submit"
-                className="inline-flex items-center gap-2 bg-gray-800 text-white px-8 py-4 rounded-full  transition-colors"
+                className="inline-flex items-center gap-2 bg-gray-800 text-white px-8 py-4 rounded-full transition-colors disabled:bg-gray-400"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onHoverStart={() => setIsHovered(true)}
                 onHoverEnd={() => setIsHovered(false)}
+                disabled={isSubmitting}
               >
-                <Send className="w-4 h-4" />
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
                 <AnimatePresence mode="wait">
-                  {isHovered ? (
+                  {isSubmitting ? (
+                    <motion.span
+                      key="submitting"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      Sending...
+                    </motion.span>
+                  ) : isHovered ? (
                     <motion.span
                       key="lets-talk"
                       initial={{ opacity: 0, y: 20 }}

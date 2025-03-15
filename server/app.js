@@ -98,7 +98,7 @@ app.use("/api/v1/fees", feeRoutes);
 app.use("/api/v1/certificates", certificateRoutes);
 app.use("/api/v1/visibility", visibilityRoutes);
 app.use('/api/v1/admin', adminRoutes);
-app.use("/api/contact", contactRoutes);
+app.use("/api/v1/contact", contactRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

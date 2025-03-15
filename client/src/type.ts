@@ -741,6 +741,7 @@ export interface HeroSectionProps {
   buttons?: ReactNode;
   stats?: StatType[];
   className?: string;
+  scale?:number
   variant?: 'home' | 'page';
 }
 

@@ -22,7 +22,7 @@ const Course = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("oldest");
   const [categories, setCategories] = useState<{ id: string; name: string; }[]>([]);
 
   const debouncedSearch = useCustomDebounce(searchQuery, 500);
@@ -91,7 +91,7 @@ const Course = () => {
   const handleReset = () => {
     setSearchQuery("");
     setSelectedCategory("all");
-    setSortBy("newest");
+    setSortBy("oldest");
     setCurrentPage(1);
   };
 
@@ -157,8 +157,8 @@ const Course = () => {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="price_high">Price: High to Low</SelectItem>
                   <SelectItem value="price_low">Price: Low to High</SelectItem>
                 </SelectContent>

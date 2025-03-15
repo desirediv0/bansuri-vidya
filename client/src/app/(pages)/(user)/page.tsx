@@ -19,6 +19,7 @@ export default function Home() {
           src: "/rupak-sir.webp",
           alt: "Hero image",
         }}
+        scale={200}
         buttons={
           <>
             <CustomButton

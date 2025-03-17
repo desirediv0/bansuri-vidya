@@ -152,25 +152,29 @@ export default function Header() {
               <Cart headerState={headerState} />
             </div>
           </div>
-
-          <button
-            className="lg:hidden text-2xl"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            ☰
-          </button>
+          <div className="flex items-center lg:hidden gap-3 justify-center">
+            <Cart headerState={headerState} />
+            <button
+              className="lg:hidden text-2xl"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle mobile menu"
+            >
+              ☰
+            </button>
+          </div>
         </div>
       </div>
 
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <MobileMenu
-            menuItems={menuItems}
-            onClose={closeMobileMenu}
-            headerState={headerState}
-            handleLogout={handleLogout}
-          />
+          <>
+            <MobileMenu
+              menuItems={menuItems}
+              onClose={closeMobileMenu}
+              headerState={headerState}
+              handleLogout={handleLogout}
+            />
+          </>
         )}
       </AnimatePresence>
     </motion.header>

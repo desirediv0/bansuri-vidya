@@ -4,7 +4,6 @@ import { LogIn, LogOut, User } from "lucide-react";
 import CustomButton from "../CustomButton";
 import Image from "next/image";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
-import Cart from "../Cart";
 import { useAuth } from "@/helper/AuthContext";
 
 interface MenuItem {
@@ -59,7 +58,6 @@ export default function MobileMenu({
             />
           </Link>
           <div className="flex items-center gap-4">
-            <Cart headerState={headerState}/>
             <button
               onClick={onClose}
               className="w-10 h-10 rounded-full bg-[#ba1c33] flex items-center justify-center text-white hover:bg-[#ba1c33]/90 hover:scale-105 transition-all duration-300"

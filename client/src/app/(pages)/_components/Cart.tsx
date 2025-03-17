@@ -107,7 +107,7 @@ const Cart: React.FC<{ headerState: string }> = ({ headerState }) => {
                         }`}
                 >
                     <div className="relative">
-                        <ShoppingCart className="h-5 w-5" />
+                        <ShoppingCart className="h-6 w-6" />
                         {isAuthenticated && cartItems.length > 0 && (
                             <motion.div
                                 initial={{ scale: 0 }}

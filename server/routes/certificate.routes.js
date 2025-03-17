@@ -17,7 +17,7 @@ const router = Router();
 
 // Configure CORS for certificate routes
 const certificateCors = cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN.split(','),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']

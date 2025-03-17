@@ -149,7 +149,7 @@ export const createCourse = asyncHandler(async (req, res) => {
         thumbnail: uploadedThumbnail,
         userId: req.user.id,
         isPublished: parseBooleanField(isPublished),
-        language: language?.toLowerCase(),
+        language: language,
         subheading: subheading?.trim(),
         metaTitle: finalMetaTitle.trim(),
         metaDesc: finalMetaDesc.trim(),
@@ -725,9 +725,9 @@ export const updateCourse = asyncHandler(async (req, res) => {
   // Build update data
   const updateData = {};
 
-  if (title !== undefined) updateData.title = title.toLowerCase();
+  if (title !== undefined) updateData.title = title;
   if (description !== undefined) updateData.description = description;
-  if (language !== undefined) updateData.language = language.toLowerCase();
+  if (language !== undefined) updateData.language = language;
   if (subheading !== undefined) updateData.subheading = subheading.trim();
   if (metaTitle !== undefined) updateData.metaTitle = metaTitle;
   if (metaDesc !== undefined) updateData.metaDesc = metaDesc;

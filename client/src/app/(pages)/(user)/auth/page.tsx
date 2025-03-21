@@ -13,7 +13,6 @@ export default function AuthPage({
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white">
-      {/* Left Section */}
       <div className="hidden md:block md:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-red-600/80 z-10" />
         <Image
@@ -25,7 +24,7 @@ export default function AuthPage({
           priority
           quality={100}
         />
-        <div className="absolute inset-0 backdrop-blur-[2px] z-20" />
+        <div className="absolute inset-0 backdrop-blur-[2px] z-20 " />
         <motion.div
           className="absolute inset-0 z-30 flex flex-col items-center justify-center p-12"
           initial={{ opacity: 0, y: 20 }}
@@ -67,15 +66,17 @@ export default function AuthPage({
         </motion.div>
       </div>
 
+
+
       {/* Right Section */}
-      <div className="flex-1 flex items-center justify-center md:p-6 bg-gradient-to-tr from-red-50 to-red-100">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6 bg-gradient-to-tr from-red-50 to-red-100">
         <motion.div
           className="w-full max-w-lg"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className=" p-4 md:p-8 ">
+          <div className="p-4 md:p-8">
             <AuthComponent courseSlug={courseSlug} />
           </div>
         </motion.div>

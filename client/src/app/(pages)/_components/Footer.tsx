@@ -8,9 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const socialLinks = [
-  // { icon: Facebook, href: "/facebook" },
   { icon: Instagram, href: "https://www.instagram.com/bansurividyamandir/" },
-  // { icon: Twitter, href: "/twitter" },
   { icon: Youtube, href: "https://www.youtube.com/@bansurividya" },
 ];
 
@@ -25,7 +23,6 @@ const popularCourses = [
   { name: "Bansuri Basics", href: "/courses/introduction-to-bansuri-basics" },
   { name: "Bansuri Beginners", href: "/courses/bansuri-swara-a-beginners-journey" },
   { name: "Bansuri Intermidiate", href: "/courses/bansuri-tarang-intermediate-course" },
-  // { name: "Contact", href: "/contact" },
 ];
 const usefullLinks = [
   { name: "Home", href: "/" },

@@ -27,7 +27,7 @@ export default function Header() {
   const { headerState } = useScrollEffect();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
 
-  const { isAuthenticated, checkAuth } = useAuth()
+  const { isAuthenticated } = useAuth()
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);

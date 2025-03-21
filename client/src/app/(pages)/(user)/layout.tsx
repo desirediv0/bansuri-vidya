@@ -1,15 +1,36 @@
+"use client";
+
 import React from "react";
 import Header from "../_components/Header/Header";
 import Footer from "../_components/Footer";
+import { usePathname } from "next/navigation";
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+
+  const hideHeaderPaths = [
+    "/auth",
+  ];
+
+  const shouldShowHeader = !hideHeaderPaths.some(path =>
+    pathname === path || pathname.startsWith(`${path}/`)
+  );
+
+  const hideFooterPaths = [
+    "/auth",
+  ];
+
+  const shouldShowFooter = !hideFooterPaths.some(path =>
+    pathname === path || pathname.startsWith(`${path}/`)
+  );
+
   return (
     <div>
-      <Header />
+      {shouldShowHeader && <Header />}
       {children}
-      <Footer />
+      {shouldShowFooter && <Footer />}
     </div>
   );
 };
 
-export default layout;
+export default Layout;

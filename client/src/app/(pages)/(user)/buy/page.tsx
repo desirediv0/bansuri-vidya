@@ -293,7 +293,7 @@ function BuyPageContent({ courseSlugs }: { courseSlugs: string[] }) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white py-12 px-4 sm:px-6 lg:px-8 font-plus-jakarta-sans">
+    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white py-12 px-4 sm:px-6 lg:px-8 font-plus-jakarta-sans mt-16">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl border border-red-100">

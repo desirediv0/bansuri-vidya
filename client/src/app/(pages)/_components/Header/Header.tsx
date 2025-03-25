@@ -28,7 +28,9 @@ export default function Header() {
   const { headerState } = useScrollEffect();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const isUserProfilePage = pathname === "/user-profile";
+
+  const isUserProfilePage = pathname === "/user-profile" || pathname === "/buy" ||
+    (pathname.startsWith("/courses/") && pathname.split("/").length > 3);
 
   const { isAuthenticated } = useAuth();
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);

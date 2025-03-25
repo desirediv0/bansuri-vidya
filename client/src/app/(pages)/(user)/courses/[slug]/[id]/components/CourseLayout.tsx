@@ -282,28 +282,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       return;
     }
 
-    // Only check for section completion when the chapter is in a different section
-    if (!chapterProgress?.isCompleted) {
-      const currentSection = course.sections.find(section =>
-        section.chapters.some(ch => ch.id === selectedChapter?.id)
-      );
-      const targetSection = course.sections.find(section =>
-        section.chapters.some(ch => ch.id === chapter.id)
-      );
-
-      // Only enforce section completion if moving to a different section
-      if (currentSection && targetSection && currentSection.id !== targetSection.id) {
-        const allCurrentSectionCompleted = currentSection.chapters.every(
-          ch => courseProgress.completedChapters.includes(ch.id)
-        );
-
-        if (!allCurrentSectionCompleted) {
-          toast.error("Please complete all chapters in the current section first");
-          return;
-        }
-      }
-    }
-
+    // Remove section completion check to allow free navigation between chapters
     setSelectedChapter(chapter);
     if (!course.paid || chapter.isFree || isPurchased) {
       try {
@@ -344,7 +323,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
   )
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 font-plus-jakarta-sans">
+    <div className="flex flex-col min-h-screen bg-gray-100 font-plus-jakarta-sans mt-10 md:mt-12">
       <div className="flex flex-1 overflow-hidden">
         {isDesktop ? (
           <div
@@ -363,7 +342,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
 
         <div className="flex flex-col flex-1 overflow-hidden mt-20">
           <ScrollArea className="flex-1">
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 relative z-10">
               <VideoPlayer
                 videoUrl={videoUrl}
                 isLoading={isVideoLoading}
@@ -376,7 +355,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
                 isCompleted={chapterProgress?.isCompleted || false}
                 chapterId={selectedChapter?.id || ''}
               />
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg shadow-md p-6 relative z-10">
                 <ChapterDetails chapter={selectedChapter} />
               </div>
             </div>

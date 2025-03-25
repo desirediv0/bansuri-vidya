@@ -8,19 +8,6 @@ import CustomButton from "../CustomButton";
 import CoursesSection from "../../(user)/online-courses/CoursesSection";
 
 
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-        },
-    },
-};
-
-
-
 export default function OnlineCourseSection() {
 
     return (
@@ -43,20 +30,12 @@ export default function OnlineCourseSection() {
                     backgroundRepeat: "no-repeat",
                 }}
             />
-            {/* <Image
-                          src="/l-2.png"
-                          alt="Decorative Image 2"
-                          width={150}
-                          height={150}
-                          className="absolute top-1/2 -right-56 -translate-y-1/2 h-auto w-80 rotate-[-55deg] opacity-5"
-                        /> */}
 
             <div className="max-w-7xl mx-auto px-4 py-12 overflow-x-hidden relative z-10 overflow-y-hidden">
                 <LayoutGroup>
                     <div className="flex flex-col items-center space-y-2">
 
                         <div className="flex flex-col w-full gap-6">
-                            {/* <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-6"> */}
 
                             <div className="flex w-fit items-center gap-2 px-4 py-2">
                                 <div className="flex p-4 items-center justify-center rounded-full bg-[#ba1c33]">

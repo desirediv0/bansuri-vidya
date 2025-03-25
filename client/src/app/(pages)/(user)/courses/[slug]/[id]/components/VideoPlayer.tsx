@@ -134,17 +134,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const handleTimeUpdate = async (currentTime: number, duration: number) => {
     if (!duration || !chapterId) return;
-    
+
     try {
       const progressPercentage = (currentTime / duration) * 100;
-      
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/user-progress/update`,
         {
           chapterId,
           watchedTime: progressPercentage
         },
-        { 
+        {
           withCredentials: true,
           headers: {
             'Accept': 'application/json',
@@ -166,10 +166,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={cn(
-        "relative aspect-video select-none", 
+        "relative aspect-video select-none",
         className
       )}
       style={{

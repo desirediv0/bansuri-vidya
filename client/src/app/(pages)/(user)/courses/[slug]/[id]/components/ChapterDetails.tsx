@@ -11,7 +11,6 @@ interface ChapterDetailsProps {
   chapter: ChapterDataNew | null
 }
 
-// Base URL for DigitalOcean Spaces
 const STORAGE_BASE_URL = "https://desirediv-storage.blr1.digitaloceanspaces.com/";
 
 const formatMediaUrl = (url: string | null | undefined): string | null => {
@@ -28,7 +27,6 @@ const PdfViewer = ({ pdfUrl }: { pdfUrl: string }) => {
   const formattedPdfUrl = formatMediaUrl(pdfUrl);
 
   useEffect(() => {
-    // Reset state when URL changes
     setIsLoading(true);
     setError(null);
   }, [pdfUrl]);
@@ -55,7 +53,7 @@ const PdfViewer = ({ pdfUrl }: { pdfUrl: string }) => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-3">
+    <div className="w-full flex flex-col gap-3 relative z-10">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-red-700 flex items-center gap-2">
           <FileText className="h-5 w-5" /> PDF Document
@@ -69,7 +67,7 @@ const PdfViewer = ({ pdfUrl }: { pdfUrl: string }) => {
           <Download className="h-4 w-4" /> Download PDF
         </Button>
       </div>
-      <div className="border rounded-md overflow-hidden bg-white shadow-sm relative min-h-[500px]">
+      <div className="border rounded-md overflow-hidden bg-white shadow-sm relative min-h-[500px] z-10">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
             <Loader2 className="h-8 w-8 text-red-600 animate-spin" />
@@ -283,7 +281,7 @@ const ChapterDetails: React.FC<ChapterDetailsProps> = ({ chapter }) => {
   const hasAdditionalContent = !!(pdfUrl || audioUrl);
 
   return (
-    <Card className="bg-gradient-to-br from-white to-red-50/30 overflow-hidden transition-all duration-300 group mx-auto relative shadow-lg">
+    <Card className="bg-gradient-to-br from-white to-red-50/30 overflow-hidden transition-all duration-300 group mx-auto relative shadow-lg z-10">
       <CardHeader className="bg-gradient-to-r from-red-100/50 to-red-50/30 border-b border-red-100 py-8 px-8 font-plus-jakarta-sans">
         <div className="flex items-center gap-3 mb-3">
           <BookOpen className="w-6 h-6 text-red-600" />

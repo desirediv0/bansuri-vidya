@@ -57,7 +57,7 @@ function Footer() {
                 <div className="flex items-center gap-2">
                   <Phone className="h-5 w-5 text-[#fff]" />
                   <span className="text-base font-medium text-[#fff]">
-                    +91 9999041001
+                    +91 9971145671
                   </span>
                 </div>
               </div>
@@ -142,7 +142,7 @@ function Footer() {
                 <p className="text-gray-400">Call us directly?</p>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-white">
-                    +91 9999041001
+                    +91 9971145671
                   </span>
                   <span className="rounded-full bg-[#ba1c32] px-2 py-0.5 text-xs font-medium text-[#fff]">
                     FREE

@@ -58,28 +58,6 @@ interface ExtendedUserSec extends UserSec {
   joinedDate?: string
 }
 
-const StatCard = ({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: any
-  label: string
-  value: string | number
-}) => (
-  <div className="bg-white rounded-xl border border-red-100 shadow-sm hover:shadow-md transition-all duration-200 p-4">
-    <div className="flex items-center gap-3">
-      <div className="p-2 bg-gradient-to-br from-red-50 to-red-100 rounded-lg">
-        <Icon className="h-5 w-5 text-red-600" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-600">{label}</p>
-        <p className="text-lg font-semibold text-gray-900">{value}</p>
-      </div>
-    </div>
-  </div>
-)
-
 
 
 const LoadingState = () => (
@@ -176,11 +154,6 @@ const UserProfile = () => {
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/user/update-name`,
         { name: newName },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
       )
 
       if (response.data && response.data.success) {

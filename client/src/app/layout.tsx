@@ -27,6 +27,7 @@ const libreFranklin = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://bansurividhyamandir.com'),
   title: 'Bansuri Vidya Mandir | Indian Classical Music Institute',
   description: 'Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship.',
   keywords: [

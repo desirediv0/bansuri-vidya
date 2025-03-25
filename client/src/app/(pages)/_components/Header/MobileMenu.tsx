@@ -38,6 +38,11 @@ export default function MobileMenu({
 }: MobileMenuProps) {
   const { isAuthenticated } = useAuth();
 
+  // Handle menu item click to ensure dropdown closes
+  const handleMenuItemClick = () => {
+    onClose();
+  };
+
   return (
     <motion.div
       className="fixed inset-0 bg-black/50 z-50 lg:hidden backdrop-blur-sm"
@@ -48,7 +53,7 @@ export default function MobileMenu({
     >
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center p-6 border-b border-[#ba1c33]">
-          <Link href="/" onClick={onClose}>
+          <Link href="/" onClick={handleMenuItemClick}>
             <Image
               src="/logo.png"
               alt="logo"
@@ -80,7 +85,7 @@ export default function MobileMenu({
               <Link
                 href={item.href}
                 className="text-white/90 hover:text-[#ba1c33] hover:translate-x-2 text-2xl font-medium tracking-wide transition-all duration-300 block"
-                onClick={onClose}
+                onClick={handleMenuItemClick}
               >
                 {item.name}
               </Link>
@@ -99,7 +104,7 @@ export default function MobileMenu({
                 <Link
                   href="/user-profile"
                   className="flex items-center space-x-2 text-white/90 hover:text-[#ba1c33] text-xl font-medium"
-                  onClick={onClose}
+                  onClick={handleMenuItemClick}
                 >
                   <User className="h-5 w-5" />
                   <span>Profile</span>
@@ -107,7 +112,7 @@ export default function MobileMenu({
                 <button
                   onClick={() => {
                     handleLogout();
-                    onClose();
+                    handleMenuItemClick();
                   }}
                   className="flex items-center space-x-2 text-white/90 hover:text-[#ba1c33] text-xl font-medium w-full"
                 >
@@ -127,7 +132,7 @@ export default function MobileMenu({
                 textColor="white"
                 hoverBgColor="#a6172c"
                 hoverTextColor="white"
-                onClick={onClose}
+                onClick={handleMenuItemClick}
               />
             )}
           </motion.div>

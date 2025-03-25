@@ -191,7 +191,7 @@ export default function ContactPage() {
 
             <div className="space-y-2">
               <p className="text-gray-600">
-                <span className="font-semibold">T:</span> +91 9999041001
+                <span className="font-semibold">T:</span> +91 9971145671
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">E:</span> bansurividya@gmail.com

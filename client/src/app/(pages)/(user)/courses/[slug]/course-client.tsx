@@ -385,7 +385,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
               </motion.div>
 
               {/* Course Meta Info */}
-              <div className="grid grid-cols-2  gap-4 md:gap-6">
+              <div className="grid md:grid-cols-2  gap-3 md:gap-6">
                 {/* Language */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -426,7 +426,9 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
             </div>
 
             {/* Video/Thumbnail */}
-            <div className="relative w-full max-w-md mx-auto md:max-w-[50%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20">
+            <div
+              className="relative w-full max-w-md mx-auto md:max-w-[50%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20 group"
+            >
               {/* Thumbnail Image - Always visible when not playing */}
               <div
                 className={`absolute inset-0 transition-opacity duration-300 ${isPlaying ? "opacity-0" : "opacity-100"
@@ -460,15 +462,16 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
                   />
                 </div>
               )}
-
-              {/* Play/Pause Overlay - Only show if video URL exists */}
               {!videoError && course.videoUrl && (
                 <button
                   onClick={togglePlayPause}
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/20 transition-all duration-300"
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300
+                    ${isPlaying
+                      ? "bg-transparent group-hover:bg-black/20 opacity-0 group-hover:opacity-100"
+                      : "bg-black/30 hover:bg-black/20 opacity-100"}`}
                 >
                   {isPlaying ? (
-                    <Pause className="w-20 h-20 text-white transition-transform hover:scale-110" />
+                    <Pause className="w-20 h-20 text-white transition-transform hover:scale-110 opacity-0 group-hover:opacity-100" />
                   ) : (
                     <PlayCircle className="w-20 h-20 text-white transition-transform hover:scale-110" />
                   )}
@@ -485,6 +488,7 @@ const CourseClient: React.FC<CourseClientProps> = ({ initialCourseData, slug }) 
           </div>
         </div>
       </div>
+
 
       {/* Course Content */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">

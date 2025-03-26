@@ -31,8 +31,7 @@ export function HeroSection({
     const y = (e.clientY - rect.top) / rect.height;
     setMousePosition({ x, y });
   };
-  console.log("test", scale);
-  
+
 
   const calculateTilt = () => {
     const tiltX = (mousePosition.y - 0.5) * 20;

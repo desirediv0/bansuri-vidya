@@ -30,7 +30,7 @@ export default function Header() {
   const pathname = usePathname();
 
   const isUserProfilePage = pathname === "/user-profile" || pathname === "/buy" ||
-    (pathname.startsWith("/courses/") && pathname.split("/").length > 3);
+    (pathname.startsWith("/courses/") && pathname.split("/").length > 3) || pathname === "/reset-password" || pathname === "/verify-email";
 
   const { isAuthenticated } = useAuth();
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);

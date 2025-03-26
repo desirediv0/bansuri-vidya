@@ -17,6 +17,7 @@ import { PasswordResetForm } from "@/type";
 import axios from "axios";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import PasswordValidation from "@/components/ui/PasswordValidation";
 
 function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,9 @@ function ResetPasswordContent() {
       confirmPassword: "",
     },
   });
+
+
+  const password = form.watch("password");
 
   const onSubmit = async (data: PasswordResetForm) => {
     setLoading(true);
@@ -108,13 +112,18 @@ function ResetPasswordContent() {
                     value: 8,
                     message: "Password must be at least 8 characters",
                   },
+                  pattern: {
+                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/,
+                    message: "Password must meet all requirements"
+                  }
                 })}
               />
               {form.formState.errors.password && (
-                <p className="text-sky-600">
+                <p className="text-red-600">
                   {form.formState.errors.password.message}
                 </p>
               )}
+              <PasswordValidation password={password} />
             </div>
             <div>
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
@@ -129,14 +138,14 @@ function ResetPasswordContent() {
                 })}
               />
               {form.formState.errors.confirmPassword && (
-                <p className="text-sky-600">
+                <p className="text-red-600">
                   {form.formState.errors.confirmPassword.message}
                 </p>
               )}
             </div>
             <Button
               type="submit"
-              className="w-full bg-sky-600 hover:bg-sky-700 text-white"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
               disabled={loading}
             >
               {loading ? (
@@ -154,7 +163,7 @@ function ResetPasswordContent() {
 export default function ResetPassword() {
   return (
     <Suspense
-      fallback={<Loader2 className="h-8 w-8 animate-spin text-sky-600" />}
+      fallback={<Loader2 className="h-8 w-8 animate-spin text-red-600" />}
     >
       <ResetPasswordContent />
     </Suspense>

@@ -143,8 +143,8 @@ export function DynamicTable({
         <Badge
           variant="outline"
           className={`${item.paid
-              ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-blue-50 text-blue-700 border-blue-200"
+            ? "bg-green-50 text-green-700 border-green-200"
+            : "bg-blue-50 text-blue-700 border-blue-200"
             } px-2 py-1 text-xs font-medium rounded-md`}
         >
           {item.paid ? "Paid" : "Free"}
@@ -157,8 +157,8 @@ export function DynamicTable({
         <Badge
           variant="outline"
           className={`${item.isVerified
-              ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-yellow-50 text-yellow-700 border-yellow-200"
+            ? "bg-green-50 text-green-700 border-green-200"
+            : "bg-yellow-50 text-yellow-700 border-yellow-200"
             } px-2 py-1 text-xs font-medium rounded-md`}
         >
           {item.isVerified ? "Verified" : "Unverified"}
@@ -173,8 +173,8 @@ export function DynamicTable({
         <Badge
           variant="outline"
           className={`${item.isPublished
-              ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-yellow-50 text-yellow-700 border-yellow-200"
+            ? "bg-green-50 text-green-700 border-green-200"
+            : "bg-yellow-50 text-yellow-700 border-yellow-200"
             } px-2 py-1 text-xs font-medium rounded-md`}
         >
           {item.isPublished ? "Published" : "Draft"}
@@ -228,7 +228,6 @@ export function DynamicTable({
           <DropdownMenuContent align="end" className="w-[200px]">
             <DropdownMenuItem
               onClick={() => {
-                console.log(item);
                 handleNavigation("user", item.slug as string);
               }}
               className="cursor-pointer"

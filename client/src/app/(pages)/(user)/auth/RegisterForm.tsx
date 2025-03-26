@@ -5,20 +5,30 @@ import { User, Mail, Lock, Loader2 } from "lucide-react";
 import InputField from "./InputField";
 import axios from "axios";
 import { RegisterFormProps, RegisterInputs } from "@/type";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GoogleButton from "./GoogleButton";
 import { motion } from "framer-motion";
+import PasswordValidation from "@/components/ui/PasswordValidation";
 
 export default function RegisterForm({
   handleLoading,
   handleRegistrationSuccess,
 }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState("");
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<RegisterInputs>();
+
+  // Watch the password field
+  const watchedPassword = watch("password", "");
+  // Update password state when it changes
+  useEffect(() => {
+    setPassword(watchedPassword);
+  }, [watchedPassword]);
 
   const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
     setIsLoading(true);
@@ -44,7 +54,6 @@ export default function RegisterForm({
       handleLoading(false);
     }
   };
-
 
   return (
     <motion.form
@@ -88,37 +97,41 @@ export default function RegisterForm({
           },
         }}
       />
-      <InputField<RegisterInputs>
-        id="register-password"
-        type="password"
-        label="Password"
-        placeholder="Enter your password..."
-        icon={<Lock className="h-4 w-4 text-gray-500" />}
-        register={register}
-        name="password"
-        errors={errors}
-        validationRules={{
-          required: "Password is required",
-          minLength: {
-            value: 8,
-            message: "Password must be at least 8 characters",
-          },
-          validate: {
-            hasUpperCase: (value: string) =>
-              /[A-Z]/.test(value) ||
-              "Password must contain at least one uppercase letter",
-            hasLowerCase: (value: string) =>
-              /[a-z]/.test(value) ||
-              "Password must contain at least one lowercase letter",
-            hasNumber: (value: string) =>
-              /\d/.test(value) || "Password must contain at least one number",
-            hasSpecialChar: (value: string) =>
-              /[!@#$%^&*(),.?":{}|<>]/.test(value) ||
-              "Password must contain at least one special character",
-          },
-        }}
-        showPasswordToggle
-      />
+      <div className="space-y-0">
+        <InputField<RegisterInputs>
+          id="register-password"
+          type="password"
+          label="Password"
+          placeholder="Enter your password..."
+          icon={<Lock className="h-4 w-4 text-gray-500" />}
+          register={register}
+          name="password"
+          errors={errors}
+          validationRules={{
+            required: "Password is required",
+            minLength: {
+              value: 8,
+              message: "Password must be at least 8 characters",
+            },
+            validate: {
+              hasUpperCase: (value: string) =>
+                /[A-Z]/.test(value) ||
+                "Password must contain at least one uppercase letter",
+              hasLowerCase: (value: string) =>
+                /[a-z]/.test(value) ||
+                "Password must contain at least one lowercase letter",
+              hasNumber: (value: string) =>
+                /\d/.test(value) || "Password must contain at least one number",
+              hasSpecialChar: (value: string) =>
+                /[!@#$%^&*(),.?":{}|<>]/.test(value) ||
+                "Password must contain at least one special character",
+            },
+          }}
+          showPasswordToggle
+        />
+        {password && <PasswordValidation password={password} />}
+      </div>
+
       <Button
         type="submit"
         disabled={isLoading}

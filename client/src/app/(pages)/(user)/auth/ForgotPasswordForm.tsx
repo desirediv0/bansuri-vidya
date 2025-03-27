@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Mail, Loader2 } from "lucide-react";
 import InputField from "./InputField";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ForgotPasswordFormProps } from "@/type";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -27,6 +27,7 @@ export default function ForgotPasswordForm({
         `${process.env.NEXT_PUBLIC_API_URL}/user/forgot-password`,
         data
       );
+
       if (result.status === 200) {
         toast.success(
           "Password reset instructions have been sent to your email."
@@ -39,7 +40,25 @@ export default function ForgotPasswordForm({
         );
       }
     } catch (error) {
-      toast.error("An unexpected error occurred. Please try again later.");
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ success: boolean; message: string; error: any }>;
+
+        if (axiosError.response) {
+          // Server responded with an error status
+          const errorMessage = axiosError.response.data?.message ||
+            "Server error occurred. Please try again.";
+          toast.error(errorMessage);
+        } else if (axiosError.request) {
+          // Request was made but no response received
+          toast.error("No response from server. Please check your connection.");
+        } else {
+          // Something else caused the error
+          toast.error("Request could not be processed. Please try again.");
+        }
+      } else {
+        // For non-Axios errors
+        toast.error("An unexpected error occurred. Please try again later.");
+      }
       console.error(error);
     } finally {
       setIsSubmitting(false);

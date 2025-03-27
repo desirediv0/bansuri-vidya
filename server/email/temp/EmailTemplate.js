@@ -4,7 +4,7 @@ export const getVerificationTemplate = (verificationLink) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Your Email - Bansuri Vidya Mandir </title>
+    <title>Verify Your Email - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -95,17 +95,17 @@ export const getVerificationTemplate = (verificationLink) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>Welcome to Bansuri Vidya Mandir </h1>
+            <h1>Welcome to Bansuri Vidya Mandir</h1>
         </div>
         <div class="content">
-            <h2>Begin Your Journey</h2>
-            <p>Dear Valued Trader,</p>
-            <p>Welcome to Bansuri Vidya Mandir. Join Bansuri Vidya Mandir - A premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship. Please verify your email address:</p>
-            <a href="${verificationLink}" class="button">Verify Email & Start</a>
+            <h2>Begin Your Musical Journey</h2>
+            <p>Dear Valued Student,</p>
+            <p>Welcome to Bansuri Vidya Mandir. Join our premier institute dedicated to teaching Indian classical flute (bansuri), traditional music education, and cultural arts. Experience authentic guru-shishya parampara with expert mentorship. Please verify your email address to begin your musical journey:</p>
+            <a href="${verificationLink}" class="button">Verify Email & Begin Journey</a>
             <p>If you didn't create an account with Bansuri Vidya Mandir, please disregard this email.</p>
         </div>
         <div class="footer">
-            © 2021 Bansuri Vidya Mandir | Terms of Service | Privacy Policy<br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -119,7 +119,7 @@ export const getDeleteTemplate = (deletionLink) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Deletion Request - Bansuri Vidya Mandir </title>
+    <title>Account Deletion Request - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -219,33 +219,33 @@ export const getDeleteTemplate = (deletionLink) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>We Value Your Journey</h1>
+            <h1>We Value Your Musical Journey</h1>
         </div>
         <div class="content">
             <h2>Account Deletion Request</h2>
-            <p>Dear Valued Trader,</p>
-            <p>We've received a request to delete your Bansuri Vidya Mandir  account. Before proceeding, we want to ensure this is your intended action, as it will affect your access and history.</p>
+            <p>Dear Valued Student,</p>
+            <p>We've received a request to delete your Bansuri Vidya Mandir account. Before proceeding, we want to ensure this is your intended action, as it will affect your access to classes, learning materials, and progress records.</p>
             <p>If you're certain about deleting your account, please click the button below:</p>
             <a href="${deletionLink}" class="button">Confirm Account Deletion</a>
             <div class="warning">
-                <strong>Warning:</strong> This action is irreversible. Once deleted, all your history, analysis settings, and personal data will be permanently removed from our systems.
+                <strong>Warning:</strong> This action is irreversible. Once deleted, all your learning history, course progress, and personal data will be permanently removed from our systems.
             </div>
             <div class="alternatives">
                 <h3>Consider these alternatives:</h3>
                 <div class="alternative-item">
-                    Temporarily deactivate your account
+                    Temporarily pause your learning journey
                 </div>
                 <div class="alternative-item">
-                    Consult with our experts
+                    Discuss options with your Guru or instructor
                 </div>
                 <div class="alternative-item">
-                    Contact our 24/7 support team
+                    Contact our support team for assistance
                 </div>
             </div>
-            <p>If you didn't request this deletion, please contact our support team immediately at support@bansurividyamandir.com.</p>
+            <p>If you didn't request this deletion, please contact our support team immediately at bansurividya@gmail.com.</p>
         </div>
         <div class="footer">
-            © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -259,7 +259,7 @@ export const getResetTemplate = (resetLink) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Your Password - Bansuri Vidya Mandir </title>
+    <title>Reset Your Password - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -335,13 +335,13 @@ export const getResetTemplate = (resetLink) => `
         </div>
         <div class="content">
             <h2>Reset Your Password</h2>
-            <p>Dear Valued Trader,</p>
-            <p>We received a request to reset the password for your Bansuri Vidya Mandir  account. To ensure the security of your account and maintain uninterrupted access to your activities, please click the button below:</p>
+            <p>Dear Valued Student,</p>
+            <p>We received a request to reset the password for your Bansuri Vidya Mandir account. To ensure the security of your account and maintain uninterrupted access to your music lessons and resources, please click the button below:</p>
             <a href="${resetLink}" class="button">Reset Password</a>
-            <p>If you didn't request this password reset, please contact our security team immediately at support@bansurividyamandir.com</p>
+            <p>If you didn't request this password reset, please contact our support team immediately at bansurividya@gmail.com</p>
         </div>
         <div class="footer">
-            © 2021 Bansuri Vidya Mandir  | Terms of Service | Privacy Policy<br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -355,7 +355,7 @@ export const getFeeReceiptTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fee Payment Receipt - Bansuri Vidya Mandir </title>
+    <title>Fee Payment Receipt - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -432,16 +432,16 @@ export const getFeeReceiptTemplate = (data) => `
         <div class="content">
             <h2>Fee Payment Receipt</h2>
             <p>Dear ${data.userName},</p>
-            <p>Thank you for your payment. Your transaction was successful.</p>
+            <p>Thank you for your payment. Your transaction for music education fees was successful.</p>
             <div class="payment-details">
                 <p><strong>Amount Paid:</strong> ₹${data.amount}</p>
                 <p><strong>Payment ID:</strong> ${data.paymentId}</p>
                 <p><strong>Date:</strong> ${new Date(data.date).toLocaleDateString()}</p>
             </div>
-            <p>Please find your receipt attached to this email.</p>
+            <p>Please find your receipt attached to this email. We look forward to continuing your musical journey with us.</p>
         </div>
         <div class="footer">
-            © ${new Date().getFullYear()} Bansuri Vidya Mandir <br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
             This is an automated message. Please do not reply.
         </div>
     </div>
@@ -455,7 +455,7 @@ export const getFeeNotificationTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Fee Assignment - Bansuri Vidya Mandir </title>
+    <title>New Fee Assignment - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -555,11 +555,11 @@ export const getFeeNotificationTemplate = (data) => `
                 </div>
                 ` : ''}
             </div>
-            <p>Please ensure timely payment to avoid any late fees.</p>
+            <p>Please ensure timely payment to continue your uninterrupted musical education with us.</p>
             <a href="${process.env.FRONTEND_URL}/dashboard/fees" class="btn">View Fee Details</a>
         </div>
         <div class="footer">
-            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir </p>
+            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute</p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
@@ -573,7 +573,7 @@ export const getPaymentSuccessTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - Bansuri Vidya Mandir </title>
+    <title>Payment Successful - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -642,7 +642,7 @@ export const getPaymentSuccessTemplate = (data) => `
         </div>
         <div class="content">
             <p>Dear ${data.userName},</p>
-            <p>Your payment has been successfully processed. Here are your transaction details:</p>
+            <p>Your payment for music education fees has been successfully processed. Here are your transaction details:</p>
             
             <div class="payment-details">
                 <div class="detail-row">
@@ -674,11 +674,11 @@ export const getPaymentSuccessTemplate = (data) => `
             </div>
 
             <p>Your payment receipt has been attached to this email for your records.</p>
-            <p>Thank you for your prompt payment!</p>
+            <p>Thank you for your prompt payment! We look forward to continuing our musical journey together.</p>
         </div>
         <div class="footer">
-            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir </p>
-            <p>For any queries, please contact our support team at support@Bansuri Vidya Mandir .com</p>
+            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute</p>
+            <p>For any queries, please contact our support team at bansurividya@gmail.com</p>
         </div>
     </div>
 </body>
@@ -691,7 +691,7 @@ export const getPaymentFailureTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Failed - Bansuri Vidya Mandir </title>
+    <title>Payment Failed - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -755,7 +755,7 @@ export const getPaymentFailureTemplate = (data) => `
         </div>
         <div class="content">
             <p>Dear ${data.userName},</p>
-            <p>We're sorry, but your recent payment attempt was unsuccessful.</p>
+            <p>We're sorry, but your recent payment attempt for music education fees was unsuccessful.</p>
             
             <div class="error-box">
                 <h3>Transaction Details:</h3>
@@ -780,8 +780,8 @@ export const getPaymentFailureTemplate = (data) => `
             </a>
         </div>
         <div class="footer">
-            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir </p>
-            <p>Need help? Contact our support team at support@Bansuri Vidya Mandir .com</p>
+            <p>© ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute</p>
+            <p>Need help? Contact our support team at bansurividya@gmail.com</p>
         </div>
     </div>
 </body>
@@ -809,7 +809,7 @@ export const getFeeUpdateTemplate = ({ name, feeTitle, oldAmount, newAmount, old
         </div>
         <div class="content">
             <p>Dear ${name},</p>
-            <p>This is to inform you that there has been an update to your fee: <strong>${feeTitle}</strong></p>
+            <p>This is to inform you that there has been an update to your music education fee: <strong>${feeTitle}</strong></p>
             
             <div class="details">
                 <h3>Update Details:</h3>
@@ -818,7 +818,7 @@ export const getFeeUpdateTemplate = ({ name, feeTitle, oldAmount, newAmount, old
                 <p><strong>Reason:</strong> ${reason}</p>
             </div>
 
-            <p>If you have any questions, please contact our support team.</p>
+            <p>If you have any questions about this update, please contact our support team.</p>
         </div>
         <div class="footer">
             <p>Bansuri Vidya Mandir | Indian Classical Music Institute</p>
@@ -835,7 +835,7 @@ export const getCertificateGeneratedTemplate = (data) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Generated - Bansuri Vidya Mandir </title>
+    <title>Certificate Generated - Bansuri Vidya Mandir</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -925,25 +925,25 @@ export const getCertificateGeneratedTemplate = (data) => `
             <h1>Congratulations!</h1>
         </div>
         <div class="content">
-            <h2>Course Completion Achievement</h2>
+            <h2>Musical Achievement Accomplished</h2>
             <p>Dear ${data.userName},</p>
             <p>We are delighted to inform you that you have successfully completed the course:</p>
             <h3 style="color: #cc0000;">${data.courseName}</h3>
             
             <div class="certificate-info">
-                <p><strong>Your certificate has been generated!</strong></p>
+                <p><strong>Your certificate of musical excellence has been generated!</strong></p>
                 <p>Certificate ID: <span class="certificate-id">${data.certificateId}</span></p>
-                <p>You can now access and download your certificate from your profile.</p>
+                <p>You can now access and download your certificate from your profile. This marks an important milestone in your musical journey with us.</p>
             </div>
 
             <center>
                 <a href="${process.env.FRONTEND_URL}/user-profile" class="button">View Certificate</a>
             </center>
 
-            <p>This certificate validates your dedication and commitment to learning. Keep up the excellent work!</p>
+            <p>This certificate validates your dedication to Indian classical music and your commitment to learning. Continue on the path of musical excellence!</p>
         </div>
         <div class="footer">
-            © ${new Date().getFullYear()} Bansuri Vidya Mandir <br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
             This is an automated message. Please do not reply to this email.
         </div>
     </div>
@@ -951,7 +951,6 @@ export const getCertificateGeneratedTemplate = (data) => `
 </html>
 `;
 
-// New contact form email template
 export const getContactFormTemplate = (data) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -1028,10 +1027,10 @@ export const getContactFormTemplate = (data) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>New Contact Form Submission</h1>
+            <h1>New Music Inquiry</h1>
         </div>
         <div class="content">
-            <h2>${data.subject || 'Website Contact Form'}</h2>
+            <h2>${data.subject || 'Inquiry About Music Education'}</h2>
             
             <div class="message-box">
                 <p>${data.message}</p>
@@ -1052,10 +1051,10 @@ export const getContactFormTemplate = (data) => `
                 </div>
             </div>
             
-            <p>Please respond to this inquiry at your earliest convenience.</p>
+            <p>Please respond to this inquiry about our music programs at your earliest convenience.</p>
         </div>
         <div class="footer">
-            © ${new Date().getFullYear()} Bansuri Vidya Mandir<br>
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
             This is an automated message from your website contact form.
         </div>
     </div>

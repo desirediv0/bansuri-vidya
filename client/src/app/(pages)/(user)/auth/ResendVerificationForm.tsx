@@ -38,9 +38,18 @@ export default function ResendVerificationForm({
           "Failed to resend verification email. Please try again."
         );
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred. Please try again later.");
+    } catch (error: any) {
       console.error(error);
+      // Extract error message from API response
+      const errorMessage = error.response?.data?.message || "An unexpected error occurred. Please try again later.";
+
+      // Special handling for "Email already verified" message
+      if (errorMessage === "Email already verified") {
+        toast.info("This email is already verified. You can proceed to login.");
+        setTimeout(() => setAuthMode("login"), 2000);
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
       handleLoading(false);

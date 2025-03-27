@@ -52,6 +52,34 @@ export default function BillingForm({
           )}
         </div>
         <div>
+          <Label htmlFor="mobileNumber" className="text-gray-700">
+            Mobile Number
+          </Label>
+          <div className="flex mt-1">
+            <div className="flex items-center bg-gray-100 rounded-l-md border border-r-0 border-input px-3 text-sm text-gray-600">
+              +91
+            </div>
+            <Input
+              id="mobileNumber"
+              type="tel"
+              placeholder="9876543210"
+              className="rounded-l-none"
+              {...register("mobileNumber", {
+                required: "Mobile number is required",
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: "Please enter a valid 10-digit Indian mobile number",
+                },
+              })}
+            />
+          </div>
+          {errors.mobileNumber && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.mobileNumber.message}
+            </p>
+          )}
+        </div>
+        <div>
           <Label htmlFor="address" className="text-gray-700">
             Address
           </Label>
@@ -109,6 +137,7 @@ export default function BillingForm({
             id="country"
             placeholder="India"
             className="mt-1"
+            defaultValue="India"
             {...register("country", { required: "Country is required" })}
           />
           {errors.country && (

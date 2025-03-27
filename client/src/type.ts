@@ -327,6 +327,7 @@ export interface BillingDetails {
   country: string;
   zipCode: string;
   saveAddress?: boolean;
+  mobileNumber?: string;
 }
 
 export interface EnrollmentResponse {

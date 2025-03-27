@@ -741,8 +741,9 @@ export interface HeroSectionProps {
   buttons?: ReactNode;
   stats?: StatType[];
   className?: string;
-  scale?:number
+  scale?: number
   variant?: 'home' | 'page';
+  backgroundImage?: string;
 }
 
 export interface Testimonial {

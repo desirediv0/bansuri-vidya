@@ -1,13 +1,27 @@
 "use client";
 
-import React from "react";
+import React, { MouseEventHandler, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { CustomButtonProps } from "@/type";
+
+interface CustomButtonProps {
+  primaryText: string;
+  secondaryText?: string;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  icon?: ReactNode;
+  className?: string;
+  href?: string;
+  variant?: 'filled' | 'outlined';
+  bgColor?: string;
+  textColor?: string;
+  hoverBgColor?: string;
+  hoverTextColor?: string;
+}
 
 const CustomButton = ({
   primaryText,
   secondaryText,
+  onClick,
   icon,
   href,
   className,
@@ -78,7 +92,11 @@ const CustomButton = ({
   }
 
   return (
-    <button className={commonClasses} style={getCustomStyles()}>
+    <button
+      onClick={onClick}
+      className={commonClasses}
+      style={getCustomStyles()}
+    >
       <ButtonContent />
     </button>
   );

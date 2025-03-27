@@ -10,6 +10,7 @@ import { HeroSection } from "../../_components/HeroSectionProps";
 import { useState } from "react";
 import VideoDialog from "../../_components/VideoDialog";
 import { scrollToSection } from "../../_components/smoothScroll";
+import BatchCards from "./BatchCards";
 
 export default function OfflineBatches() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -55,11 +56,21 @@ export default function OfflineBatches() {
         onClose={() => setIsVideoOpen(false)}
         videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       />
+      <section id="courses-section" className="max-w-7xl mx-auto py-16 px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Available Batches</h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Choose from our carefully designed batch programs tailored for different skill levels and flute types.
+          </p>
+          <div className="w-24 h-1 bg-[#ba1c33] mx-auto mt-6"></div>
+        </div>
+        <BatchCards />
+      </section>
       <LearningLanding />
       <main className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
         <LearningStyle />
       </main>
-      <div id="courses-section">
+      <div>
         <CourseHero />
       </div>
       <TestimonialsSection />

@@ -33,6 +33,11 @@ const navItems: NavItem[] = [
     icon: BookOpen,
   },
   {
+    title: "New Course",
+    href: "/dashboard/create-course",
+    icon: FilePlus,
+  },
+  {
     title: "Course Access",
     href: "/dashboard/access-course",
     icon: KeyRound,
@@ -56,11 +61,6 @@ const navItems: NavItem[] = [
     title: "Reviews",
     href: "/dashboard/reviews",
     icon: MessageSquare,
-  },
-  {
-    title: "New Course",
-    href: "/dashboard/create-course",
-    icon: FilePlus,
   },
   {
     title: "Saved Drafts",

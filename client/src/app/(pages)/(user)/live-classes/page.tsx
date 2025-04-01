@@ -11,6 +11,7 @@ import { HeroSection } from "../../_components/HeroSectionProps";
 import VideoDialog from "../../_components/VideoDialog";
 import { useState } from "react";
 import { scrollToSection } from "../../_components/smoothScroll";
+import BatchCards from "./BatchCards";
 
 export default function LiveClasses() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function LiveClasses() {
         title="Live Classes"
         description="Embark on your journey to flute mastery with our pre-recorded courses, interactive live classes, and immersive offline batches designed to suit every learner's needs."
         variant="page"
-        backgroundImage="/live-classes-bg.jpg"
+        backgroundImage="/live-course.png"
         buttons={
           <>
             <CustomButton
@@ -54,12 +55,22 @@ export default function LiveClasses() {
       <VideoDialog
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        videoUrl="https://www.youtube.com/watch?v=yRhTDpSSk6Y"
       />
+      <section id="courses-section" className="max-w-7xl mx-auto py-16 px-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Available Batches</h2>
+                <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                  Choose from our carefully designed batch programs tailored for different skill levels and flute types.
+                </p>
+                <div className="w-24 h-1 bg-[#ba1c33] mx-auto mt-6"></div>
+              </div>
+              <BatchCards />
+            </section>
       <LearningLanding />
-      <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
+      {/* <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
         <LearningStyle />
-      </main>
+      </main> */}
       <CourseHero />
       <TestimonialsSection />
       <TablaTanpura />

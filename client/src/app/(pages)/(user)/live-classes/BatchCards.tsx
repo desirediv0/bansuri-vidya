@@ -28,118 +28,118 @@ export interface BatchData {
 }
 
 export const batchesData: BatchData[] = [
-    // {
-    //     id: "1",
-    //     title: "C Natural Flute - Beginners",
-    //     type: "LIVE",
-    //     fluteType: "C Natural Flute",
-    //     level: "BEGINNERS",
-    //     batches: [
-    //         {
-    //             number: 1,
-    //             times: [{ day: "Saturday", time: "5-6pm" }]
-    //         },
-    //         {
-    //             number: 2,
-    //             times: [{ day: "Wednesday", time: "7-8pm" }]
-    //         }
-    //     ],
-    //     image: "/c1.jpg",
-    //     slug: "c-natural-beginners-live",
-    //     description: "Start your flute journey with our beginner-friendly C Natural Flute class. Perfect for those with no prior experience."
-    // },
-    // {
-    //     id: "2",
-    //     title: "G Natural Base Flute - Intermediate",
-    //     type: "LIVE",
-    //     fluteType: "G Natural Base Flute",
-    //     level: "INTERMEDIATE",
-    //     batches: [
-    //         {
-    //             number: 1,
-    //             times: [{ day: "Sunday", time: "12:30pm" }]
-    //         }
-    //     ],
-    //     image: "/c1.jpg",
-    //     slug: "g-natural-intermediate-live",
-    //     description: "Take your flute skills to the next level with our intermediate G Natural Base Flute classes."
-    // },
-    // {
-    //     id: "3",
-    //     title: "E Base Flute - Expert",
-    //     type: "LIVE",
-    //     fluteType: "E Base Flute",
-    //     level: "EXPERT",
-    //     batches: [
-    //         {
-    //             number: 2,
-    //             times: [{ day: "Saturday", time: "6pm" }]
-    //         }
-    //     ],
-    //     image: "/c1.jpg",
-    //     slug: "e-base-expert-live",
-    //     description: "Advance your flute mastery with our expert-level E Base Flute class. For experienced players only."
-    // },
     {
         id: "1",
         title: "C Natural Flute - Beginners",
-        type: "OFFLINE",
+        type: "LIVE",
         fluteType: "C Natural Flute",
         level: "BEGINNERS",
         batches: [
             {
                 number: 1,
-                times: [{ day: "Sunday", time: "4 to 5:30pm" }]
+                times: [{ day: "Saturday", time: "5-6pm" }]
             },
             {
                 number: 2,
-                times: [{ day: "Saturday", time: "9:30 to 11am" }]
+                times: [{ day: "Wednesday", time: "7-8pm" }]
             }
         ],
-        image: "/offline-batch/c-natural-offline.png",
-        slug: "c-natural-beginners-offline",
-        description: "Learn the basics of flute playing in-person with our beginner-friendly C Natural Flute offline class."
+        image: "/live-class/c-natural-live.png",
+        slug: "c-natural-beginners-live",
+        description: "Start your flute journey with our beginner-friendly C Natural Flute class. Perfect for those with no prior experience."
     },
     {
         id: "2",
-        title: "G Base Flute - Intermediate",
-        type: "OFFLINE",
-        fluteType: "G Base Flute",
+        title: "G Natural Base Flute - Intermediate",
+        type: "LIVE",
+        fluteType: "G Natural Base Flute",
         level: "INTERMEDIATE",
         batches: [
             {
                 number: 1,
-                times: [{ day: "Sunday", time: "9:30am to 11am" }]
-            },
-            {
-                number: 2,
-                times: [{ day: "Sunday", time: "12:30 to 2pm" }]
+                times: [{ day: "Sunday", time: "12:30pm" }]
             }
         ],
-        image: "/offline-batch/g-base-offline.png",
-        slug: "g-base-intermediate-offline",
-        description: "Enhance your skills with our intermediate G Base Flute offline classes in a supportive environment."
+        image: "/live-class/g-natural-live.png",
+        slug: "g-natural-intermediate-live",
+        description: "Take your flute skills to the next level with our intermediate G Natural Base Flute classes."
     },
     {
         id: "3",
-        title: "E Base Flute - Advanced",
-        type: "OFFLINE",
+        title: "E Base Flute - Expert",
+        type: "LIVE",
         fluteType: "E Base Flute",
-        level: "ADVANCE",
+        level: "EXPERT",
         batches: [
             {
-                number: 1,
-                times: [{ day: "Sunday", time: "11-12:30pm" }]
-            },
-            {
                 number: 2,
-                times: [{ day: "Saturday", time: "12:30 to 2pm" }]
+                times: [{ day: "Saturday", time: "6pm" }]
             }
         ],
-        image: "/offline-batch/e-base-expert.png",
-        slug: "e-base-advanced-offline",
-        description: "Master advanced techniques with our E Base Flute offline classes designed for serious flute players."
-    }
+        image: "/live-class/e-base-live.png",
+        slug: "e-base-expert-live",
+        description: "Advance your flute mastery with our expert-level E Base Flute class. For experienced players only."
+    },
+    // {
+    //     id: "1",
+    //     title: "C Natural Flute - Beginners",
+    //     type: "OFFLINE",
+    //     fluteType: "C Natural Flute",
+    //     level: "BEGINNERS",
+    //     batches: [
+    //         {
+    //             number: 1,
+    //             times: [{ day: "Sunday", time: "4 to 5:30pm" }]
+    //         },
+    //         {
+    //             number: 2,
+    //             times: [{ day: "Saturday", time: "9:30 to 11am" }]
+    //         }
+    //     ],
+    //     image: "/c1.jpg",
+    //     slug: "c-natural-beginners-offline",
+    //     description: "Learn the basics of flute playing in-person with our beginner-friendly C Natural Flute offline class."
+    // },
+    // {
+    //     id: "2",
+    //     title: "G Base Flute - Intermediate",
+    //     type: "OFFLINE",
+    //     fluteType: "G Base Flute",
+    //     level: "INTERMEDIATE",
+    //     batches: [
+    //         {
+    //             number: 1,
+    //             times: [{ day: "Sunday", time: "9:30am to 11am" }]
+    //         },
+    //         {
+    //             number: 2,
+    //             times: [{ day: "Sunday", time: "12:30 to 2pm" }]
+    //         }
+    //     ],
+    //     image: "/c1.jpg",
+    //     slug: "g-base-intermediate-offline",
+    //     description: "Enhance your skills with our intermediate G Base Flute offline classes in a supportive environment."
+    // },
+    // {
+    //     id: "3",
+    //     title: "E Base Flute - Advanced",
+    //     type: "OFFLINE",
+    //     fluteType: "E Base Flute",
+    //     level: "ADVANCE",
+    //     batches: [
+    //         {
+    //             number: 1,
+    //             times: [{ day: "Sunday", time: "11-12:30pm" }]
+    //         },
+    //         {
+    //             number: 2,
+    //             times: [{ day: "Saturday", time: "12:30 to 2pm" }]
+    //         }
+    //     ],
+    //     image: "/c1.jpg",
+    //     slug: "e-base-advanced-offline",
+    //     description: "Master advanced techniques with our E Base Flute offline classes designed for serious flute players."
+    // }
 ];
 
 const primaryColor = "#ba1c33";
@@ -168,7 +168,7 @@ const BatchCard = ({ batch }: { batch: BatchData }) => {
     const router = useRouter();
 
     const handleClick = () => {
-        router.push(`/offline-batches/${batch.slug}`);
+        router.push(`/live-classes/${batch.slug}`);
     };
 
     const badgeColor = batch.type === 'LIVE'

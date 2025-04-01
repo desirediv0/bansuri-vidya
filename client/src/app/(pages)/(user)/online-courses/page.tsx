@@ -19,7 +19,7 @@ export default function OnlineCourses() {
         title="Online Courses"
         description="At Bansuri Vidya Mandir, we believe in making quality education accessible to everyone, anytime, anywhere. Our Online Courses are designed to provide a flexible and engaging learning experience, ensuring that students receive the best education from the comfort of their homes."
         variant="page"
-        backgroundImage="/c1.jpg"
+        backgroundImage="/online-course-n.png"
         buttons={
           <>
             <CustomButton
@@ -53,7 +53,7 @@ export default function OnlineCourses() {
       <VideoDialog
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        videoUrl="https://www.youtube.com/watch?v=9Jk5C2cgPQU"
       />
       <main className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
         <div id="courses-section">

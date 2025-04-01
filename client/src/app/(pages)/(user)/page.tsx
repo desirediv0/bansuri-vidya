@@ -60,7 +60,7 @@ export default function Home() {
       <VideoDialog
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        videoUrl="https://www.youtube.com/watch?v=vT8gQHlPTK4"
       />
       <LearningLanding />
       <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">

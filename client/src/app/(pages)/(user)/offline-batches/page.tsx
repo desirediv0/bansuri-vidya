@@ -20,7 +20,7 @@ export default function OfflineBatches() {
         title="Offline Batches"
         description="Embark on your journey to flute mastery with our pre-recorded courses, interactive live classes, and immersive offline batches designed to suit every learner's needs."
         variant="page"
-        backgroundImage="/c1.jpg"
+        backgroundImage="/offline-batch.png"
         buttons={
           <>
             <CustomButton
@@ -54,7 +54,7 @@ export default function OfflineBatches() {
       <VideoDialog
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        videoUrl="https://www.youtube.com/watch?v=tqRvyP9hVG0"
       />
       <section id="courses-section" className="max-w-7xl mx-auto py-16 px-4">
         <div className="text-center mb-12">
@@ -67,9 +67,9 @@ export default function OfflineBatches() {
         <BatchCards />
       </section>
       <LearningLanding />
-      <main className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
+      {/* <main className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
         <LearningStyle />
-      </main>
+      </main> */}
       <div>
         <CourseHero />
       </div>

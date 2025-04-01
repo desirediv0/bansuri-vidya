@@ -108,7 +108,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     verificationTokenExpiry: new Date(Date.now() + TOKEN_EXPIRY),
   });
 
-  await sendVerificationEmail(newUser, verificationToken);
+  // await sendVerificationEmail(newUser, verificationToken);
 
   return res.status(201).json(
     new ApiResponsive(

@@ -47,7 +47,7 @@ export function HeroSection({
     <div
       className={cn(
         "relative overflow-hidden w-full",
-        variant === "home" ? "lg:min-h-screen" : "h-[400px] md:h-[500px]",
+        variant === "home" ? "lg:min-h-screen" : "h-[400px] md:h-[600px]",
         className
       )}
       style={{ backgroundColor }}
@@ -57,9 +57,11 @@ export function HeroSection({
           <Image
             src={backgroundImage}
             alt="Background"
-            layout="fill"
-            objectFit="cover"
-            className="opacity-60"
+            width="1200"
+            height="900"
+            // layout="fill"
+            // objectFit="cover"
+            className="opacity-60 w-full"
             priority
           />
         </div>

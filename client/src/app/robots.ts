@@ -18,6 +18,6 @@ export default function robots(): MetadataRoute.Robots {
                 '/_next/'
             ]
         },
-        sitemap: 'http://localhost:3000/sitemap.xml',
+        sitemap: 'https://bansurividya.com/sitemap.xml',
     }
 }

@@ -4,6 +4,7 @@ import React from "react";
 import Header from "../_components/Header/Header";
 import Footer from "../_components/Footer";
 import { usePathname } from "next/navigation";
+import WhatsappFixdes from "../_components/WhatsappFixdes";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -29,6 +30,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {shouldShowHeader && <Header />}
       {children}
       {shouldShowFooter && <Footer />}
+      <WhatsappFixdes/>
     </div>
   );
 };

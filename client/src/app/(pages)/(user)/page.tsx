@@ -52,9 +52,9 @@ export default function Home() {
           </>
         }
         stats={[
-          { number: "260+", label: "Tutors", endValue: 260 },
-          { number: "9000+", label: "Students", endValue: 9000 },
-          { number: "500+", label: "Courses", endValue: 500 }
+          { number: "18+", label: "Years of Experience", endValue: 18 },
+          { number: "3000+", label: "Students", endValue: 3000 },
+          { number: "240+", label: "Google Reviews", endValue: 240 }
         ]}
       />
       <VideoDialog

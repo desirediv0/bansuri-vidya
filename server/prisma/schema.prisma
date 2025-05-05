@@ -377,6 +377,7 @@ model BillingDetails {
   state         String
   country       String
   zipCode       String
+  mobileNumber  String?
   paymentStatus Boolean                 @default(false)
   saveAddress   Boolean                 @default(false)
   userId        String

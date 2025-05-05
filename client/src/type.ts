@@ -326,6 +326,7 @@ export interface BillingDetails {
   state: string;
   country: string;
   zipCode: string;
+  mobileNumber?: string;
   saveAddress?: boolean;
 }
 

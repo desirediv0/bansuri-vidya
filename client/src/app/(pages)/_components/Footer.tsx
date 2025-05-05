@@ -22,7 +22,7 @@ const navLinks = [
 const popularCourses = [
   { name: "Bansuri Basics", href: "/courses/introduction-to-bansuri-basics" },
   { name: "Bansuri Beginners", href: "/courses/bansuri-swara-a-beginners-journey" },
-  { name: "Bansuri Intermediate", href: "/courses/bansuri-tarang-intermediate-course" },
+  { name: "Bansuri Intermidiate", href: "/courses/bansuri-tarang-intermediate-course" },
 ];
 const usefullLinks = [
   { name: "Home", href: "/" },

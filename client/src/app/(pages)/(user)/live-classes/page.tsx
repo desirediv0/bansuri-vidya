@@ -1,34 +1,75 @@
 "use client";
-import { ThumbsUp, Youtube } from "lucide-react";
+import { ThumbsUp, Youtube, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import CustomButton from "../../_components/CustomButton";
-import Link from "next/link";
-import LearningLanding from "../../_components/LearningLanding";
-import CourseHero from "../../_components/CourseHero";
-import TestimonialsSection from "../../_components/testimonial/testimonial-section";
-import TablaTanpura from "../../_components/TablaTanpura";
-import LearningStyle from "../../_components/courses/learningStyle";
 import { HeroSection } from "../../_components/HeroSectionProps";
 import VideoDialog from "../../_components/VideoDialog";
-import { useState } from "react";
 import { scrollToSection } from "../../_components/smoothScroll";
-import BatchCards from "./BatchCards";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/helper/AuthContext";
+import ClassCard from "./components/ClassCard";
 
 export default function LiveClasses() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      setLoading(true);
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/classes?includeAll=true`;
+
+      console.log("Fetching classes from:", apiUrl);
+      const response = await axios.get(apiUrl);
+
+      const classesData = response.data.data;
+      console.log(`Received ${classesData.length} classes`);
+
+      // Validate that each class has either id or slug for navigation
+      const validatedClasses = classesData.map((classItem: any) => {
+        if (!classItem.id && !classItem.slug) {
+          console.warn("Class missing both ID and slug:", classItem.title);
+        }
+        return classItem;
+      });
+
+      setClasses(validatedClasses);
+    } catch (error: any) {
+      console.error("Error fetching live classes:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to load live classes. Please try again.";
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <>
+    <div>
       <HeroSection
         title="Live Classes"
         description="Embark on your journey to flute mastery with our pre-recorded courses, interactive live classes, and immersive offline batches designed to suit every learner's needs."
         variant="page"
-        backgroundImage="/live-course.png"
         buttons={
           <>
             <CustomButton
               primaryText="Get Started"
               secondaryText="Learn More"
               icon={<ThumbsUp size={20} />}
-              onClick={() => scrollToSection("courses-section")}
+              onClick={() => scrollToSection("classes-section")}
               className="!px-6 py-3 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white/10 transition-colors w-[200px]"
             />
             <button
@@ -49,31 +90,61 @@ export default function LiveClasses() {
         stats={[
           { number: "260+", label: "Tutors", endValue: 260 },
           { number: "9000+", label: "Students", endValue: 9000 },
-          { number: "500+", label: "Courses", endValue: 500 }
+          { number: "500+", label: "Courses", endValue: 500 },
         ]}
       />
       <VideoDialog
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://www.youtube.com/watch?v=yRhTDpSSk6Y"
+        videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       />
-      <section id="courses-section" className="max-w-7xl mx-auto py-16 px-4">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Available Batches</h2>
-                <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                  Choose from our carefully designed batch programs tailored for different skill levels and flute types.
-                </p>
-                <div className="w-24 h-1 bg-[#ba1c33] mx-auto mt-6"></div>
+
+      <div className="bg-gradient-to-b from-[#F8F9FA] to-[#F3F8F8] py-16">
+        <div id="classes-section" className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4 text-gray-800 relative inline-block">
+              Live Classes
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 bg-primary rounded-full w-4/5" />
+            </h1>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Join our expert instructors for live interactive sessions designed
+              to enhance your flute playing skills. Reserve your spot today!
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center min-h-[60vh]">
+              <div className="animate-spin">
+                <Loader2 className="h-12 w-12 text-primary" />
               </div>
-              <BatchCards />
-            </section>
-      <LearningLanding />
-      {/* <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
-        <LearningStyle />
-      </main> */}
-      <CourseHero />
-      <TestimonialsSection />
-      <TablaTanpura />
-    </>
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="p-10 max-w-2xl mx-auto text-center">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800">
+                No Classes Available
+              </h2>
+              <p className="mb-2 text-gray-600">
+                There are no upcoming live classes at the moment.
+              </p>
+              <p className="text-gray-500">
+                Please check back soon as we regularly update our schedule with
+                new classes.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {classes.map((classItem, idx) => (
+                <div key={idx} className="mb-6">
+                  <ClassCard
+                    classData={classItem}
+                    isAuthenticated={isAuthenticated}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

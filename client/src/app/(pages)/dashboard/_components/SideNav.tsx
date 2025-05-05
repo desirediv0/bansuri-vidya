@@ -22,6 +22,7 @@ import {
   Award,
   Folder,
   KeyRound,
+  Video,
   // Eye
 } from "lucide-react";
 import { NavItem } from "@/type";
@@ -31,11 +32,6 @@ const navItems: NavItem[] = [
     title: "My Courses",
     href: "/dashboard",
     icon: BookOpen,
-  },
-  {
-    title: "New Course",
-    href: "/dashboard/create-course",
-    icon: FilePlus,
   },
   {
     title: "Course Access",
@@ -61,6 +57,11 @@ const navItems: NavItem[] = [
     title: "Reviews",
     href: "/dashboard/reviews",
     icon: MessageSquare,
+  },
+  {
+    title: "New Course",
+    href: "/dashboard/create-course",
+    icon: FilePlus,
   },
   {
     title: "Saved Drafts",
@@ -90,13 +91,18 @@ const navItems: NavItem[] = [
   {
     title: "Certificates",
     href: "/dashboard/certificates",
-    icon: Award
+    icon: Award,
+  },
+  {
+    title: "Live Classes",
+    href: "/dashboard/zoom",
+    icon: Video,
   },
   {
     title: "Contact Messages",
     href: "/dashboard/contacts",
     icon: MessageSquare,
-  }
+  },
 ];
 
 export function Sidenav() {
@@ -115,7 +121,10 @@ export function Sidenav() {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-56 p-0 bg-gradient-to-b from-red-50 to-white">
+        <SheetContent
+          side="left"
+          className="w-56 p-0 bg-gradient-to-b from-red-50 to-white"
+        >
           <MobileNav />
         </SheetContent>
       </Sheet>
@@ -157,12 +166,14 @@ function SidenavItems() {
                   : "text-gray-600 hover:bg-red-100/50 hover:text-red-600 hover:shadow-sm"
               )}
             >
-              <item.icon className={cn(
-                "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
-                pathname === item.href
-                  ? "text-white"
-                  : "text-gray-400 group-hover:text-red-500"
-              )} />
+              <item.icon
+                className={cn(
+                  "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
+                  pathname === item.href
+                    ? "text-white"
+                    : "text-gray-400 group-hover:text-red-500"
+                )}
+              />
               <span>{item.title}</span>
             </span>
           </Link>
@@ -204,5 +215,7 @@ function MobileNav() {
 }
 
 function Separator() {
-  return <div className="h-px bg-gradient-to-r from-red-100/50 via-red-200/50 to-red-100/50 my-4" />;
+  return (
+    <div className="h-px bg-gradient-to-r from-red-100/50 via-red-200/50 to-red-100/50 my-4" />
+  );
 }

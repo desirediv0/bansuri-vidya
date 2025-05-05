@@ -1,6 +1,6 @@
-
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import s3client from "./s3client.js";
+
 export const deleteFromS3 = async (fileUrl) => {
     try {
         let Key;
@@ -21,6 +21,8 @@ export const deleteFromS3 = async (fileUrl) => {
                 Key,
             })
         );
+
+        console.log(`Successfully deleted file: ${Key}`);
     } catch (error) {
         console.error('S3 deletion error:', error);
         throw error;

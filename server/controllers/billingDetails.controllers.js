@@ -14,7 +14,6 @@ export const createBillingDetails = asyncHandler(async (req, res) => {
     zipCode,
     courseIds,
     saveAddress,
-    mobileNumber,
   } = req.body;
 
   const userId = req.user.id;
@@ -33,7 +32,6 @@ export const createBillingDetails = asyncHandler(async (req, res) => {
       state,
       country,
       zipCode,
-      mobileNumber,
       saveAddress: Boolean(saveAddress),
       user: {
         connect: { id: userId },
@@ -84,9 +82,8 @@ export const getSavedAddressesByUser = asyncHandler(async (req, res) => {
       state: true,
       country: true,
       zipCode: true,
-      mobileNumber: true,
     },
-    distinct: ["address", "city", "state", "country", "zipCode", "mobileNumber"],
+    distinct: ["address", "city", "state", "country", "zipCode"],
     orderBy: {
       createdAt: "desc",
     },
@@ -129,7 +126,6 @@ export const updateBillingDetails = asyncHandler(async (req, res) => {
     country,
     zipCode,
     paymentStatus,
-    mobileNumber,
   } = req.body;
 
   const billingDetails = await prisma.billingDetails.update({
@@ -143,7 +139,6 @@ export const updateBillingDetails = asyncHandler(async (req, res) => {
       country,
       zipCode,
       paymentStatus,
-      mobileNumber,
     },
   });
 

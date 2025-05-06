@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,6 @@ import {
   Puzzle,
   School,
   ShoppingBasket,
-  // Wallet,
   BookOpen,
   FilePlus,
   FileText,
@@ -23,9 +22,12 @@ import {
   Folder,
   KeyRound,
   Video,
-  // Eye
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { NavItem } from "@/type";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const navItems: NavItem[] = [
   {
@@ -48,11 +50,6 @@ const navItems: NavItem[] = [
     href: "/dashboard/students",
     icon: School,
   },
-  // {
-  //   title: "Course Access",
-  //   href: "/dashboard/visibility",
-  //   icon: Eye,
-  // },
   {
     title: "Reviews",
     href: "/dashboard/reviews",
@@ -83,11 +80,6 @@ const navItems: NavItem[] = [
     href: "/dashboard/purchase",
     icon: ShoppingBasket,
   },
-  // {
-  //   title: "Revenue",
-  //   href: "/dashboard/fees",
-  //   icon: Wallet,
-  // },
   {
     title: "Certificates",
     href: "/dashboard/certificates",
@@ -104,6 +96,31 @@ const navItems: NavItem[] = [
     icon: MessageSquare,
   },
 ];
+
+// Course links for dropdown
+const courseLinks = [
+  { name: "Online Courses", href: "/online-courses" },
+  { name: "Live Classes", href: "/live-classes" },
+  { name: "Offline Batches", href: "/offline-batches" },
+];
+
+// Logout handler function
+const handleLogout = async () => {
+  try {
+    const accessToken = Cookies.get("accessToken");
+    if (!accessToken) return;
+
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/user/logout`,
+      {},
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    Cookies.remove("accessToken");
+    window.location.href = "/auth";
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+};
 
 export function Sidenav() {
   const pathname = usePathname();
@@ -152,6 +169,7 @@ export function Sidenav() {
 
 function SidenavItems() {
   const pathname = usePathname();
+  const [isCoursesDropdownOpen, setIsCoursesDropdownOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-full">
@@ -182,12 +200,43 @@ function SidenavItems() {
 
       <div className="mt-auto space-y-4">
         <Separator />
-        <Link href="/courses">
-          <span className="flex items-center rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-red-50 to-red-100/50 text-red-600 hover:from-red-100 hover:to-red-200/50 transition-colors shadow-sm">
-            <GraduationCap className="mr-3 h-5 w-5" />
-            <span>View All Courses</span>
-          </span>
-        </Link>
+
+        <div className="relative">
+          <button
+            onClick={() => setIsCoursesDropdownOpen(!isCoursesDropdownOpen)}
+            className="w-full flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-red-50 to-red-100/50 text-red-600 hover:from-red-100 hover:to-red-200/50 transition-colors shadow-sm"
+          >
+            <div className="flex items-center">
+              <GraduationCap className="mr-3 h-5 w-5" />
+              <span>View All Courses</span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 transform transition-transform duration-200 ${
+                isCoursesDropdownOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {isCoursesDropdownOpen && (
+            <div className="mt-2 rounded-xl overflow-hidden bg-white shadow-md border border-red-100/50">
+              {courseLinks.map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <div className="px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+                    {link.name}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-red-100 to-red-200/70 text-red-600 hover:from-red-200 hover:to-red-300/70 transition-colors shadow-sm"
+        >
+          <LogOut className="mr-3 h-5 w-5" />
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   );

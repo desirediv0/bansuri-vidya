@@ -66,10 +66,6 @@ export default function SessionLinks({
   // Use sessions if provided, otherwise use classes
   const allSessions = sessions || classes || [];
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleString();
-  };
-
   const handleActivateLinks = async (session: ZoomLiveClass) => {
     if (!session.isActive) {
       toast({
@@ -160,7 +156,7 @@ export default function SessionLinks({
               activeUpcomingClasses.map((session) => (
                 <TableRow key={session.id}>
                   <TableCell className="font-medium">{session.title}</TableCell>
-                  <TableCell>{formatDate(session.startTime)}</TableCell>
+                  <TableCell>{session.startTime}</TableCell>
                   <TableCell>
                     {session.zoomLink ? (
                       <Badge className="bg-green-100 text-green-800 hover:bg-green-100 flex items-center gap-1 w-fit">

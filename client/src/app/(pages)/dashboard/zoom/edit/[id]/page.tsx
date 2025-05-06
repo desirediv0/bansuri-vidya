@@ -11,7 +11,15 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/dropzone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Calendar, Clock, Info, Tag } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Calendar,
+  Clock,
+  Info,
+  Tag,
+  User,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface EditClassState {
@@ -33,6 +41,7 @@ interface EditClassState {
   hasModules: boolean;
   isFirstModuleFree: boolean;
   sessionDescription?: string | null;
+  author?: string | null;
   slug: string;
 }
 
@@ -57,12 +66,11 @@ export default function EditZoomClassPage() {
         const classData = response.data.data;
         setClassData({
           ...classData,
-          startTime: new Date(classData.startTime).toISOString().slice(0, 16),
-
           getPrice: classData.getPrice || false,
           recurringClass: classData.recurringClass || false,
           hasModules: classData.hasModules || false,
           isFirstModuleFree: classData.isFirstModuleFree || false,
+          author: classData.author || "",
         });
       } catch (error) {
         console.error("Error fetching class details:", error);
@@ -113,6 +121,7 @@ export default function EditZoomClassPage() {
           hasModules: false,
           isFirstModuleFree: false,
           sessionDescription: classData.sessionDescription,
+          author: classData.author,
           slug: classData.slug,
         },
         { withCredentials: true }
@@ -196,6 +205,22 @@ export default function EditZoomClassPage() {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="author">Meeting Author/Host</Label>
+                  <div className="relative">
+                    <User className="h-4 w-4 absolute left-3 top-3 text-gray-500" />
+                    <Input
+                      id="author"
+                      value={classData.author || ""}
+                      onChange={(e) =>
+                        setClassData({ ...classData, author: e.target.value })
+                      }
+                      placeholder="Enter meeting host name"
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
@@ -242,7 +267,7 @@ export default function EditZoomClassPage() {
                       <Clock className="h-4 w-4 absolute left-3 top-3 text-gray-500" />
                       <Input
                         id="startTime"
-                        type="datetime-local"
+                        type="text"
                         value={classData.startTime}
                         onChange={(e) =>
                           setClassData({
@@ -251,9 +276,14 @@ export default function EditZoomClassPage() {
                           })
                         }
                         className="pl-10"
+                        placeholder="e.g., June 15, 2024 15:00"
                         required
                       />
                     </div>
+                    <p className="text-xs text-gray-500">
+                      Enter date and time in any format (e.g., June 15, 2024
+                      3:00 PM)
+                    </p>
                   </div>
                 </div>
               </div>

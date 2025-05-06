@@ -18,6 +18,7 @@ import {
   Tag,
   IndianRupee,
   Clock,
+  User,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -34,6 +35,7 @@ interface FormData {
   currentOrientation: string;
   sessionDescription: string;
   isActive: boolean;
+  author: string;
 }
 
 export default function CreateZoomLiveClassPage() {
@@ -50,6 +52,7 @@ export default function CreateZoomLiveClassPage() {
     currentOrientation: "",
     sessionDescription: "",
     isActive: true,
+    author: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -115,6 +118,7 @@ export default function CreateZoomLiveClassPage() {
         hasModules: false,
         isFirstModuleFree: false,
         recurringClass: false,
+        author: formData.author || "",
       };
 
       // Create zoom live class
@@ -186,6 +190,23 @@ export default function CreateZoomLiveClassPage() {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="author" className="text-sm font-medium">
+                    Meeting Author/Host
+                  </Label>
+                  <div className="relative">
+                    <User className="h-4 w-4 absolute left-3 top-3 text-gray-500" />
+                    <Input
+                      id="author"
+                      name="author"
+                      value={formData.author}
+                      onChange={handleChange}
+                      placeholder="Enter meeting host name"
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="description" className="text-sm font-medium">
                     Class Description
@@ -238,13 +259,18 @@ export default function CreateZoomLiveClassPage() {
                       <Input
                         id="startTime"
                         name="startTime"
-                        type="datetime-local"
+                        type="text"
                         value={formData.startTime}
                         onChange={handleChange}
                         className="pl-10"
+                        placeholder="e.g., June 15, 2024 15:00"
                         required
                       />
                     </div>
+                    <p className="text-xs text-gray-500">
+                      Enter date and time in any format (e.g., June 15, 2024
+                      3:00 PM)
+                    </p>
                   </div>
                 </div>
               </div>

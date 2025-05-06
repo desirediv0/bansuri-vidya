@@ -42,27 +42,18 @@ const createZoomMeeting = async (meetingData) => {
   try {
     const token = await getZoomAccessToken();
 
-    // Convert string time to Date if needed
-    const startTime =
-      typeof meetingData.startTime === "string"
-        ? new Date(meetingData.startTime)
-        : meetingData.startTime;
+    // Just use the startTime as provided, without converting it - this allows for any string time format
+    const startTime = meetingData.startTime;
 
-    const endTime = meetingData.endTime
-      ? typeof meetingData.endTime === "string"
-        ? new Date(meetingData.endTime)
-        : meetingData.endTime
-      : new Date(startTime.getTime() + 60 * 60 * 1000); // Default 1 hour
-
-    // Calculate duration in minutes
-    const durationInMinutes = Math.ceil((endTime - startTime) / (60 * 1000));
+    // For duration, use a default 1 hour duration since we're accepting any string format
+    const durationInMinutes = 60; // Default 60 minutes duration
 
     const response = await axios.post(
       "https://api.zoom.us/v2/users/me/meetings",
       {
         topic: meetingData.title,
         type: 2, // Scheduled meeting
-        start_time: startTime.toISOString(),
+        start_time: startTime,
         duration: durationInMinutes,
         timezone: "Asia/Kolkata",
         settings: {
@@ -114,6 +105,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
     currentOrientation,
     sessionDescription,
     isActive,
+    author,
     slug,
   } = req.body;
 
@@ -143,49 +135,20 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       zoomPassword: zoomData.zoomPassword,
       thumbnailUrl,
       slug,
+      author: author || "",
+      registrationFee: parseFloat(registrationFee || 0),
+      courseFee: parseFloat(courseFee || 0),
+      courseFeeEnabled: courseFeeEnabled || false,
+      hasModules: hasModules || false,
+      isFirstModuleFree: isFirstModuleFree || false,
+      currentRaga: currentRaga || null,
+      currentOrientation: currentOrientation || null,
+      sessionDescription: sessionDescription || null,
+      isActive: isActive !== undefined ? isActive : true,
+      recurringClass: recurringClass || false,
     };
 
-    // Add optional fields if provided
-    if (registrationFee !== undefined) {
-      zoomLiveClassData.registrationFee = parseFloat(registrationFee || 0);
-    }
-
-    if (courseFee !== undefined) {
-      zoomLiveClassData.courseFee = parseFloat(courseFee || 0);
-    }
-
-    if (courseFeeEnabled !== undefined) {
-      zoomLiveClassData.courseFeeEnabled = courseFeeEnabled;
-    }
-
-    if (hasModules !== undefined) {
-      zoomLiveClassData.hasModules = hasModules || false;
-    }
-
-    if (isFirstModuleFree !== undefined) {
-      zoomLiveClassData.isFirstModuleFree = isFirstModuleFree || false;
-    }
-
-    if (currentRaga !== undefined) {
-      zoomLiveClassData.currentRaga = currentRaga || null;
-    }
-
-    if (currentOrientation !== undefined) {
-      zoomLiveClassData.currentOrientation = currentOrientation || null;
-    }
-
-    if (sessionDescription !== undefined) {
-      zoomLiveClassData.sessionDescription = sessionDescription || null;
-    }
-
-    if (isActive !== undefined) {
-      zoomLiveClassData.isActive = isActive;
-    }
-
-    if (recurringClass !== undefined) {
-      zoomLiveClassData.recurringClass = recurringClass;
-    }
-
+    // Add capacity if provided
     if (capacity !== undefined && capacity !== null) {
       zoomLiveClassData.capacity = parseInt(capacity);
     }
@@ -219,8 +182,8 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
             data: {
               title: module.title,
               description: module.description,
-              startTime: new Date(module.startTime),
-              endTime: new Date(module.endTime),
+              startTime: module.startTime,
+              endTime: module.endTime,
               zoomLink: moduleZoomData.zoomLink,
               zoomMeetingId: moduleZoomData.zoomMeetingId,
               zoomPassword: moduleZoomData.zoomPassword,
@@ -323,6 +286,7 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
     currentOrientation,
     sessionDescription,
     isActive,
+    author,
     slug,
   } = req.body;
 
@@ -367,6 +331,7 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
     updatedFields.sessionDescription = sessionDescription;
   if (isActive !== undefined) updatedFields.isActive = isActive;
   if (slug !== undefined) updatedFields.slug = slug;
+  if (author !== undefined) updatedFields.author = author;
 
   // Handle thumbnail update
   if (thumbnailUrl !== undefined) {
@@ -517,10 +482,12 @@ export const deleteZoomLiveClass = asyncHandler(async (req, res) => {
 
 // User: Get available Zoom live classes
 export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
+  const includeAll = req.query.includeAll === "true";
+
+  const whereClause = includeAll ? {} : { isActive: true };
+
   const zoomLiveClasses = await prisma.zoomLiveClass.findMany({
-    where: {
-      isActive: true,
-    },
+    where: whereClause,
     orderBy: {
       createdAt: "desc",
     },
@@ -576,28 +543,19 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
       }
     }
 
+    // Make sure teacherName is available even if author is empty
+    const teacherName =
+      classData.author || liveClass.createdBy?.name || "Instructor";
+
     // Return transformed class
     return {
       ...classData,
       isRegistered,
       hasAccessToLinks,
-      teacherName: liveClass.createdBy?.name || "Instructor",
-      formattedDate:
-        typeof liveClass.startTime === "string"
-          ? new Date(liveClass.startTime).toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
-          : "Date pending",
-      formattedTime:
-        typeof liveClass.startTime === "string"
-          ? new Date(liveClass.startTime).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "Time pending",
+      author: classData.author || "",
+      teacherName,
+      formattedDate: liveClass.startTime || "",
+      formattedTime: liveClass.startTime || "",
       subscriptions: undefined,
       createdBy: undefined,
     };
@@ -681,28 +639,19 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
     }
   }
 
+  // Make sure teacherName is available even if author is empty
+  const teacherName =
+    classData.author || zoomLiveClass.createdBy?.name || "Instructor";
+
   // Return transformed class with additional formatted data
   const transformedClass = {
     ...classData,
     isRegistered,
     hasAccessToLinks,
-    teacherName: zoomLiveClass.createdBy?.name || "Instructor",
-    formattedDate:
-      typeof zoomLiveClass.startTime === "string"
-        ? new Date(zoomLiveClass.startTime).toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : "Date pending",
-    formattedTime:
-      typeof zoomLiveClass.startTime === "string"
-        ? new Date(zoomLiveClass.startTime).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "Time pending",
+    author: classData.author || "",
+    teacherName,
+    formattedDate: zoomLiveClass.startTime || "",
+    formattedTime: zoomLiveClass.startTime || "",
     subscriptions: undefined,
     createdBy: undefined,
   };

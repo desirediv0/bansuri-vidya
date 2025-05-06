@@ -493,6 +493,7 @@ model ZoomLiveClass {
   zoomLink           String?
   zoomMeetingId      String?
   zoomPassword       String?
+  author             String?
   isActive           Boolean @default(true)
   price              Float   @default(0)
   getPrice           Boolean @default(false)
@@ -565,16 +566,16 @@ model ZoomSubscription {
 }
 
 model ZoomSessionModule {
-  id            String   @id @default(uuid())
+  id            String  @id @default(uuid())
   title         String
   description   String?
-  startTime     DateTime
-  endTime       DateTime
+  startTime     String
+  endTime       String?
   zoomLink      String?
   zoomMeetingId String?
   zoomPassword  String?
-  position      Int      @default(1)
-  isFree        Boolean  @default(false)
+  position      Int     @default(1)
+  isFree        Boolean @default(false)
 
   // Relations
   zoomLiveClass   ZoomLiveClass      @relation(fields: [zoomLiveClassId], references: [id], onDelete: Cascade)

@@ -48,9 +48,6 @@ export default function ClassCard({
     }
   };
 
-  // Define a default thumbnail image
-  const defaultThumbnail = "/images/default-class-thumbnail.jpg";
-
   return (
     <motion.div
       whileHover={{ y: -8 }}
@@ -62,7 +59,7 @@ export default function ClassCard({
       <Card className="w-full overflow-hidden bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 rounded-xl group h-full">
         <div className="relative h-56 w-full overflow-hidden">
           <Image
-            src={classData.thumbnailUrl || defaultThumbnail}
+            src={classData.thumbnailUrl}
             alt={classData.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

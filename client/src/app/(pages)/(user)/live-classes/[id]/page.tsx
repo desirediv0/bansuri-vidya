@@ -100,22 +100,6 @@ export default function ClassDetails() {
 
       const classData = response.data.data;
 
-      if (classData.startTime) {
-        const startDate = new Date(classData.startTime);
-        classData.formattedDate = startDate.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-
-        classData.formattedTime = startDate.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
-      }
-
       console.log(
         "Class details fetched, reg status:",
         classData.isRegistered,

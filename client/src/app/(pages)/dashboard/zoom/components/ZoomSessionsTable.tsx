@@ -380,7 +380,7 @@ export default function ZoomSessionsTable({
                     </div>
                   )}
                 </TableCell>
-                <TableCell>{formatDate(liveClass.startTime)}</TableCell>
+                <TableCell>{liveClass.startTime}</TableCell>
                 <TableCell>₹{liveClass.registrationFee}</TableCell>
                 <TableCell>₹{liveClass.courseFee}</TableCell>
                 <TableCell>
@@ -469,7 +469,7 @@ export default function ZoomSessionsTable({
                                 Position: {module.position}
                               </div>
                               <div className="text-xs text-gray-500">
-                                Start: {formatDate(module.startTime)}
+                                Start: {module.startTime}
                               </div>
                             </div>
                           ))}

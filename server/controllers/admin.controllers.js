@@ -85,6 +85,13 @@ export const assignCourseToUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Course not found");
   }
 
+  // Calculate expiry date if course has validity days
+  let expiryDate = null;
+  if (course.validityDays > 0) {
+    expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + course.validityDays);
+  }
+
   // Begin transaction
   await prisma.$transaction(async (tx) => {
     // If course is paid, create a purchase record
@@ -95,6 +102,7 @@ export const assignCourseToUser = asyncHandler(async (req, res) => {
           courseId,
           purchasePrice: course.salePrice || course.price,
           discountPrice: course.salePrice ? course.price - course.salePrice : 0,
+          expiryDate, // Add expiry date
         },
       });
     }
@@ -104,6 +112,7 @@ export const assignCourseToUser = asyncHandler(async (req, res) => {
       data: {
         userId,
         courseId,
+        expiryDate, // Add expiry date
       },
     });
   });
@@ -135,6 +144,13 @@ export const assignBulkCoursesToUsers = asyncHandler(async (req, res) => {
     // Begin transaction for each user
     await prisma.$transaction(async (tx) => {
       for (const course of courses) {
+        // Calculate expiry date if course has validity days
+        let expiryDate = null;
+        if (course.validityDays > 0) {
+          expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + course.validityDays);
+        }
+
         // Check if enrollment already exists
         const existingEnrollment = await tx.enrollment.findFirst({
           where: {
@@ -154,6 +170,7 @@ export const assignBulkCoursesToUsers = asyncHandler(async (req, res) => {
                 discountPrice: course.salePrice
                   ? course.price - course.salePrice
                   : 0,
+                expiryDate, // Add expiry date
               },
             });
           }
@@ -163,6 +180,7 @@ export const assignBulkCoursesToUsers = asyncHandler(async (req, res) => {
             data: {
               userId,
               courseId: course.id,
+              expiryDate, // Add expiry date
             },
           });
         }

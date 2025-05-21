@@ -27,11 +27,59 @@ export const createPurchase = asyncHandler(async (req, res) => {
   });
 
   if (existingPurchase) {
+    // If the purchase exists but has expired, update it with a new expiry date
+    if (
+      existingPurchase.expiryDate &&
+      new Date() > new Date(existingPurchase.expiryDate)
+    ) {
+      let newExpiryDate = null;
+      if (course.validityDays > 0) {
+        newExpiryDate = new Date();
+        newExpiryDate.setDate(newExpiryDate.getDate() + course.validityDays);
+      }
+
+      const updatedPurchase = await prisma.purchase.update({
+        where: {
+          id: existingPurchase.id,
+        },
+        data: {
+          expiryDate: newExpiryDate,
+          purchasePrice,
+          discountPrice,
+          couponCode,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Also update enrollment if it exists
+      await prisma.enrollment.updateMany({
+        where: {
+          userId,
+          courseId,
+        },
+        data: {
+          expiryDate: newExpiryDate,
+          updatedAt: new Date(),
+        },
+      });
+
+      return res
+        .status(200)
+        .json(new ApiResponsive(200, "Course access renewed", updatedPurchase));
+    }
+
     return res
       .status(200)
       .json(
         new ApiResponsive(200, "Course already purchased", existingPurchase)
       );
+  }
+
+  // Calculate expiry date if course has validity days
+  let expiryDate = null;
+  if (course.validityDays > 0) {
+    expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + course.validityDays);
   }
 
   // Create new purchase
@@ -42,6 +90,26 @@ export const createPurchase = asyncHandler(async (req, res) => {
       purchasePrice,
       discountPrice,
       couponCode,
+      expiryDate, // Add expiry date
+    },
+  });
+
+  // Create or update enrollment with the same expiry date
+  await prisma.enrollment.upsert({
+    where: {
+      userId_courseId: {
+        userId,
+        courseId,
+      },
+    },
+    create: {
+      userId,
+      courseId,
+      expiryDate,
+    },
+    update: {
+      expiryDate,
+      updatedAt: new Date(),
     },
   });
 
@@ -72,6 +140,17 @@ export const checkPurchase = asyncHandler(async (req, res) => {
       );
   }
 
+  // Check if purchase has expired
+  if (purchase.expiryDate && new Date() > new Date(purchase.expiryDate)) {
+    return res.status(200).json(
+      new ApiResponsive(200, "Course access has expired", {
+        purchased: false,
+        expired: true,
+        expiryDate: purchase.expiryDate,
+      })
+    );
+  }
+
   return res
     .status(200)
     .json(new ApiResponsive(200, "Course purchased", { purchased: true }));
@@ -89,16 +168,39 @@ export const getMyPurchases = asyncHandler(async (req, res) => {
       course: {
         include: {
           category: true,
-
-        }
+        },
       },
     },
+  });
+
+  // Add expiration information
+  const processedPurchases = purchases.map((purchase) => {
+    const isExpired =
+      purchase.expiryDate && new Date() > new Date(purchase.expiryDate);
+    const daysLeft = purchase.expiryDate
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(purchase.expiryDate) - new Date()) / (1000 * 60 * 60 * 24)
+          )
+        )
+      : null;
+
+    return {
+      ...purchase,
+      isExpired,
+      daysLeft,
+    };
   });
 
   return res
     .status(200)
     .json(
-      new ApiResponsive(200, "User purchases retrieved successfully", purchases)
+      new ApiResponsive(
+        200,
+        "User purchases retrieved successfully",
+        processedPurchases
+      )
     );
 });
 

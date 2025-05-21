@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import type { CourseDataNew, ChapterDataNew } from "@/type"
-import { toast } from "sonner"
-import LoadingSkeleton from "./LoadingSkeleton"
-import ErrorDisplay from "./ErrorDisplay"
-import VideoPlayer from "./VideoPlayer"
-import ChapterList from "./ChapterList"
-import ChapterDetails from "./ChapterDetails"
-import { Button } from "@/components/ui/button"
-import { ChevronRight, ChevronLeft } from "lucide-react"
-import { useAuth } from "@/helper/AuthContext"
-import PurchaseDialog from "../PurchaseDialog"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { useMediaQuery } from "./use-media"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import type { CourseDataNew, ChapterDataNew } from "@/type";
+import { toast } from "sonner";
+import LoadingSkeleton from "./LoadingSkeleton";
+import ErrorDisplay from "./ErrorDisplay";
+import VideoPlayer from "./VideoPlayer";
+import ChapterList from "./ChapterList";
+import ChapterDetails from "./ChapterDetails";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import { useAuth } from "@/helper/AuthContext";
+import PurchaseDialog from "../PurchaseDialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useMediaQuery } from "./use-media";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CourseLayoutProps {
-  initialCourseData: CourseDataNew
-  slug: string
+  initialCourseData: CourseDataNew;
+  slug: string;
 }
 
 interface CourseProgress {
@@ -29,20 +29,25 @@ interface CourseProgress {
   isCompleted: boolean;
 }
 
-const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) => {
-  const router = useRouter()
-  const { checkAuth } = useAuth()
-  const [course] = useState<CourseDataNew>(initialCourseData)
-  const [selectedChapter, setSelectedChapter] = useState<ChapterDataNew | null>(null)
-  const [videoUrl, setVideoUrl] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isPurchaseChecked, setIsPurchaseChecked] = useState(false)
-  const [isVideoLoading, setIsVideoLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isPurchased, setIsPurchased] = useState<boolean>(false)
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+const CourseLayout: React.FC<CourseLayoutProps> = ({
+  initialCourseData,
+  slug,
+}) => {
+  const router = useRouter();
+  const { checkAuth } = useAuth();
+  const [course] = useState<CourseDataNew>(initialCourseData);
+  const [selectedChapter, setSelectedChapter] = useState<ChapterDataNew | null>(
+    null
+  );
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPurchaseChecked, setIsPurchaseChecked] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPurchased, setIsPurchased] = useState<boolean>(false);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [chapterProgress, setChapterProgress] = useState<{
     isCompleted: boolean;
     watchedTime: number;
@@ -50,10 +55,13 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
   const [courseProgress, setCourseProgress] = useState<CourseProgress>({
     percentage: 0,
     completedChapters: [],
-    isCompleted: false
+    isCompleted: false,
   });
 
-  const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
+  const makeAuthenticatedRequest = async (
+    url: string,
+    options: RequestInit = {}
+  ) => {
     try {
       const response = await fetch(url, {
         ...options,
@@ -62,101 +70,134 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
           "Content-Type": "application/json",
         },
         credentials: "include",
-      })
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
-          router.push("/auth")
-          throw new Error("Not authenticated")
+          router.push("/auth");
+          throw new Error("Not authenticated");
         }
-        throw new Error("Request failed")
+        throw new Error("Request failed");
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || "Request failed")
+        throw new Error(data.message || "Request failed");
       }
-      return data
+      return data;
     } catch (error) {
-      console.error("Request error:", error)
-      throw error
+      console.error("Request error:", error);
+      throw error;
     }
-  }
+  };
 
   const canAccessCourse = () => {
     return !course.paid || isPurchased;
   };
 
   const checkPurchaseStatus = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       if (course.paid) {
-        const data = await makeAuthenticatedRequest(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${course.id}`)
+        const data = await makeAuthenticatedRequest(
+          `${process.env.NEXT_PUBLIC_API_URL}/purchase/${course.id}`
+        );
         const hasPurchased = data.message?.purchased;
-        setIsPurchased(hasPurchased)
-        setIsPurchaseChecked(true)
+
+        // Handle expired purchases
+        if (data.message?.expired) {
+          setIsPurchased(false);
+          setIsPurchaseChecked(true);
+          toast.error(
+            `Your access to this course has expired on ${new Date(data.message.expiryDate).toLocaleDateString()}.`
+          );
+          return false;
+        }
+
+        setIsPurchased(hasPurchased);
+        setIsPurchaseChecked(true);
         return hasPurchased;
       } else {
-        setIsPurchased(true)
-        setIsPurchaseChecked(true)
+        // Check enrollment for free courses
+        const enrollmentData = await makeAuthenticatedRequest(
+          `${process.env.NEXT_PUBLIC_API_URL}/enrollment/check/${course.id}`
+        );
+
+        // Handle expired enrollment
+        if (enrollmentData.data?.expired) {
+          setIsPurchased(false);
+          setIsPurchaseChecked(true);
+          toast.error(
+            `Your access to this course has expired on ${new Date(enrollmentData.data.expiryDate).toLocaleDateString()}.`
+          );
+          return false;
+        }
+
+        setIsPurchased(true);
+        setIsPurchaseChecked(true);
         return true;
       }
     } catch (err) {
-      console.error("Purchase check error:", err)
-      setError("Failed to check purchase status")
+      console.error("Purchase check error:", err);
+      setError("Failed to check purchase status");
       return false;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const isAuth = await checkAuth()
+        const isAuth = await checkAuth();
         if (!isAuth) {
-          router.push("/auth")
+          router.push("/auth");
           return;
         }
 
-        const hasPurchased = await checkPurchaseStatus()
+        const hasPurchased = await checkPurchaseStatus();
 
         if (course.paid && !hasPurchased) {
-          router.push(`/courses/${slug}`)
-          toast.error("Please purchase this course to access the content")
+          router.push(`/courses/${slug}`);
+          toast.error("Please purchase this course to access the content");
           return;
         }
 
         if (course?.sections?.length > 0) {
-          const firstChapter = course.sections.flatMap((s) => s.chapters || []).find((chapter) => chapter);
+          const firstChapter = course.sections
+            .flatMap((s) => s.chapters || [])
+            .find((chapter) => chapter);
           if (firstChapter) {
-            setSelectedChapter(firstChapter)
-            await loadVideoUrl(firstChapter.slug)
+            setSelectedChapter(firstChapter);
+            await loadVideoUrl(firstChapter.slug);
           }
         }
       } catch (error) {
         console.error("Auth error:", error);
-        setError("Authentication failed")
+        setError("Authentication failed");
       }
-    }
-    initializeAuth()
-  }, [checkAuth, slug])
+    };
+    initializeAuth();
+  }, [checkAuth, slug]);
 
   const loadVideoUrl = async (chapterSlug: string) => {
-    setIsVideoLoading(true)
+    setIsVideoLoading(true);
     try {
-      const data = await makeAuthenticatedRequest(`${process.env.NEXT_PUBLIC_API_URL}/chapter/url/${chapterSlug}`, {
-        method: "POST",
-      })
-      setVideoUrl(data.message)
+      const data = await makeAuthenticatedRequest(
+        `${process.env.NEXT_PUBLIC_API_URL}/chapter/url/${chapterSlug}`,
+        {
+          method: "POST",
+        }
+      );
+      setVideoUrl(data.message);
     } catch (err) {
-      console.error("Failed to fetch video URL:", err)
-      toast.error("Failed to load video. Please try again.")
+      console.error("Failed to fetch video URL:", err);
+      toast.error("Failed to load video. Please try again.");
     } finally {
-      setIsVideoLoading(false)
+      setIsVideoLoading(false);
     }
-  }
+  };
 
   const fetchCourseProgress = async () => {
     try {
@@ -168,14 +209,14 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
         completedChapters: Array.isArray(data.data.completedChapters)
           ? data.data.completedChapters
           : [],
-        isCompleted: data.data.percentage === 100
+        isCompleted: data.data.percentage === 100,
       });
     } catch (err) {
       console.error("Failed to fetch course progress:", err);
       setCourseProgress({
         percentage: 0,
         completedChapters: [],
-        isCompleted: false
+        isCompleted: false,
       });
     }
   };
@@ -218,20 +259,22 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
             method: "POST",
             body: JSON.stringify({
               chapterId: selectedChapter.id,
-              watchedTime: selectedChapter.duration || 100
+              watchedTime: selectedChapter.duration || 100,
             }),
           }
         );
 
         setChapterProgress({
           isCompleted: true,
-          watchedTime: selectedChapter.duration || 100
+          watchedTime: selectedChapter.duration || 100,
         });
 
         await fetchCourseProgress();
 
         if (courseProgress.percentage === 100) {
-          toast.success("🎉 Congratulations! You've completed the entire course!");
+          toast.success(
+            "🎉 Congratulations! You've completed the entire course!"
+          );
           router.push("/user-profile");
         } else {
           const nextChapter = getNextChapter();
@@ -278,7 +321,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
 
   const handleChapterClick = async (chapter: ChapterDataNew) => {
     if (!canAccessCourse() && !chapter.isFree) {
-      toast.error("Please purchase this course to access this chapter")
+      toast.error("Please purchase this course to access this chapter");
       return;
     }
 
@@ -301,11 +344,12 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
   };
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
-  }
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
-  if (isLoading) return <LoadingSkeleton />
-  if (error) return <ErrorDisplay error={error} onRetry={checkPurchaseStatus} />
+  if (isLoading) return <LoadingSkeleton />;
+  if (error)
+    return <ErrorDisplay error={error} onRetry={checkPurchaseStatus} />;
 
   const SidebarContent = (
     <ChapterList
@@ -320,15 +364,16 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
       completedChapters={courseProgress.completedChapters || []}
       courseProgress={courseProgress.percentage}
     />
-  )
+  );
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 font-plus-jakarta-sans mt-10 md:mt-12">
       <div className="flex flex-1 overflow-hidden">
         {isDesktop ? (
           <div
-            className={`${isSidebarOpen ? "w-[300px]" : "w-0"
-              } transition-all duration-300 ease-in-out overflow-hidden border-r shadow-xl bg-white`}
+            className={`${
+              isSidebarOpen ? "w-[300px]" : "w-0"
+            } transition-all duration-300 ease-in-out overflow-hidden border-r shadow-xl bg-white`}
           >
             <ScrollArea className="h-full">{SidebarContent}</ScrollArea>
           </div>
@@ -347,13 +392,14 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
                 videoUrl={videoUrl}
                 isLoading={isVideoLoading}
                 onProgress={handleVideoProgress}
-                onDuration={() => { }}
+                onDuration={() => {}}
                 onEnded={handleVideoEnded}
-                className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out ${isSidebarOpen ? "aspect-[21/9]" : "aspect-video"
-                  }`}
+                className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out ${
+                  isSidebarOpen ? "aspect-[21/9]" : "aspect-video"
+                }`}
                 initialProgress={chapterProgress?.watchedTime || 0}
                 isCompleted={chapterProgress?.isCompleted || false}
-                chapterId={selectedChapter?.id || ''}
+                chapterId={selectedChapter?.id || ""}
               />
               <div className="bg-white rounded-lg shadow-md p-6 relative z-10">
                 <ChapterDetails chapter={selectedChapter} />
@@ -382,16 +428,15 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({ initialCourseData, slug }) 
         courseSlug={course.slug || ""}
         coursePrice={course.price}
         onPurchaseSuccess={() => {
-          setIsPurchased(true)
-          setIsDialogOpen(false)
+          setIsPurchased(true);
+          setIsDialogOpen(false);
           if (selectedChapter) {
-            loadVideoUrl(selectedChapter.slug)
+            loadVideoUrl(selectedChapter.slug);
           }
         }}
       />
     </div>
-  )
-}
+  );
+};
 
-export default CourseLayout
-
+export default CourseLayout;

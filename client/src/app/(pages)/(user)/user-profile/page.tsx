@@ -186,7 +186,86 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
+
+  // Function to refresh data
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    try {
+      const [enrollmentsResponse, purchasesResponse] = await Promise.all([
+        axios.get<ApiResponseTh<Enrollment[]>>(
+          `${process.env.NEXT_PUBLIC_API_URL}/enrollment/user`
+        ),
+        axios.get<ApiResponseTh<Purchase[]>>(
+          `${process.env.NEXT_PUBLIC_API_URL}/purchase/my-course`
+        ),
+      ]);
+
+      if (enrollmentsResponse.data && enrollmentsResponse.data.success) {
+        // Process enrollment data to add validity information
+        const processedEnrollments = enrollmentsResponse.data.data.map(
+          (enrollment) => {
+            const expiryDate = enrollment.expiryDate;
+            const isExpired = expiryDate
+              ? new Date(expiryDate) < new Date()
+              : false;
+            const daysLeft = expiryDate
+              ? Math.max(
+                  0,
+                  Math.ceil(
+                    (new Date(expiryDate).getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )
+                )
+              : null;
+
+            return {
+              ...enrollment,
+              isExpired,
+              daysLeft,
+            };
+          }
+        );
+        setEnrollments(processedEnrollments);
+      }
+
+      if (purchasesResponse.data && purchasesResponse.data.success) {
+        // Process purchase data to add validity information
+        const purchases = Array.isArray(purchasesResponse.data.message)
+          ? purchasesResponse.data.message
+          : [];
+
+        const processedPurchases = purchases.map((purchase) => {
+          const expiryDate = purchase.expiryDate;
+          const isExpired = expiryDate
+            ? new Date(expiryDate) < new Date()
+            : false;
+          const daysLeft = expiryDate
+            ? Math.max(
+                0,
+                Math.ceil(
+                  (new Date(expiryDate).getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )
+              )
+            : null;
+
+          return {
+            ...purchase,
+            isExpired,
+            daysLeft,
+          };
+        });
+        setPurchases(processedPurchases);
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast.error("Failed to refresh data");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -215,15 +294,61 @@ const UserProfile = () => {
         }
 
         if (enrollmentsResponse.data && enrollmentsResponse.data.success) {
-          setEnrollments(enrollmentsResponse.data.data);
+          // Process enrollment data to add validity information
+          const processedEnrollments = enrollmentsResponse.data.data.map(
+            (enrollment) => {
+              const expiryDate = enrollment.expiryDate;
+              const isExpired = expiryDate
+                ? new Date(expiryDate) < new Date()
+                : false;
+              const daysLeft = expiryDate
+                ? Math.max(
+                    0,
+                    Math.ceil(
+                      (new Date(expiryDate).getTime() - new Date().getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  )
+                : null;
+
+              return {
+                ...enrollment,
+                isExpired,
+                daysLeft,
+              };
+            }
+          );
+          setEnrollments(processedEnrollments);
         }
 
         if (purchasesResponse.data && purchasesResponse.data.success) {
-          setPurchases(
-            Array.isArray(purchasesResponse.data.message)
-              ? purchasesResponse.data.message
-              : []
-          );
+          // Process purchase data to add validity information
+          const purchases = Array.isArray(purchasesResponse.data.message)
+            ? purchasesResponse.data.message
+            : [];
+
+          const processedPurchases = purchases.map((purchase) => {
+            const expiryDate = purchase.expiryDate;
+            const isExpired = expiryDate
+              ? new Date(expiryDate) < new Date()
+              : false;
+            const daysLeft = expiryDate
+              ? Math.max(
+                  0,
+                  Math.ceil(
+                    (new Date(expiryDate).getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )
+                )
+              : null;
+
+            return {
+              ...purchase,
+              isExpired,
+              daysLeft,
+            };
+          });
+          setPurchases(processedPurchases);
         }
       } catch (error) {
         setError("An error occurred while fetching data");
@@ -235,6 +360,21 @@ const UserProfile = () => {
 
     fetchUserData();
   }, [checkAuth, router]);
+
+  // Add an effect to refresh data when the component is focused
+  useEffect(() => {
+    // This will refresh data when the page is focused after navigating back from another page
+    const handleFocus = () => {
+      refreshData();
+    };
+
+    // Add event listeners
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState error={error} retry={() => router.refresh()} />;
@@ -353,10 +493,28 @@ const UserProfile = () => {
 
   const EnrolledCoursesContent = () => (
     <section>
-      <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 mb-6">
-        <BookOpenIcon className="h-5 w-5 text-red-600" />
-        My Enrolled Courses
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <BookOpenIcon className="h-5 w-5 text-red-600" />
+          My Enrolled Courses
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={refreshData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          {isRefreshing ? (
+            <>
+              <span className="animate-spin">⟳</span>
+              Refreshing...
+            </>
+          ) : (
+            <>⟳ Refresh</>
+          )}
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {enrollments.length === 0 ? (
           <Card className="col-span-full p-8 text-center border-dashed border-2 border-red-200">
@@ -376,6 +534,9 @@ const UserProfile = () => {
               hidePrice={true}
               key={enrollment.course.id}
               course={enrollment.course}
+              expiryDate={enrollment.expiryDate}
+              isExpired={enrollment.isExpired}
+              daysLeft={enrollment.daysLeft}
             />
           ))
         )}
@@ -385,10 +546,28 @@ const UserProfile = () => {
 
   const PurchasedCoursesContent = () => (
     <section>
-      <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 mb-6">
-        <ShoppingCartIcon className="h-5 w-5 text-red-600" />
-        Purchased Courses
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <ShoppingCartIcon className="h-5 w-5 text-red-600" />
+          Purchased Courses
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={refreshData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          {isRefreshing ? (
+            <>
+              <span className="animate-spin">⟳</span>
+              Refreshing...
+            </>
+          ) : (
+            <>⟳ Refresh</>
+          )}
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {purchases.length === 0 ? (
           <Card className="col-span-full p-8 text-center border-dashed border-2 border-red-200">
@@ -406,6 +585,9 @@ const UserProfile = () => {
               hidePrice={true}
               key={purchase.course.id}
               course={purchase.course}
+              expiryDate={purchase.expiryDate}
+              isExpired={purchase.isExpired}
+              daysLeft={purchase.daysLeft}
             />
           ))
         )}

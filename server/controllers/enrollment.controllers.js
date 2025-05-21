@@ -15,11 +15,19 @@ export const enrollCourse = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Course not found");
   }
 
+  // Calculate expiry date if course has validity days
+  let expiryDate = null;
+  if (course.validityDays > 0) {
+    expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + course.validityDays);
+  }
+
   try {
     const enrollment = await prisma.enrollment.create({
       data: {
         userId,
         courseId,
+        expiryDate, // Add the expiry date
       },
     });
 
@@ -60,6 +68,16 @@ export const checkEnrollment = asyncHandler(async (req, res) => {
       .json(new ApiResponsive(200, "Not enrolled in course"));
   }
 
+  // Check if enrollment has expired
+  if (enrollment.expiryDate && new Date() > new Date(enrollment.expiryDate)) {
+    return res.status(200).json(
+      new ApiResponsive(200, "Enrollment has expired", {
+        expired: true,
+        expiryDate: enrollment.expiryDate,
+      })
+    );
+  }
+
   return res
     .status(200)
     .json(new ApiResponsive(200, enrollment, "Enrolled in course"));
@@ -80,7 +98,28 @@ export const getUserEnrollments = asyncHandler(async (req, res) => {
     },
   });
 
+  // Filter out expired enrollments and add expiration info
+  const processedEnrollments = enrollments.map((enrollment) => {
+    const isExpired =
+      enrollment.expiryDate && new Date() > new Date(enrollment.expiryDate);
+    const daysLeft = enrollment.expiryDate
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(enrollment.expiryDate) - new Date()) /
+              (1000 * 60 * 60 * 24)
+          )
+        )
+      : null;
+
+    return {
+      ...enrollment,
+      isExpired,
+      daysLeft,
+    };
+  });
+
   return res
     .status(200)
-    .json(new ApiResponsive(200, enrollments, "User enrollments"));
+    .json(new ApiResponsive(200, processedEnrollments, "User enrollments"));
 });

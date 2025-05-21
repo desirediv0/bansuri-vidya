@@ -74,19 +74,20 @@ enum UserType {
 }
 
 model Course {
-  id          String  @id @default(uuid())
-  title       String
-  description String
-  thumbnail   String?
-  price       Float?
-  salePrice   Float?
-  slug        String  @unique
-  paid        Boolean @default(true)
-  videoUrl    String?
-  language    String?
-  subheading  String?
-  metaTitle   String?
-  metaDesc    String?
+  id           String  @id @default(uuid())
+  title        String
+  description  String
+  thumbnail    String?
+  price        Float?
+  salePrice    Float?
+  slug         String  @unique
+  paid         Boolean @default(true)
+  videoUrl     String?
+  language     String?
+  subheading   String?
+  metaTitle    String?
+  metaDesc     String?
+  validityDays Int     @default(0) // 0 means unlimited access, any positive number means access for that many days
 
   // Visibility control
   isPublic  Boolean            @default(true)
@@ -245,13 +246,14 @@ model Coupon {
 }
 
 model Enrollment {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id         String    @id @default(uuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  course     Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  expiryDate DateTime? // When access expires (null means unlimited access)
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -336,6 +338,7 @@ model Purchase {
   purchasePrice Float
   discountPrice Float?
   couponCode    String?
+  expiryDate    DateTime? // When access expires (null means unlimited access)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())

@@ -178,6 +178,9 @@ export interface Enrollment {
   progress: number;
   course: CourseDataNew;
   createdAt?: string;
+  expiryDate?: string | null;
+  isExpired?: boolean;
+  daysLeft?: number | null;
 }
 export interface CourseCardsProps {
   courses: CourseDataNew[];
@@ -308,6 +311,7 @@ export interface CourseData {
   userId: string;
   createdAt: string;
   updatedAt: string;
+  validityDays?: number;
   Chapter?: ChapterData[];
 }
 
@@ -477,6 +481,9 @@ export interface Purchase {
   createdAt: string;
   updatedAt: string;
   course: CourseDataNew;
+  expiryDate?: string | null;
+  isExpired?: boolean;
+  daysLeft?: number | null;
 }
 
 export interface ApiResponseTh<T> {
@@ -530,6 +537,7 @@ export interface CourseDataNew {
   slug?: string;
   createdAt?: string;
   duration?: number;
+  validityDays?: number;
   sections: Section[];
   categoryId: string;
   category: {

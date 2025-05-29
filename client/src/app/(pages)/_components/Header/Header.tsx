@@ -150,7 +150,10 @@ export default function Header() {
             <Link
               href="/"
               className="text-2xl font-bold"
-              onClick={() => handleMenuClick("/")}
+              onClick={() => {
+                handleMenuClick("/");
+                if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+              }}
             >
               <Image
                 src={
@@ -163,6 +166,7 @@ export default function Header() {
                 alt="logo"
                 width={isUserProfilePage ? 150 : 200}
                 height={isUserProfilePage ? 75 : 100}
+                priority
               />
             </Link>
             {isUserProfilePage ? (
@@ -196,7 +200,7 @@ export default function Header() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
+                          className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-[1000]"
                         >
                           <Link
                             href="/user-profile"
@@ -218,7 +222,55 @@ export default function Header() {
                       )}
                     </AnimatePresence>
                   </div>
-                  <Cart headerState="visible" />
+                  <div className="flex items-center lg:hidden gap-3">
+                    <Cart headerState="visible" />
+                    {isAuthenticated ? (
+                      <div className="relative">
+                        <button
+                          onClick={() =>
+                            setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                          }
+                          className="p-2 rounded-full text-gray-700 hover:bg-gray-100"
+                        >
+                          <User className="h-5 w-5" />
+                        </button>
+                        <AnimatePresence>
+                          {isProfileDropdownOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 10 }}
+                              className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-[1000]"
+                            >
+                              <Link
+                                href="/user-profile"
+                                className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                                onClick={() => setIsProfileDropdownOpen(false)}
+                              >
+                                Profile
+                              </Link>
+                              <button
+                                onClick={() => {
+                                  handleLogout();
+                                  setIsProfileDropdownOpen(false);
+                                }}
+                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50"
+                              >
+                                Logout
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ) : (
+                      <Link
+                        href="/auth"
+                        className="p-2 rounded-full text-gray-700 hover:bg-gray-100"
+                      >
+                        <LogIn className="h-5 w-5" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
@@ -304,16 +356,47 @@ export default function Header() {
                 <div className="flex items-center lg:hidden gap-3 justify-center">
                   <Cart headerState={headerState} />
                   {isAuthenticated ? (
-                    <Link
-                      href="/user-profile"
-                      className={`p-2 rounded-full ${
-                        headerState === "transparent"
-                          ? "text-white hover:bg-white/10"
-                          : "text-black hover:bg-gray-100"
-                      }`}
-                    >
-                      <User className="h-5 w-5" />
-                    </Link>
+                    <div className="relative">
+                      <button
+                        onClick={() =>
+                          setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                        }
+                        className={`p-2 rounded-full ${
+                          headerState === "transparent"
+                            ? "text-white hover:bg-white/10"
+                            : "text-black hover:bg-gray-100"
+                        }`}
+                      >
+                        <User className="h-5 w-5" />
+                      </button>
+                      <AnimatePresence>
+                        {isProfileDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
+                          >
+                            <Link
+                              href="/user-profile"
+                              className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                              onClick={() => setIsProfileDropdownOpen(false)}
+                            >
+                              Profile
+                            </Link>
+                            <button
+                              onClick={() => {
+                                handleLogout();
+                                setIsProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50"
+                            >
+                              Logout
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   ) : (
                     <Link
                       href="/auth"

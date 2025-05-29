@@ -26,7 +26,6 @@ export default function LiveClasses() {
       setLoading(true);
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/classes?includeAll=true`;
 
-      console.log("Fetching classes from:", apiUrl);
       const response = await axios.get(apiUrl);
 
       const classesData = response.data.data;

@@ -9,28 +9,26 @@ import WhatsappFixdes from "../_components/WhatsappFixdes";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
-  const hideHeaderPaths = [
-    "/auth",
-  ];
+  const hideHeaderPaths = ["/auth"];
 
-  const shouldShowHeader = !hideHeaderPaths.some(path =>
-    pathname === path || pathname.startsWith(`${path}/`)
+  const shouldShowHeader = !hideHeaderPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
   );
 
-  const hideFooterPaths = [
-    "/auth",
-  ];
+  const hideFooterPaths = ["/auth"];
 
-  const shouldShowFooter = !hideFooterPaths.some(path =>
-    pathname === path || pathname.startsWith(`${path}/`)
+  const shouldShowFooter = !hideFooterPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
   );
 
   return (
-    <div>
-      {shouldShowHeader && <Header />}
-      {children}
-      {shouldShowFooter && <Footer />}
-      <WhatsappFixdes/>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1">
+        {shouldShowHeader && <Header />}
+        <div className="pb-20 lg:pb-0">{children}</div>
+        {shouldShowFooter && <Footer />}
+        <WhatsappFixdes />
+      </div>
     </div>
   );
 };

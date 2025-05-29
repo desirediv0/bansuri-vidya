@@ -32,6 +32,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import ReviewSection from "../components/ReviewSection";
 
 export default function ClassDetails() {
   const params = useParams();
@@ -859,6 +860,15 @@ export default function ClassDetails() {
           onClose={() => setShowCourseAccessDialog(false)}
           onSuccess={handleCourseAccessComplete}
         />
+      )}
+
+      {classData && (
+        <div className="mt-8 lg:col-span-2">
+          <ReviewSection
+            zoomClassId={classData.id}
+            isRegistered={isRegistered || classData.isRegistered}
+          />
+        </div>
       )}
     </div>
   );

@@ -24,10 +24,20 @@ import {
   Video,
   LogOut,
   ChevronDown,
+  LucideIcon,
 } from "lucide-react";
-import { NavItem } from "@/type";
 import axios from "axios";
 import Cookies from "js-cookie";
+
+interface NavItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  children?: {
+    title: string;
+    href: string;
+  }[];
+}
 
 const navItems: NavItem[] = [
   {
@@ -54,6 +64,16 @@ const navItems: NavItem[] = [
     title: "Reviews",
     href: "/dashboard/reviews",
     icon: MessageSquare,
+    children: [
+      {
+        title: "Course Reviews",
+        href: "/dashboard/reviews",
+      },
+      {
+        title: "Live Class Reviews",
+        href: "/dashboard/live-reviews",
+      },
+    ],
   },
   {
     title: "New Course",
@@ -170,31 +190,90 @@ export function Sidenav() {
 function SidenavItems() {
   const pathname = usePathname();
   const [isCoursesDropdownOpen, setIsCoursesDropdownOpen] = useState(false);
+  const [openSubMenus, setOpenSubMenus] = useState<string[]>([]);
+
+  const toggleSubMenu = (href: string) => {
+    setOpenSubMenus((prev) =>
+      prev.includes(href)
+        ? prev.filter((item) => item !== href)
+        : [...prev, href]
+    );
+  };
 
   return (
     <div className="flex flex-col h-full">
       <div className="space-y-1">
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <span
-              className={cn(
-                "group flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
-                pathname === item.href
-                  ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
-                  : "text-gray-600 hover:bg-red-100/50 hover:text-red-600 hover:shadow-sm"
-              )}
-            >
-              <item.icon
-                className={cn(
-                  "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
-                  pathname === item.href
-                    ? "text-white"
-                    : "text-gray-400 group-hover:text-red-500"
+          <div key={item.href}>
+            {item.children ? (
+              <>
+                <button
+                  onClick={() => toggleSubMenu(item.href)}
+                  className={cn(
+                    "group flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out w-full",
+                    pathname.startsWith(item.href)
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                      : "text-gray-600 hover:bg-red-100/50 hover:text-red-600 hover:shadow-sm"
+                  )}
+                >
+                  <item.icon
+                    className={cn(
+                      "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
+                      pathname.startsWith(item.href)
+                        ? "text-white"
+                        : "text-gray-400 group-hover:text-red-500"
+                    )}
+                  />
+                  <span>{item.title}</span>
+                  <ChevronDown
+                    className={cn(
+                      "ml-auto h-4 w-4 transition-transform",
+                      openSubMenus.includes(item.href) && "rotate-180"
+                    )}
+                  />
+                </button>
+                {openSubMenus.includes(item.href) && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    {item.children.map((child) => (
+                      <Link key={child.href} href={child.href}>
+                        <span
+                          className={cn(
+                            "group flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
+                            pathname === child.href
+                              ? "bg-red-100 text-red-600"
+                              : "text-gray-600 hover:bg-red-50 hover:text-red-600"
+                          )}
+                        >
+                          {child.title}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 )}
-              />
-              <span>{item.title}</span>
-            </span>
-          </Link>
+              </>
+            ) : (
+              <Link href={item.href}>
+                <span
+                  className={cn(
+                    "group flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+                    pathname === item.href
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                      : "text-gray-600 hover:bg-red-100/50 hover:text-red-600 hover:shadow-sm"
+                  )}
+                >
+                  <item.icon
+                    className={cn(
+                      "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
+                      pathname === item.href
+                        ? "text-white"
+                        : "text-gray-400 group-hover:text-red-500"
+                    )}
+                  />
+                  <span>{item.title}</span>
+                </span>
+              </Link>
+            )}
+          </div>
         ))}
       </div>
 
@@ -243,6 +322,17 @@ function SidenavItems() {
 }
 
 function MobileNav() {
+  const pathname = usePathname();
+  const [openSubMenus, setOpenSubMenus] = useState<string[]>([]);
+
+  const toggleSubMenu = (href: string) => {
+    setOpenSubMenus((prev) =>
+      prev.includes(href)
+        ? prev.filter((item) => item !== href)
+        : [...prev, href]
+    );
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="px-6 py-8">
@@ -257,7 +347,80 @@ function MobileNav() {
             <p className="text-xs text-red-600/80">Manage your courses</p>
           </div>
         </div>
-        <SidenavItems />
+        <div className="space-y-1">
+          {navItems.map((item) => (
+            <div key={item.href}>
+              {item.children ? (
+                <>
+                  <button
+                    onClick={() => toggleSubMenu(item.href)}
+                    className={cn(
+                      "group flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out w-full",
+                      pathname.startsWith(item.href)
+                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                        : "text-gray-600 hover:bg-red-100/50 hover:text-red-600 hover:shadow-sm"
+                    )}
+                  >
+                    <item.icon
+                      className={cn(
+                        "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
+                        pathname.startsWith(item.href)
+                          ? "text-white"
+                          : "text-gray-400 group-hover:text-red-500"
+                      )}
+                    />
+                    <span>{item.title}</span>
+                    <ChevronDown
+                      className={cn(
+                        "ml-auto h-4 w-4 transition-transform",
+                        openSubMenus.includes(item.href) && "rotate-180"
+                      )}
+                    />
+                  </button>
+                  {openSubMenus.includes(item.href) && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {item.children.map((child) => (
+                        <Link key={child.href} href={child.href}>
+                          <span
+                            className={cn(
+                              "group flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
+                              pathname === child.href
+                                ? "bg-red-100 text-red-600"
+                                : "text-gray-600 hover:bg-red-50 hover:text-red-600"
+                            )}
+                          >
+                            {child.title}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link href={item.href}>
+                  <span
+                    className={cn(
+                      "group flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+                      pathname === item.href
+                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                        : "text-gray-600 hover:bg-red-100/50 hover:text-red-600 hover:shadow-sm"
+                    )}
+                  >
+                    <item.icon
+                      className={cn(
+                        "mr-3 h-4 w-4 transition-transform duration-200 ease-in-out group-hover:scale-110",
+                        pathname === item.href
+                          ? "text-white"
+                          : "text-gray-400 group-hover:text-red-500"
+                      )}
+                    />
+                    <span>{item.title}</span>
+                  </span>
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </ScrollArea>
   );

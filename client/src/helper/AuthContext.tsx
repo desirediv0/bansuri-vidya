@@ -15,26 +15,34 @@ interface AuthContextType {
   isAuthenticated: boolean;
   checkAuth: () => Promise<boolean>;
   logout: () => void;
+  user: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<AuthContextType["user"]>(null);
 
   const checkAuth = async (): Promise<boolean> => {
     try {
       const response = await checkAuthService();
       if (response && response.success) {
         setIsAuthenticated(true);
+        setUser(response?.user || null);
         return true;
       } else {
         setIsAuthenticated(false);
+        setUser(null);
         return false;
       }
     } catch (error) {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
+      setUser(null);
       return false;
     }
   };
@@ -42,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     Cookies.remove("accessToken");
     setIsAuthenticated(false);
+    setUser(null);
   };
 
   useEffect(() => {
@@ -60,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, checkAuth, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, checkAuth, logout, user }}>
       {children}
     </AuthContext.Provider>
   );

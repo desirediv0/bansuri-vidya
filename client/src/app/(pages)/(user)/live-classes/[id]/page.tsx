@@ -294,7 +294,7 @@ export default function ClassDetails() {
   const handlePurchase = () => {
     if (!isAuthenticated) {
       router.push(
-        `/auth?redirect=${encodeURIComponent(window.location.pathname)}`
+        `/auth?redirect=${encodeURIComponent(window.location.pathname)}&course-slug=${classData?.courseSlug || ""}&live-class-id=${id}`
       );
       return;
     }

@@ -12,9 +12,16 @@ import { useState } from "react";
 interface GoogleButtonProps {
   mode: "login" | "register";
   courseSlug?: string;
+  liveClassId?: string;
+  redirect?: string;
 }
 
-export default function GoogleButton({ mode, courseSlug }: GoogleButtonProps) {
+export default function GoogleButton({
+  mode,
+  courseSlug,
+  liveClassId,
+  redirect,
+}: GoogleButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,24 +48,27 @@ export default function GoogleButton({ mode, courseSlug }: GoogleButtonProps) {
           });
           toast.success("Google authentication successful!");
 
+          if (redirect) {
+            router.push(redirect);
+            return;
+          }
+
+          if (courseSlug) {
+            router.push(`/courses/${courseSlug}`);
+            return;
+          }
+
+          if (liveClassId) {
+            router.push(`/live-classes/${liveClassId}`);
+            return;
+          }
+
           if (user.role === "ADMIN") {
             router.push("/dashboard");
             return;
           }
-          if (courseSlug) {
-            try {
-              await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/cart/add/${courseSlug}`
-              );
-              router.push(`/buy?course-slug=${courseSlug}`);
-            } catch (error) {
-              if (axios.isAxiosError(error)) {
-                router.push(`/courses/${courseSlug}`);
-              }
-            }
-          } else {
-            router.push("/user-profile");
-          }
+
+          router.push("/user-profile");
         }
       } catch (error) {
         console.error("Google Auth Error:", error);

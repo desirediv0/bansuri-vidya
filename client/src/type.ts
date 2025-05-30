@@ -74,12 +74,16 @@ export interface RegisterFormProps {
   handleLoading: (isLoading: boolean) => void;
   handleRegistrationSuccess: () => void;
   courseSlug?: string;
+  liveClassId?: string;
+  redirect?: string;
 }
 
 export interface LoginFormProps {
   handleLoading: (isLoading: boolean) => void;
-  setAuthMode: React.Dispatch<React.SetStateAction<AuthMode>>;
+  setAuthMode: (mode: AuthMode) => void;
   courseSlug?: string;
+  liveClassId?: string;
+  redirect?: string;
 }
 
 export interface PasswordResetForm {

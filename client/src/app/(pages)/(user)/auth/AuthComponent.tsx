@@ -19,9 +19,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface AuthComponentProps {
   courseSlug?: string;
+  liveClassId?: string;
+  redirect?: string;
 }
 
-export default function AuthComponent({ courseSlug }: AuthComponentProps) {
+export default function AuthComponent({
+  courseSlug,
+  liveClassId,
+  redirect,
+}: AuthComponentProps) {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
@@ -29,19 +35,21 @@ export default function AuthComponent({ courseSlug }: AuthComponentProps) {
   const handleLoading = (isLoading: boolean) => setLoading(isLoading);
   const handleRegistrationSuccess = () => setRegistrationSuccess(true);
 
-  const getCardTitle = (mode: AuthMode): string => ({
-    login: "Welcome to Bansuri Vidya Mandir",
-    register: "Join Bansuri Vidya Mandir",
-    forgotPassword: "Reset Your Password",
-    resendVerification: "Verify Your Email",
-  }[mode] || "");
+  const getCardTitle = (mode: AuthMode): string =>
+    ({
+      login: "Welcome to Bansuri Vidya Mandir",
+      register: "Join Bansuri Vidya Mandir",
+      forgotPassword: "Reset Your Password",
+      resendVerification: "Verify Your Email",
+    })[mode] || "";
 
-  const getCardDescription = (mode: AuthMode): string => ({
-    login: "Access your musical journey",
-    register: "Begin your musical journey today",
-    forgotPassword: "We'll help you reset your password",
-    resendVerification: "Verify your email to continue",
-  }[mode] || "");
+  const getCardDescription = (mode: AuthMode): string =>
+    ({
+      login: "Access your musical journey",
+      register: "Begin your musical journey today",
+      forgotPassword: "We'll help you reset your password",
+      resendVerification: "Verify your email to continue",
+    })[mode] || "";
 
   return (
     <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm p-5">
@@ -77,6 +85,8 @@ export default function AuthComponent({ courseSlug }: AuthComponentProps) {
                     handleLoading={handleLoading}
                     setAuthMode={setAuthMode}
                     courseSlug={courseSlug}
+                    liveClassId={liveClassId}
+                    redirect={redirect}
                   />
                 )}
                 {authMode === "register" && (
@@ -84,6 +94,8 @@ export default function AuthComponent({ courseSlug }: AuthComponentProps) {
                     handleLoading={handleLoading}
                     handleRegistrationSuccess={handleRegistrationSuccess}
                     courseSlug={courseSlug}
+                    liveClassId={liveClassId}
+                    redirect={redirect}
                   />
                 )}
                 {authMode === "forgotPassword" && (

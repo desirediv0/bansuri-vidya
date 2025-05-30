@@ -13,6 +13,9 @@ import PasswordValidation from "@/components/ui/PasswordValidation";
 export default function RegisterForm({
   handleLoading,
   handleRegistrationSuccess,
+  courseSlug,
+  liveClassId,
+  redirect,
 }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState("");
@@ -156,7 +159,12 @@ export default function RegisterForm({
         </div>
       </div>
 
-      <GoogleButton mode="register" />
+      <GoogleButton
+        mode="register"
+        courseSlug={courseSlug}
+        liveClassId={liveClassId}
+        redirect={redirect}
+      />
     </motion.form>
   );
 }

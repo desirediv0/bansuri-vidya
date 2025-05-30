@@ -20,6 +20,8 @@ export default function LoginForm({
   handleLoading,
   setAuthMode,
   courseSlug,
+  liveClassId,
+  redirect,
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const {
@@ -52,25 +54,32 @@ export default function LoginForm({
 
         if (userResponse.data && userResponse.data.success) {
           const user = userResponse.data.data.user;
+
+          // First check if there's a redirect URL
+          if (redirect) {
+            router.push(redirect);
+            return;
+          }
+
+          // Then check for course or live class
+          if (courseSlug) {
+            router.push(`/courses/${courseSlug}`);
+            return;
+          }
+
+          if (liveClassId) {
+            router.push(`/live-classes/${liveClassId}`);
+            return;
+          }
+
+          // If no specific redirect, then check user role
           if (user.role === "ADMIN") {
             router.push("/dashboard");
             return;
           }
 
-          if (courseSlug) {
-            try {
-              await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/cart/add/${courseSlug}`
-              );
-              router.push(`/buy?course-slug=${courseSlug}`);
-            } catch (error) {
-              if (axios.isAxiosError(error)) {
-                router.push(`/courses/${courseSlug}`);
-              }
-            }
-          } else {
-            router.push("/user-profile");
-          }
+          // For regular users with no specific redirect, go to profile
+          router.push("/user-profile");
         }
       }
     } catch (error) {
@@ -172,8 +181,6 @@ export default function LoginForm({
             "Login"
           )}
         </Button>
-
-
       </form>
     </motion.div>
   );

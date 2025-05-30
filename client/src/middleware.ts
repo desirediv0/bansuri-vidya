@@ -9,7 +9,15 @@ interface UserDetails {
 }
 
 const ROUTES = {
-  public: ["/", "/about", "/contact", "/courses", "/blog","verify-email", "/reset-password"],
+  public: [
+    "/",
+    "/about",
+    "/contact",
+    "/courses",
+    "/blog",
+    "verify-email",
+    "/reset-password",
+  ],
   auth: ["/auth", "/login", "/register"],
   admin: ["/dashboard", "/admin"],
   user: ["/user-profile", "/my-courses", "/settings"],
@@ -21,11 +29,16 @@ export async function middleware(request: NextRequest) {
   let user: UserDetails | null = null;
 
   // Helper functions
-  const redirect = (path: string) => NextResponse.redirect(new URL(path, request.url));
-  const isPublicRoute = () => ROUTES.public.some(route => pathname.startsWith(route));
-  const isAuthRoute = () => ROUTES.auth.some(route => pathname.startsWith(route));
-  const isAdminRoute = () => ROUTES.admin.some(route => pathname.startsWith(route));
-  const isUserRoute = () => ROUTES.user.some(route => pathname.startsWith(route));
+  const redirect = (path: string) =>
+    NextResponse.redirect(new URL(path, request.url));
+  const isPublicRoute = () =>
+    ROUTES.public.some((route) => pathname.startsWith(route));
+  const isAuthRoute = () =>
+    ROUTES.auth.some((route) => pathname.startsWith(route));
+  const isAdminRoute = () =>
+    ROUTES.admin.some((route) => pathname.startsWith(route));
+  const isUserRoute = () =>
+    ROUTES.user.some((route) => pathname.startsWith(route));
 
   try {
     // Verify token and get user details
@@ -63,6 +76,15 @@ export async function middleware(request: NextRequest) {
 
     // Auth routes - redirect logged in users
     if (isAuthRoute()) {
+      const searchParams = request.nextUrl.searchParams;
+      const redirectUrl = searchParams.get("redirect");
+
+      // If there's a redirect URL, use it
+      if (redirectUrl) {
+        return redirect(redirectUrl);
+      }
+
+      // Otherwise use default redirects
       return redirect(user.role === "ADMIN" ? "/dashboard" : "/user-profile");
     }
 
@@ -86,7 +108,6 @@ export async function middleware(request: NextRequest) {
 
     // Default - allow authenticated users
     return NextResponse.next();
-
   } catch (error) {
     console.error("Middleware error:", error);
     // Clear invalid token and redirect to auth

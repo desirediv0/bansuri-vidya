@@ -7,9 +7,15 @@ import { motion } from "framer-motion";
 export default function AuthPage({
   searchParams,
 }: {
-  searchParams: { "course-slug": string };
+  searchParams: {
+    "course-slug"?: string;
+    "live-class-id"?: string;
+    redirect?: string;
+  };
 }) {
   const courseSlug = searchParams["course-slug"];
+  const liveClassId = searchParams["live-class-id"];
+  const redirect = searchParams.redirect;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white">
@@ -66,8 +72,6 @@ export default function AuthPage({
         </motion.div>
       </div>
 
-
-
       {/* Right Section */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-6 bg-gradient-to-tr from-red-50 to-red-100">
         <motion.div
@@ -77,7 +81,11 @@ export default function AuthPage({
           transition={{ duration: 0.5 }}
         >
           <div className="p-4 md:p-8">
-            <AuthComponent courseSlug={courseSlug} />
+            <AuthComponent
+              courseSlug={courseSlug}
+              liveClassId={liveClassId}
+              redirect={redirect}
+            />
           </div>
         </motion.div>
       </div>

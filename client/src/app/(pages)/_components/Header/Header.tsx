@@ -57,6 +57,10 @@ export default function Header() {
   const { headerState } = useScrollEffect();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const { isAuthenticated, user, isLoading } = useAuth();
+
+  // Only show admin dashboard link when not loading and user is admin
+  const showAdminDashboard = !isLoading && user?.role === "ADMIN";
 
   const isUserProfilePage =
     pathname === "/user-profile" ||
@@ -64,8 +68,6 @@ export default function Header() {
     (pathname.startsWith("/courses/") && pathname.split("/").length > 3) ||
     pathname === "/reset-password" ||
     pathname === "/verify-email";
-
-  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleResize = () => {
@@ -209,6 +211,15 @@ export default function Header() {
                           >
                             Profile
                           </Link>
+                          {showAdminDashboard && (
+                            <Link
+                              href="/dashboard"
+                              className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                              onClick={() => setIsProfileDropdownOpen(false)}
+                            >
+                              Dashboard
+                            </Link>
+                          )}
                           <button
                             onClick={() => {
                               handleLogout();
@@ -249,6 +260,17 @@ export default function Header() {
                               >
                                 Profile
                               </Link>
+                              {showAdminDashboard && (
+                                <Link
+                                  href="/dashboard"
+                                  className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                                  onClick={() =>
+                                    setIsProfileDropdownOpen(false)
+                                  }
+                                >
+                                  Dashboard
+                                </Link>
+                              )}
                               <button
                                 onClick={() => {
                                   handleLogout();
@@ -316,6 +338,17 @@ export default function Header() {
                               >
                                 Profile
                               </Link>
+                              {showAdminDashboard && (
+                                <Link
+                                  href="/dashboard"
+                                  className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                                  onClick={() =>
+                                    setIsProfileDropdownOpen(false)
+                                  }
+                                >
+                                  Dashboard
+                                </Link>
+                              )}
                               <button
                                 onClick={() => {
                                   handleLogout();
@@ -384,6 +417,16 @@ export default function Header() {
                             >
                               Profile
                             </Link>
+
+                            {user?.role === "ADMIN" && (
+                              <Link
+                                href="/dashboard"
+                                className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                                onClick={() => setIsProfileDropdownOpen(false)}
+                              >
+                                Dashboard
+                              </Link>
+                            )}
                             <button
                               onClick={() => {
                                 handleLogout();

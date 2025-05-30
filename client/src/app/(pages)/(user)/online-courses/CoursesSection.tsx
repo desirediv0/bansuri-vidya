@@ -8,7 +8,6 @@ import SkeletonCardGrid from "../../_components/SkeletonCardGrid";
 import { CourseDataNew } from "@/type";
 import CustomButton from "../../_components/CustomButton";
 import { ArrowRight } from "lucide-react";
-import EnhancedCourseCard from "../../_components/EnhancedCourseCard";
 
 export default function CoursesSection() {
   const searchParams = useSearchParams();
@@ -99,38 +98,12 @@ export default function CoursesSection() {
       {isLoading && <SkeletonCardGrid />}
 
       {!isLoading && courses.length > 0 && (
-        <div className="px-4 py-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {courses.map((course) => (
-              <EnhancedCourseCard key={course.id} course={course} />
-            ))}
-          </div>
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center mt-8">
-              <div className="join">
-                <button
-                  onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="btn btn-outline join-item"
-                >
-                  Previous
-                </button>
-                <div className="join-item px-4 py-2 bg-gray-100">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(currentPage + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="btn btn-outline join-item"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <CourseCards
+          courses={courses}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       )}
 
       {!isLoading && courses.length === 0 && (

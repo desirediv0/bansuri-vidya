@@ -3,11 +3,18 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useCustomDebounce } from "@/hooks/useCustomDebounce";
-import CourseCards from "../../_components/CourseCards";
 import SkeletonCardGrid from "../../_components/SkeletonCardGrid";
 import { CourseDataNew } from "@/type";
-import CustomButton from "../../_components/CustomButton";
-import { ArrowRight } from "lucide-react";
+import EnhancedCourseCard from "../../_components/EnhancedCourseCard";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function CoursesSection() {
   const searchParams = useSearchParams();
@@ -20,9 +27,6 @@ export default function CoursesSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("oldest");
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
-  );
 
   const debouncedSearch = useCustomDebounce(searchQuery, 500);
 
@@ -98,12 +102,59 @@ export default function CoursesSection() {
       {isLoading && <SkeletonCardGrid />}
 
       {!isLoading && courses.length > 0 && (
-        <CourseCards
-          courses={courses}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          setCurrentPage={setCurrentPage}
-        />
+        <div className="px-4 py-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {courses.map((course) => (
+              <EnhancedCourseCard key={course.id} course={course} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center mt-8">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() =>
+                        setCurrentPage(Math.max(currentPage - 1, 1))
+                      }
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => setCurrentPage(page)}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() =>
+                        setCurrentPage(Math.min(currentPage + 1, totalPages))
+                      }
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </div>
       )}
 
       {!isLoading && courses.length === 0 && (

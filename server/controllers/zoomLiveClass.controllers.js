@@ -4,6 +4,7 @@ import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import axios from "axios";
 import { deleteFromS3 } from "../utils/deleteFromS3.js";
+import { createSlug } from "../helper/Slug.js";
 
 // Function to get Zoom access token
 const getZoomAccessToken = async () => {
@@ -109,11 +110,32 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
     slug,
   } = req.body;
 
-  if (!title || !startTime || !thumbnailUrl || !slug) {
+  if (!title || !startTime || !thumbnailUrl) {
     throw new ApiError(400, "Please provide all required fields");
   }
 
   try {
+    // Format and validate slug
+    let formattedSlug;
+    if (slug) {
+      // Ensure proper slug formatting even for user-provided slugs
+      formattedSlug = createSlug(slug);
+    } else {
+      // Generate slug from title if not provided
+      formattedSlug = createSlug(title);
+    }
+
+    // Check if slug already exists
+    const existingClass = await prisma.zoomLiveClass.findUnique({
+      where: { slug: formattedSlug },
+    });
+
+    if (existingClass) {
+      // If slug exists, append a random string to make it unique
+      const randomStr = Math.random().toString(36).substring(2, 7);
+      formattedSlug = `${formattedSlug}-${randomStr}`;
+    }
+
     // Create Zoom meeting
     const zoomData = await createZoomMeeting({
       title,
@@ -134,7 +156,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       zoomMeetingId: zoomData.zoomMeetingId,
       zoomPassword: zoomData.zoomPassword,
       thumbnailUrl,
-      slug,
+      slug: formattedSlug,
       author: author || "",
       registrationFee: parseFloat(registrationFee || 0),
       courseFee: parseFloat(courseFee || 0),
@@ -330,8 +352,35 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
   if (sessionDescription !== undefined)
     updatedFields.sessionDescription = sessionDescription;
   if (isActive !== undefined) updatedFields.isActive = isActive;
-  if (slug !== undefined) updatedFields.slug = slug;
   if (author !== undefined) updatedFields.author = author;
+
+  // Handle slug update
+  if (slug !== undefined) {
+    // Always format the slug properly
+    const formattedSlug = createSlug(slug);
+    console.log("Processing slug update:", {
+      originalSlug: zoomLiveClass.slug,
+      providedSlug: slug,
+      formattedSlug: formattedSlug,
+    });
+
+    // Check if this slug already exists for a different class
+    if (formattedSlug !== zoomLiveClass.slug) {
+      const existingClass = await prisma.zoomLiveClass.findFirst({
+        where: {
+          slug: formattedSlug,
+          id: { not: id },
+        },
+      });
+
+      if (existingClass) {
+        throw new ApiError(400, "This slug is already in use by another class");
+      }
+    }
+
+    updatedFields.slug = formattedSlug;
+    console.log("Setting new slug:", formattedSlug);
+  }
 
   // Handle thumbnail update
   if (thumbnailUrl !== undefined) {

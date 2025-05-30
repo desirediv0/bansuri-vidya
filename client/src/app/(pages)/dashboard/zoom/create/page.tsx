@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { generateSlug } from "@/utils/slugUtils";
 
 interface FormData {
   title: string;
@@ -36,6 +37,7 @@ interface FormData {
   sessionDescription: string;
   isActive: boolean;
   author: string;
+  slug: string;
 }
 
 export default function CreateZoomLiveClassPage() {
@@ -53,15 +55,43 @@ export default function CreateZoomLiveClassPage() {
     sessionDescription: "",
     isActive: true,
     author: "",
+    slug: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const { toast } = useToast();
+
+  // Generate slug from title automatically
+  useEffect(() => {
+    if (formData.title && !slugManuallyEdited) {
+      const generatedSlug = generateSlug(formData.title);
+      setFormData((prev) => ({ ...prev, slug: generatedSlug }));
+    }
+  }, [formData.title, slugManuallyEdited]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Format slug field specifically
+    if (name === "slug") {
+      const formattedSlug = value
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "") // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/-+/g, "-"); // Replace multiple hyphens with a single hyphen
+
+      setFormData((prev) => ({ ...prev, [name]: formattedSlug }));
+      setSlugManuallyEdited(true);
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
+    // If user is manually editing the slug, track this
+    if (name === "slug") {
+      setSlugManuallyEdited(true);
+    }
   };
 
   const handleSwitchChange = (name: string, checked: boolean) => {
@@ -93,11 +123,8 @@ export default function CreateZoomLiveClassPage() {
 
     setIsLoading(true);
     try {
-      // Generate slug from title
-      const slug = formData.title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-");
+      // Use the slug directly if provided, otherwise generate from title
+      const slug = formData.slug || generateSlug(formData.title);
 
       // Prepare payload
       const payload: any = {
@@ -188,6 +215,26 @@ export default function CreateZoomLiveClassPage() {
                     className="w-full"
                     required
                   />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="slug" className="text-sm font-medium">
+                    URL Slug
+                  </Label>
+                  <Input
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleChange}
+                    placeholder="custom-url-path (leave empty to auto-generate from title)"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Custom URL identifier (e.g.,
+                    "intermediate-bansuri-class-june"). The slug will
+                    auto-update as you type the title unless you manually edit
+                    it.
+                  </p>
                 </div>
 
                 <div className="space-y-2">

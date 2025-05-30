@@ -536,6 +536,7 @@ export interface CourseDataNew {
   paid: boolean;
   slug?: string;
   createdAt?: string;
+  newSlug?: string;
   duration?: number;
   validityDays?: number;
   sections: Section[];

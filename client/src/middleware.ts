@@ -40,95 +40,81 @@ export async function middleware(request: NextRequest) {
   const isUserRoute = () =>
     ROUTES.user.some((route) => pathname.startsWith(route));
 
-  // Allow access to public routes without authentication
-  if (isPublicRoute()) {
-    return NextResponse.next();
-  }
+  try {
+    // Verify token and get user details
+    if (!accessToken) {
+      // If no token and trying to access protected routes
+      if (isAdminRoute() || isUserRoute()) {
+        return redirect("/auth");
+      }
+      // Allow access to public and auth routes
+      if (isPublicRoute() || isAuthRoute()) {
+        return NextResponse.next();
+      }
+      return redirect("/auth");
+    }
 
-  // Handle authentication
-  if (!accessToken) {
-    // If no token and trying to access protected routes
-    if (isAdminRoute() || isUserRoute()) {
+    // Parse and verify token
+    try {
+      user = jwtDecode<UserDetails>(accessToken);
+      if (!user || !user.id || !user.role) {
+        throw new Error("Invalid token");
+      }
+    } catch {
+      // Invalid token - clear it and redirect to auth
       const response = redirect("/auth");
       response.cookies.delete("accessToken");
       return response;
     }
-    // Allow access to auth routes
+
+    // Handle logout
+    if (pathname === "/logout") {
+      const response = redirect("/");
+      response.cookies.delete("accessToken");
+      return response;
+    }
+
+    // Auth routes - redirect logged in users
     if (isAuthRoute()) {
+      const searchParams = request.nextUrl.searchParams;
+      const redirectUrl = searchParams.get("redirect");
+
+      // If there's a redirect URL, use it
+      if (redirectUrl) {
+        return redirect(redirectUrl);
+      }
+
+      // Otherwise use default redirects
+      return redirect(user.role === "ADMIN" ? "/dashboard" : "/user-profile");
+    }
+
+    // Admin routes - strict admin check
+    if (isAdminRoute()) {
+      if (user.role !== "ADMIN") {
+        return redirect("/user-profile");
+      }
       return NextResponse.next();
     }
-    // Redirect to auth for any other route
+
+    // User routes - authenticated users only
+    if (isUserRoute()) {
+      return NextResponse.next();
+    }
+
+    // Public routes - allow all authenticated users
+    if (isPublicRoute()) {
+      return NextResponse.next();
+    }
+
+    // Default - allow authenticated users
+    return NextResponse.next();
+  } catch (error) {
+    console.error("Middleware error:", error);
+    // Clear invalid token and redirect to auth
     const response = redirect("/auth");
     response.cookies.delete("accessToken");
     return response;
   }
-
-  // Parse and verify token
-  try {
-    user = jwtDecode<UserDetails>(accessToken);
-    if (!user || !user.id || !user.role) {
-      const response = redirect("/auth");
-      response.cookies.delete("accessToken");
-      return response;
-    }
-  } catch {
-    // Invalid token - clear it and redirect to auth
-    const response = redirect("/auth");
-    response.cookies.delete("accessToken");
-    return response;
-  }
-
-  // Handle logout
-  if (pathname === "/logout") {
-    const response = redirect("/");
-    response.cookies.delete("accessToken");
-    return response;
-  }
-
-  // Auth routes - redirect logged in users
-  if (isAuthRoute()) {
-    const searchParams = request.nextUrl.searchParams;
-    const redirectUrl = searchParams.get("redirect");
-    const courseSlug = searchParams.get("course-slug");
-    const liveClassId = searchParams.get("live-class-id");
-
-    // If there's a redirect URL, use it
-    if (redirectUrl) {
-      return redirect(redirectUrl);
-    }
-
-    // If there's a course slug, redirect to course
-    if (courseSlug) {
-      return redirect(`/courses/${courseSlug}`);
-    }
-
-    // If there's a live class ID, redirect to live class
-    if (liveClassId) {
-      return redirect(`/live-classes/${liveClassId}`);
-    }
-
-    // Otherwise use default redirects based on role
-    if (user.role === "ADMIN") {
-      return redirect("/dashboard");
-    }
-    return redirect("/user-profile");
-  }
-
-  // Admin routes - strict admin check
-  if (isAdminRoute()) {
-    if (user.role !== "ADMIN") {
-      return redirect("/user-profile");
-    }
-    return NextResponse.next();
-  }
-
-  // User routes - authenticated users only
-  if (isUserRoute()) {
-    return NextResponse.next();
-  }
-
-  // Default - allow authenticated users
-  return NextResponse.next();
 }
 
 export const config = {

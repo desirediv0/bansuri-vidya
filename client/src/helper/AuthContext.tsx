@@ -12,6 +12,7 @@ import {
 import { checkAuthService } from "@/helper/checkAuthService";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -31,44 +32,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const hasCheckedAuth = useRef(false);
+  const authCheckInProgress = useRef(false);
+  const lastCheckTime = useRef(0);
+  const router = useRouter();
 
-  const checkAuth = useCallback(async (): Promise<boolean> => {
-    try {
-      const accessToken = Cookies.get("accessToken");
-      if (!accessToken) {
-        setIsAuthenticated(false);
-        setUser(null);
-        hasCheckedAuth.current = false;
-        return false;
-      }
-
-      const response = await checkAuthService();
-      if (response && response.success) {
-        setIsAuthenticated(true);
-        setUser(response?.user || null);
-        hasCheckedAuth.current = true;
-        return true;
-      } else {
-        setIsAuthenticated(false);
-        setUser(null);
-        hasCheckedAuth.current = false;
-        Cookies.remove("accessToken");
-        return false;
-      }
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-      setIsAuthenticated(false);
-      setUser(null);
-      hasCheckedAuth.current = false;
-      Cookies.remove("accessToken");
-      return false;
-    } finally {
-      setIsLoading(false);
+  const checkAuth = async (forceCheck = false): Promise<boolean> => {
+    // Prevent multiple simultaneous auth checks
+    if (authCheckInProgress.current) {
+      return isAuthenticated;
     }
-  }, []);
 
-  useEffect(() => {
+    // If we've checked recently (within 5 seconds) and not forcing a check, return current state
+    const now = Date.now();
+    if (!forceCheck && now - lastCheckTime.current < 5000) {
+      return isAuthenticated;
+    }
+    const checkAuth = useCallback(async (): Promise<boolean> => {
+      try {
+        const accessToken = Cookies.get("accessToken");
+        if (!accessToken) {
+          setIsAuthenticated(false);
+          setUser(null);
+          hasCheckedAuth.current = false;
+          return false;
+        }
+
+        authCheckInProgress.current = true;
+        setIsLoading(true);
+
+        try {
+          const accessToken = Cookies.get("accessToken");
+          if (!accessToken) {
+            setIsAuthenticated(false);
+            setUser(null);
+            return false;
+          }
+
+          const response = await checkAuthService();
+          if (response && response.success) {
+            setIsAuthenticated(true);
+            setUser(response?.user || null);
+            lastCheckTime.current = now;
+            return true;
+          } else {
+            setIsAuthenticated(false);
+            setUser(null);
+            Cookies.remove("accessToken");
+            hasCheckedAuth.current = false;
+            Cookies.remove("accessToken");
+            return false;
+          }
+        } catch (error) {
+          console.error("Error checking authentication:", error);
+          setIsAuthenticated(false);
+          setUser(null);
+          Cookies.remove("accessToken");
+          hasCheckedAuth.current = false;
+          Cookies.remove("accessToken");
+          return false;
+        } finally {
+          setIsLoading(false);
+          authCheckInProgress.current = false;
+        }
+      }, []);
+
+    // Initial auth check
+    useEffect(() => {
+      checkAuth(true);
+    }, []);
     if (!hasCheckedAuth.current) {
       checkAuth();
     }
@@ -78,14 +109,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.remove("accessToken");
     setIsAuthenticated(false);
     setUser(null);
+    router.push("/auth");
     hasCheckedAuth.current = false;
   };
 
+  // Setup axios interceptor
   useEffect(() => {
-    const interceptor = axios.interceptors.request.use((config) => {
-      config.withCredentials = true;
-      return config;
-    });
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        config.withCredentials = true;
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
 
     return () => {
       axios.interceptors.request.eject(interceptor);

@@ -43,7 +43,11 @@ export default function LoginForm({
       );
 
       const accessToken = result?.data?.data?.accessToken;
-      Cookies.set("accessToken", accessToken, { expires: 7 });
+      Cookies.set("accessToken", accessToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "lax",
+      });
       toast.success("Login successful!");
 
       const isAuthenticated = await checkAuth();
@@ -54,32 +58,26 @@ export default function LoginForm({
 
         if (userResponse.data && userResponse.data.success) {
           const user = userResponse.data.data.user;
+          let redirectPath = "/user-profile";
 
           // First check if there's a redirect URL
           if (redirect) {
-            router.push(redirect);
-            return;
+            redirectPath = redirect;
           }
-
           // Then check for course or live class
-          if (courseSlug) {
-            router.push(`/courses/${courseSlug}`);
-            return;
+          else if (courseSlug) {
+            redirectPath = `/courses/${courseSlug}`;
+          } else if (liveClassId) {
+            redirectPath = `/live-classes/${liveClassId}`;
           }
-
-          if (liveClassId) {
-            router.push(`/live-classes/${liveClassId}`);
-            return;
-          }
-
           // If no specific redirect, then check user role
-          if (user.role === "ADMIN") {
-            router.push("/dashboard");
-            return;
+          else if (user.role === "ADMIN") {
+            redirectPath = "/dashboard";
           }
 
-          // For regular users with no specific redirect, go to profile
-          router.push("/user-profile");
+          // Single navigation with refresh
+          router.push(redirectPath);
+          router.refresh();
         }
       }
     } catch (error) {

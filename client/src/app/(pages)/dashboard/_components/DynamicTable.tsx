@@ -78,12 +78,15 @@ export function DynamicTable({
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const router = useRouter();
-  const { checkAuth } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
-      const isAuth = await checkAuth();
-      if (!isAuth) {
+      // Wait for auth to complete loading first
+      if (authLoading) return;
+
+      // If not authenticated, don't fetch data
+      if (!isAuthenticated) {
         setLoading(false);
         return;
       }
@@ -121,7 +124,7 @@ export function DynamicTable({
     };
 
     fetchData();
-  }, [apiUrl, checkAuth, currentPage]);
+  }, [apiUrl, currentPage, isAuthenticated, authLoading]);
 
   const handleNavigation = (type: string, slug: string) => {
     switch (type) {
@@ -272,7 +275,15 @@ export function DynamicTable({
     );
   };
 
-  if (loading) return renderLoadingSkeleton();
+  if (loading || authLoading) return renderLoadingSkeleton();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Please log in to view this content.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 overflow-hidden">

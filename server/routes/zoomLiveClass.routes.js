@@ -9,10 +9,6 @@ import {
   getUserZoomLiveClasses,
   getZoomLiveClass,
   toggleCourseFeeEnabled,
-  getClassRegistrations,
-  bulkApproveRegistrations,
-  removeUserAccess,
-  getClassAttendees,
 } from "../controllers/zoomLiveClass.controllers.js";
 
 import {
@@ -131,34 +127,6 @@ router.post(
   verifyJWTToken,
   verifyAdmin,
   toggleCourseFeeEnabled
-);
-
-router.get(
-  "/admin/class/:id/registrations",
-  verifyJWTToken,
-  verifyAdmin,
-  getClassRegistrations
-);
-
-router.post(
-  "/admin/class/:id/approve-registrations",
-  verifyJWTToken,
-  verifyAdmin,
-  bulkApproveRegistrations
-);
-
-router.post(
-  "/admin/class/:id/remove-access",
-  verifyJWTToken,
-  verifyAdmin,
-  removeUserAccess
-);
-
-router.get(
-  "/admin/class/:id/attendees",
-  verifyJWTToken,
-  verifyAdmin,
-  getClassAttendees
 );
 
 export default router;

@@ -46,7 +46,7 @@ const createZoomMeeting = async (meetingData) => {
     // Just use the startTime as provided, without converting it - this allows for any string time format
     const startTime = meetingData.startTime;
 
-    // For duration, use a default 1 hour duration since we're accepting any string format
+
     const durationInMinutes = 60; // Default 60 minutes duration
 
     const response = await axios.post(
@@ -358,11 +358,6 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
   if (slug !== undefined) {
     // Always format the slug properly
     const formattedSlug = createSlug(slug);
-    console.log("Processing slug update:", {
-      originalSlug: zoomLiveClass.slug,
-      providedSlug: slug,
-      formattedSlug: formattedSlug,
-    });
 
     // Check if this slug already exists for a different class
     if (formattedSlug !== zoomLiveClass.slug) {
@@ -379,7 +374,7 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
     }
 
     updatedFields.slug = formattedSlug;
-    console.log("Setting new slug:", formattedSlug);
+
   }
 
   // Handle thumbnail update
@@ -391,7 +386,7 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
 
     if (thumbnailHasChanged) {
       try {
-        console.log(`Deleting old thumbnail: ${oldThumbnailUrl}`);
+
         await deleteFromS3(oldThumbnailUrl);
       } catch (err) {
         console.error("Error deleting old thumbnail:", err);
@@ -435,7 +430,6 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
 export const deleteZoomLiveClass = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  console.log(`Attempting to delete zoom live class with ID: ${id}`);
 
   const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
     where: { id },
@@ -450,15 +444,9 @@ export const deleteZoomLiveClass = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Zoom live class not found");
   }
 
-  console.log(
-    `Found zoom live class: ${zoomLiveClass.title} with ${zoomLiveClass.subscriptions.length} subscriptions and ${zoomLiveClass.modules.length} modules`
-  );
 
   // Delete the Zoom live class and related records in a transaction
   try {
-    console.log(
-      `Starting transaction to delete zoom live class and related data`
-    );
     await prisma.$transaction(async (tx) => {
       // 1. First, find all subscriptions for this class
       const subscriptions = await tx.zoomSubscription.findMany({
@@ -468,31 +456,26 @@ export const deleteZoomLiveClass = asyncHandler(async (req, res) => {
 
       // 2. Get all subscription IDs
       const subscriptionIds = subscriptions.map((sub) => sub.id);
-      console.log(`Found ${subscriptionIds.length} subscriptions to delete`);
 
       // 3. Delete all related payments first
       if (subscriptionIds.length > 0) {
-        const deletedPayments = await tx.zoomPayment.deleteMany({
+        await tx.zoomPayment.deleteMany({
           where: {
             subscriptionId: {
               in: subscriptionIds,
             },
           },
         });
-        console.log(`Deleted ${deletedPayments.count} related payments`);
       }
 
-      // 4. Delete all modules
-      const deletedModules = await tx.zoomSessionModule.deleteMany({
+      await tx.zoomSessionModule.deleteMany({
         where: { zoomLiveClassId: id },
       });
-      console.log(`Deleted ${deletedModules.count} modules`);
 
-      // 5. Delete all subscriptions
-      const deletedSubscriptions = await tx.zoomSubscription.deleteMany({
+      await tx.zoomSubscription.deleteMany({
         where: { zoomLiveClassId: id },
       });
-      console.log(`Deleted ${deletedSubscriptions.count} subscriptions`);
+
 
       // 6. Finally, delete the class itself
       await tx.zoomLiveClass.delete({
@@ -504,9 +487,7 @@ export const deleteZoomLiveClass = asyncHandler(async (req, res) => {
     // Delete the thumbnail if it exists (after the database transaction completes)
     if (zoomLiveClass.thumbnailUrl) {
       try {
-        console.log(
-          `Attempting to delete thumbnail from S3: ${zoomLiveClass.thumbnailUrl}`
-        );
+
         await deleteFromS3(zoomLiveClass.thumbnailUrl);
         console.log(`Successfully deleted thumbnail from S3`);
       } catch (s3Error) {
@@ -544,10 +525,10 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
       subscriptions: {
         ...(req.user
           ? {
-              where: {
-                userId: req.user.id,
-              },
-            }
+            where: {
+              userId: req.user.id,
+            },
+          }
           : {}),
       },
       createdBy: {
@@ -634,10 +615,10 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
       subscriptions: {
         ...(req.user
           ? {
-              where: {
-                userId: req.user.id,
-              },
-            }
+            where: {
+              userId: req.user.id,
+            },
+          }
           : {}),
       },
       createdBy: {
@@ -742,173 +723,8 @@ export const toggleCourseFeeEnabled = asyncHandler(async (req, res) => {
       new ApiResponsive(
         200,
         updatedClass,
-        `Course fee requirement ${
-          courseFeeEnabled ? "enabled" : "disabled"
+        `Course fee requirement ${courseFeeEnabled ? "enabled" : "disabled"
         } successfully`
       )
-    );
-});
-
-// Admin: Get registrations for a class
-export const getClassRegistrations = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const registrations = await prisma.zoomSubscription.findMany({
-    where: {
-      zoomLiveClassId: id,
-      isRegistered: true,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponsive(
-        200,
-        registrations,
-        "Class registrations fetched successfully"
-      )
-    );
-});
-
-// Admin: Bulk approve registrations
-export const bulkApproveRegistrations = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { userIds } = req.body;
-
-  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
-    where: { id },
-  });
-
-  if (!zoomLiveClass) {
-    throw new ApiError(404, "Zoom live class not found");
-  }
-
-  // Update all specified subscriptions
-  const updatedSubscriptions = await prisma.$transaction(
-    userIds.map((userId) =>
-      prisma.zoomSubscription.update({
-        where: {
-          userId_zoomLiveClassId: {
-            userId,
-            zoomLiveClassId: id,
-          },
-        },
-        data: {
-          isApproved: true,
-          status: "ACTIVE",
-          hasAccessToLinks: !zoomLiveClass.courseFeeEnabled, // Give access if course fee is not required
-        },
-      })
-    )
-  );
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponsive(
-        200,
-        updatedSubscriptions,
-        "Registrations approved successfully"
-      )
-    );
-});
-
-// Admin: Remove access for users
-export const removeUserAccess = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { userIds } = req.body;
-
-  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
-    where: { id },
-  });
-
-  if (!zoomLiveClass) {
-    throw new ApiError(404, "Zoom live class not found");
-  }
-
-  // Update all specified subscriptions
-  const updatedSubscriptions = await prisma.$transaction(
-    userIds.map((userId) =>
-      prisma.zoomSubscription.update({
-        where: {
-          userId_zoomLiveClassId: {
-            userId,
-            zoomLiveClassId: id,
-          },
-        },
-        data: {
-          hasAccessToLinks: false,
-          status: "CANCELLED",
-        },
-      })
-    )
-  );
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponsive(
-        200,
-        updatedSubscriptions,
-        "Access removed successfully"
-      )
-    );
-});
-
-// Add getClassAttendees controller
-export const getClassAttendees = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
-    where: { id },
-    include: {
-      subscriptions: {
-        where: {
-          hasAccessToLinks: true, // Only get users who have access
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!zoomLiveClass) {
-    throw new ApiError(404, "Zoom live class not found");
-  }
-
-  // Transform the data for better frontend consumption
-  const attendees = zoomLiveClass.subscriptions.map((sub) => ({
-    id: sub.id,
-    userId: sub.user.id,
-    name: sub.user.name,
-    email: sub.user.email,
-    joinedAt: sub.createdAt,
-    status: sub.status,
-  }));
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponsive(200, attendees, "Class attendees fetched successfully")
     );
 });

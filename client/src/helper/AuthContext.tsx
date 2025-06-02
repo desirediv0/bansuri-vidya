@@ -7,6 +7,7 @@ import {
   useState,
   ReactNode,
   useRef,
+  useCallback,
 } from "react";
 import { checkAuthService } from "@/helper/checkAuthService";
 import axios from "axios";
@@ -32,13 +33,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const hasCheckedAuth = useRef(false);
 
-  const checkAuth = async (): Promise<boolean> => {
-    // If we've already checked auth, don't check again
-    if (hasCheckedAuth.current) {
-      return isAuthenticated;
-    }
-
+  const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
+      const accessToken = Cookies.get("accessToken");
+      if (!accessToken) {
+        setIsAuthenticated(false);
+        setUser(null);
+        hasCheckedAuth.current = false;
+        return false;
+      }
+
       const response = await checkAuthService();
       if (response && response.success) {
         setIsAuthenticated(true);
@@ -48,31 +52,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setIsAuthenticated(false);
         setUser(null);
-        hasCheckedAuth.current = true;
+        hasCheckedAuth.current = false;
+        Cookies.remove("accessToken");
         return false;
       }
     } catch (error) {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
       setUser(null);
-      hasCheckedAuth.current = true;
+      hasCheckedAuth.current = false;
+      Cookies.remove("accessToken");
       return false;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!hasCheckedAuth.current) {
       checkAuth();
     }
-  }, []); // Only run once on mount
+  }, []);
 
   const logout = () => {
     Cookies.remove("accessToken");
     setIsAuthenticated(false);
     setUser(null);
-    hasCheckedAuth.current = false; // Reset the check flag on logout
+    hasCheckedAuth.current = false;
   };
 
   useEffect(() => {

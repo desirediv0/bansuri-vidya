@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/helper/AuthContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -184,10 +184,29 @@ const UserProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "dashboard"
+  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
+
+  // Function to update URL when tab changes
+  const updateTab = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.push(`/user-profile?${params.toString()}`, { scroll: false });
+  };
+
+  // Sync tab with URL parameter
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams, activeTab]);
 
   // Function to refresh data
   const refreshData = async () => {
@@ -483,6 +502,17 @@ const UserProfile = () => {
                     )}
                   </span>
                 </div>
+                {user?.role === "ADMIN" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-auto bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                    onClick={() => router.push("/dashboard")}
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Admin Dashboard
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -646,7 +676,7 @@ const UserProfile = () => {
           </p>
           <Button
             className="w-full bg-red-600 hover:bg-red-700"
-            onClick={() => setActiveTab("live-classes")}
+            onClick={() => updateTab("live-classes")}
           >
             View Live Classes
           </Button>
@@ -664,8 +694,9 @@ const UserProfile = () => {
             {/* Mobile Tabs */}
             <div className="block lg:hidden mb-6">
               <Tabs
-                defaultValue="dashboard"
-                onValueChange={setActiveTab}
+                defaultValue={activeTab}
+                value={activeTab}
+                onValueChange={updateTab}
                 className="w-full"
               >
                 <TabsList className="w-full grid grid-cols-4 bg-white shadow-sm rounded-lg p-1">
@@ -717,7 +748,7 @@ const UserProfile = () => {
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
                   }`}
-                  onClick={() => setActiveTab("dashboard")}
+                  onClick={() => updateTab("dashboard")}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-2" />
                   Dashboard
@@ -729,7 +760,7 @@ const UserProfile = () => {
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
                   }`}
-                  onClick={() => setActiveTab("certificates")}
+                  onClick={() => updateTab("certificates")}
                 >
                   <GraduationCap className="h-4 w-4 mr-2" />
                   Certificates
@@ -741,7 +772,7 @@ const UserProfile = () => {
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
                   }`}
-                  onClick={() => setActiveTab("live-classes")}
+                  onClick={() => updateTab("live-classes")}
                 >
                   <Video className="h-4 w-4 mr-2" />
                   Live Classes
@@ -755,7 +786,7 @@ const UserProfile = () => {
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
                   }`}
-                  onClick={() => setActiveTab("enrolled-courses")}
+                  onClick={() => updateTab("enrolled-courses")}
                 >
                   <BookOpenIcon className="h-4 w-4 mr-2" />
                   Enrolled Courses
@@ -769,7 +800,7 @@ const UserProfile = () => {
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
                   }`}
-                  onClick={() => setActiveTab("purchased-courses")}
+                  onClick={() => updateTab("purchased-courses")}
                 >
                   <ShoppingCartIcon className="h-4 w-4 mr-2" />
                   Purchased Courses

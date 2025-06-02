@@ -116,7 +116,6 @@ const MyLiveClasses = () => {
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
       script.onload = () => {
-        console.log("Razorpay script loaded successfully");
         setRazorpayLoaded(true);
       };
       script.onerror = () => {

@@ -11,6 +11,7 @@ import {
 import { checkAuthService } from "@/helper/checkAuthService";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -30,56 +31,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const hasCheckedAuth = useRef(false);
+  const authCheckInProgress = useRef(false);
+  const lastCheckTime = useRef(0);
+  const router = useRouter();
 
-  const checkAuth = async (): Promise<boolean> => {
-    // If we've already checked auth, don't check again
-    if (hasCheckedAuth.current) {
+  const checkAuth = async (forceCheck = false): Promise<boolean> => {
+    // Prevent multiple simultaneous auth checks
+    if (authCheckInProgress.current) {
       return isAuthenticated;
     }
 
+    // If we've checked recently (within 5 seconds) and not forcing a check, return current state
+    const now = Date.now();
+    if (!forceCheck && now - lastCheckTime.current < 5000) {
+      return isAuthenticated;
+    }
+
+    authCheckInProgress.current = true;
+    setIsLoading(true);
+
     try {
+      const accessToken = Cookies.get("accessToken");
+      if (!accessToken) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return false;
+      }
+
       const response = await checkAuthService();
       if (response && response.success) {
         setIsAuthenticated(true);
         setUser(response?.user || null);
-        hasCheckedAuth.current = true;
+        lastCheckTime.current = now;
         return true;
       } else {
         setIsAuthenticated(false);
         setUser(null);
-        hasCheckedAuth.current = true;
+        Cookies.remove("accessToken");
         return false;
       }
     } catch (error) {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
       setUser(null);
-      hasCheckedAuth.current = true;
+      Cookies.remove("accessToken");
       return false;
     } finally {
       setIsLoading(false);
+      authCheckInProgress.current = false;
     }
   };
 
+  // Initial auth check
   useEffect(() => {
-    if (!hasCheckedAuth.current) {
-      checkAuth();
-    }
-  }, []); // Only run once on mount
+    checkAuth(true);
+  }, []);
 
   const logout = () => {
     Cookies.remove("accessToken");
     setIsAuthenticated(false);
     setUser(null);
-    hasCheckedAuth.current = false; // Reset the check flag on logout
+    router.push("/auth");
   };
 
+  // Setup axios interceptor
   useEffect(() => {
-    const interceptor = axios.interceptors.request.use((config) => {
-      config.withCredentials = true;
-      return config;
-    });
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        config.withCredentials = true;
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
 
     return () => {
       axios.interceptors.request.eject(interceptor);

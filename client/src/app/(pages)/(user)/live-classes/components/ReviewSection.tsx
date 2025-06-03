@@ -29,11 +29,13 @@ interface Review {
 interface ReviewSectionProps {
   zoomClassId: string;
   isRegistered?: boolean;
+  hasAccess?: boolean;
 }
 
 export default function ReviewSection({
   zoomClassId,
   isRegistered,
+  hasAccess,
 }: ReviewSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,18 +123,17 @@ export default function ReviewSection({
   }
 
   return (
-    <div className="py-8 px-5">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Student Reviews</h2>
-        {isAuthenticated && isRegistered && (
-          <Button
-            onClick={() => setShowReviewDialog(true)}
-            className="bg-primary hover:bg-primary/90"
-          >
-            Write a Review
-          </Button>
-        )}
-      </div>
+    <div className="py-8 px-5">      <div className="flex justify-between items-center mb-6">
+      <h2 className="text-2xl font-bold text-gray-900">Student Reviews</h2>
+      {isAuthenticated && hasAccess && (
+        <Button
+          onClick={() => setShowReviewDialog(true)}
+          className="bg-primary hover:bg-primary/90"
+        >
+          Write a Review
+        </Button>
+      )}
+    </div>
 
       {reviews.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
@@ -157,11 +158,10 @@ export default function ReviewSection({
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-4 w-4 ${
-                            i < review.rating
+                          className={`h-4 w-4 ${i < review.rating
                               ? "text-yellow-400 fill-yellow-400"
                               : "text-gray-300"
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -213,11 +213,10 @@ export default function ReviewSection({
                   className="focus:outline-none"
                 >
                   <Star
-                    className={`h-8 w-8 ${
-                      i < rating
+                    className={`h-8 w-8 ${i < rating
                         ? "text-yellow-400 fill-yellow-400"
                         : "text-gray-300"
-                    }`}
+                      }`}
                   />
                 </button>
               ))}

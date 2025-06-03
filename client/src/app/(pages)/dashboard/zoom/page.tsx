@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import ZoomAnalytics from "./components/ZoomAnalytics";
 import ZoomSubscriptionsTable from "./components/ZoomSubscriptionsTable";
 import ZoomPaymentsTable from "./components/ZoomPaymentsTable";
-import PendingApprovals from "./components/PendingApprovals";
 import SessionLinks from "./components/SessionLinks";
 
 type TabValue =
@@ -21,7 +20,6 @@ type TabValue =
   | "subscriptions"
   | "payments"
   | "links"
-  | "approvals";
 
 export default function ZoomDashboard() {
   const searchParams = useSearchParams();
@@ -40,7 +38,7 @@ export default function ZoomDashboard() {
         "subscriptions",
         "payments",
         "links",
-        "approvals",
+
       ].includes(tabParam)
     ) {
       return tabParam as TabValue;
@@ -63,7 +61,7 @@ export default function ZoomDashboard() {
         "subscriptions",
         "payments",
         "links",
-        "approvals",
+
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam as TabValue);
@@ -99,29 +97,6 @@ export default function ZoomDashboard() {
     }
   };
 
-  const handleProcessRenewals = async () => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/process-renewals`,
-        {},
-        { withCredentials: true }
-      );
-
-      toast({
-        title: "Success",
-        description: `Processed ${response.data.data.processed} subscriptions.`,
-      });
-
-      fetchData();
-    } catch (error) {
-      console.error("Error processing renewals:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process renewals.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -140,13 +115,7 @@ export default function ZoomDashboard() {
           >
             <RefreshCw size={18} /> Refresh
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleProcessRenewals}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw size={18} /> Process Renewals
-          </Button>
+
         </div>
       </div>
 
@@ -161,7 +130,7 @@ export default function ZoomDashboard() {
           <TabsTrigger value="links">Class Links</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="approvals">Approvals</TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
@@ -201,9 +170,7 @@ export default function ZoomDashboard() {
           <ZoomPaymentsTable />
         </TabsContent>
 
-        <TabsContent value="approvals" className="mt-6 space-y-6">
-          <PendingApprovals />
-        </TabsContent>
+
       </Tabs>
     </div>
   );

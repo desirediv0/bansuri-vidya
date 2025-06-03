@@ -96,6 +96,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
     registrationFee,
     courseFee,
     courseFeeEnabled,
+    registrationEnabled,
     capacity,
     recurringClass,
     thumbnailUrl,
@@ -141,9 +142,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       title,
       startTime,
       endTime,
-    });
-
-    // Initialize base data with required fields
+    });    // Initialize base data with required fields
     const zoomLiveClassData = {
       title,
       description,
@@ -161,6 +160,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       registrationFee: parseFloat(registrationFee || 0),
       courseFee: parseFloat(courseFee || 0),
       courseFeeEnabled: courseFeeEnabled || false,
+      registrationEnabled: registrationEnabled !== undefined ? registrationEnabled : true,
       hasModules: hasModules || false,
       isFirstModuleFree: isFirstModuleFree || false,
       currentRaga: currentRaga || null,
@@ -299,6 +299,7 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
     registrationFee,
     courseFee,
     courseFeeEnabled,
+    registrationEnabled,
     capacity,
     recurringClass,
     thumbnailUrl,
@@ -335,10 +336,11 @@ export const updateZoomLiveClass = asyncHandler(async (req, res) => {
   if (price !== undefined) updatedFields.price = parseFloat(price);
   if (getPrice !== undefined) updatedFields.getPrice = getPrice;
   if (registrationFee !== undefined)
-    updatedFields.registrationFee = parseFloat(registrationFee);
-  if (courseFee !== undefined) updatedFields.courseFee = parseFloat(courseFee);
+    updatedFields.registrationFee = parseFloat(registrationFee); if (courseFee !== undefined) updatedFields.courseFee = parseFloat(courseFee);
   if (courseFeeEnabled !== undefined)
     updatedFields.courseFeeEnabled = courseFeeEnabled;
+  if (registrationEnabled !== undefined)
+    updatedFields.registrationEnabled = registrationEnabled;
   if (capacity !== undefined && capacity !== null)
     updatedFields.capacity = parseInt(capacity);
   if (recurringClass !== undefined)
@@ -672,7 +674,6 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
   // Make sure teacherName is available even if author is empty
   const teacherName =
     classData.author || zoomLiveClass.createdBy?.name || "Instructor";
-
   // Return transformed class with additional formatted data
   const transformedClass = {
     ...classData,
@@ -682,6 +683,7 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
     teacherName,
     formattedDate: zoomLiveClass.startTime || "",
     formattedTime: zoomLiveClass.startTime || "",
+    registrationEnabled: zoomLiveClass.registrationEnabled, // Include registration status
     subscriptions: undefined,
     createdBy: undefined,
   };
@@ -724,6 +726,38 @@ export const toggleCourseFeeEnabled = asyncHandler(async (req, res) => {
         200,
         updatedClass,
         `Course fee requirement ${courseFeeEnabled ? "enabled" : "disabled"
+        } successfully`
+      )
+    );
+});
+
+// Admin: Toggle registration enabled status
+export const toggleRegistrationEnabled = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { registrationEnabled } = req.body;
+
+  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id },
+  });
+
+  if (!zoomLiveClass) {
+    throw new ApiError(404, "Zoom live class not found");
+  }
+
+  const updatedClass = await prisma.zoomLiveClass.update({
+    where: { id },
+    data: {
+      registrationEnabled: registrationEnabled,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        updatedClass,
+        `Registration ${registrationEnabled ? "enabled" : "disabled"
         } successfully`
       )
     );

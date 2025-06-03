@@ -19,6 +19,7 @@ import {
   Info,
   Tag,
   User,
+  Save,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { generateSlug } from "@/utils/slugUtils";
@@ -33,6 +34,7 @@ interface EditClassState {
   registrationFee: number;
   courseFee: number;
   courseFeeEnabled: boolean;
+  registrationEnabled: boolean;
   currentRaga?: string | null;
   currentOrientation?: string | null;
   isActive: boolean;
@@ -111,6 +113,24 @@ export default function EditZoomClassPage() {
     e.preventDefault();
     if (!classData) return;
 
+    // Basic validation
+    if (
+      !classData.title ||
+      !classData.startTime ||
+      !classData.registrationFee ||
+      !classData.courseFee ||
+      !classData.thumbnailUrl
+    ) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Course fee validation - removed since courseFeeEnabled is always true
+
     setIsSaving(true);
 
     try {
@@ -124,7 +144,8 @@ export default function EditZoomClassPage() {
           getPrice: false,
           registrationFee: parseFloat(classData.registrationFee.toString()),
           courseFee: parseFloat(classData.courseFee.toString()),
-          courseFeeEnabled: classData.courseFeeEnabled,
+          courseFeeEnabled: true, // Always true - course fee is always required
+          registrationEnabled: classData.registrationEnabled,
           currentRaga: classData.currentRaga,
           currentOrientation: classData.currentOrientation,
           isActive: classData.isActive,
@@ -319,7 +340,9 @@ export default function EditZoomClassPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="startTime">Start Time</Label>
+                    <Label htmlFor="startTime">
+                      Start Time <span className="text-red-500">*</span>
+                    </Label>
                     <div className="relative">
                       <Clock className="h-4 w-4 absolute left-3 top-3 text-gray-500" />
                       <Input
@@ -392,25 +415,17 @@ export default function EditZoomClassPage() {
                       required
                     />
                   </div>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Switch
-                      id="courseFeeEnabled"
-                      checked={classData.courseFeeEnabled}
-                      onCheckedChange={(checked) =>
-                        setClassData({
-                          ...classData,
-                          courseFeeEnabled: checked,
-                        })
-                      }
-                    />
-                    <Label htmlFor="courseFeeEnabled" className="text-sm">
-                      Enable course fee requirement
+                  <div className="flex items-center space-x-2 mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="h-4 w-4 bg-blue-500 rounded-sm flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <Label className="text-sm text-blue-700 font-medium">
+                      Course fee requirement is always enabled
                     </Label>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    When enabled, students must pay the course fee to access
-                    class links after registration. When disabled, students get
-                    access to links immediately after registration approval.
+                    Students must pay the course fee to access class links after registration.
+                    This ensures proper payment verification before granting access to the live class.
                   </p>
                 </div>
               </div>
@@ -533,7 +548,12 @@ export default function EditZoomClassPage() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSaving}>
-                  {isSaving ? "Saving..." : "Save Changes"}
+                  {isSaving ? "Saving..." : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

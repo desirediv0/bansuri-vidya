@@ -87,7 +87,78 @@ export default function ClassDetails() {
     const userHasAccess =
       hasAccessToLinks || (classData && classData.hasAccessToLinks);
 
-    return { userIsRegistered, userHasAccess };
+    const userIsApproved = classData && classData.isApproved;
+
+    return { userIsRegistered, userHasAccess, userIsApproved };
+  };
+
+  // Function to determine button state based on registration status
+  const getButtonState = () => {
+    const { userIsRegistered, userHasAccess, userIsApproved } = determineUserStatus();
+
+    // If registration is disabled
+    if (classData?.registrationEnabled === false) {
+      return {
+        type: "disabled",
+        text: "Registration Closed",
+        color: "bg-gray-400 cursor-not-allowed text-gray-600",
+        disabled: true,
+        action: null
+      };
+    }
+
+    // If user has full access (can join class)
+    if (userHasAccess) {
+      return {
+        type: "join",
+        text: isJoining ? "Joining..." : "Join Live Class",
+        color: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white",
+        disabled: isJoining,
+        action: () => handleJoinClass()
+      };
+    }
+
+    // If user is registered but waiting for approval
+    if (userIsRegistered && !userIsApproved) {
+      return {
+        type: "waiting",
+        text: "Waiting for Admin Approval",
+        color: "bg-gray-400 cursor-not-allowed text-gray-600",
+        disabled: true,
+        action: null
+      };
+    }
+
+    // If user is registered and approved but needs to pay course fee
+    if (userIsRegistered && userIsApproved && classData?.courseFeeEnabled) {
+      return {
+        type: "pay",
+        text: "Pay Course Fee",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: false,
+        action: () => setShowCourseAccessDialog(true)
+      };
+    }
+
+    // If user is registered and approved but no course fee required
+    if (userIsRegistered && userIsApproved && !classData?.courseFeeEnabled) {
+      return {
+        type: "join",
+        text: isJoining ? "Joining..." : "Join Live Class",
+        color: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white",
+        disabled: isJoining,
+        action: () => handleJoinClass()
+      };
+    }
+
+    // Default: Not registered yet
+    return {
+      type: "register",
+      text: "Register for Class",
+      color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+      disabled: false,
+      action: handlePurchase
+    };
   };
 
   const fetchClassDetails = async () => {
@@ -142,6 +213,7 @@ export default function ClassDetails() {
         const {
           isSubscribed,
           isRegistered,
+          isApproved,
           hasAccessToLinks,
           meetingDetails,
           courseFeeEnabled,
@@ -157,14 +229,15 @@ export default function ClassDetails() {
             ...prev,
             isSubscribed: !!isSubscribed,
             isRegistered: !!isRegistered,
+            isApproved: !!isApproved,
             hasAccessToLinks: !!hasAccessToLinks,
             courseFeeEnabled: courseFeeEnabled,
             ...(hasAccessToLinks && meetingDetails
               ? {
-                  zoomLink: meetingDetails.link || prev.zoomLink,
-                  zoomMeetingId: meetingDetails.meetingId || prev.zoomMeetingId,
-                  zoomPassword: meetingDetails.password || prev.zoomPassword,
-                }
+                zoomLink: meetingDetails.link || prev.zoomLink,
+                zoomMeetingId: meetingDetails.meetingId || prev.zoomMeetingId,
+                zoomPassword: meetingDetails.password || prev.zoomPassword,
+              }
               : {}),
           };
         });
@@ -296,6 +369,16 @@ export default function ClassDetails() {
       router.push(
         `/auth?redirect=${encodeURIComponent(window.location.pathname)}&course-slug=${classData?.courseSlug || ""}&live-class-id=${id}`
       );
+      return;
+    }
+
+    // Check if registration is enabled for this class
+    if (classData?.registrationEnabled === false) {
+      toast({
+        title: "Registration Disabled",
+        description: "Registration is currently disabled for this class. Please check back later or contact support.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -602,7 +685,7 @@ export default function ClassDetails() {
               <div className="mb-6">
                 <div className="flex flex-col gap-2">
                   {isAuthenticated &&
-                  (isRegistered || classData.isRegistered) ? (
+                    (isRegistered || classData.isRegistered) ? (
                     hasAccessToLinks || classData.hasAccessToLinks ? (
                       <div className="text-center py-2">
                         <span className="text-green-600 font-semibold text-lg flex items-center justify-center">
@@ -672,79 +755,70 @@ export default function ClassDetails() {
                     <div>{classData.teacherName}</div>
                   </div>
                 </div>
-                {userIsRegistered && !userHasAccess && (
-                  <div className="mt-2 pt-2 border-t border-gray-100">
-                    <div className="text-sm font-medium text-gray-500">
-                      Registration Status:
-                    </div>
-                    <div
-                      className={`mt-1 px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center ${
-                        !classData.isApproved
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {!classData.isApproved
-                        ? "Pending Admin Approval"
-                        : "Approved - Ready for Payment"}
-                    </div>
-                  </div>
-                )}
+                {(() => {
+                  const { userIsRegistered, userHasAccess, userIsApproved } = determineUserStatus();
+
+                  // Only show status badge if user is registered but doesn't have full access
+                  if (userIsRegistered && !userHasAccess) {
+                    return (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="text-sm font-medium text-gray-500">
+                          Registration Status:
+                        </div>
+                        <div
+                          className={`mt-1 px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center ${!userIsApproved
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                            }`}
+                        >
+                          {!userIsApproved
+                            ? "Pending Admin Approval"
+                            : classData?.courseFeeEnabled
+                              ? "Approved - Ready for Payment"
+                              : "Approved - Ready to Join"}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return null;
+                })()}
               </div>
 
               <div className="space-y-4">
-                {userIsRegistered && !userHasAccess ? (
-                  <div>
-                    {classData?.courseFeeEnabled ? (
+                {(() => {
+                  const buttonState = getButtonState();
+
+                  return (
+                    <div>
                       <Button
-                        onClick={() => setShowCourseAccessDialog(true)}
-                        className="w-full bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                        onClick={buttonState.action || undefined}
+                        disabled={buttonState.disabled}
+                        className={`w-full py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ${buttonState.color}`}
                       >
-                        <CreditCard className="mr-2 h-5 w-5" />
-                        Pay Course Fee
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleJoinClass()}
-                        disabled={isJoining}
-                        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                      >
-                        {isJoining ? (
+                        {buttonState.type === "join" && isJoining ? (
                           <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                        ) : (
+                        ) : buttonState.type === "join" ? (
                           <Video className="h-5 w-5 mr-2" />
-                        )}
-                        {isJoining ? "Joining..." : "Join Live Class"}
+                        ) : buttonState.type === "pay" ? (
+                          <CreditCard className="mr-2 h-5 w-5" />
+                        ) : buttonState.type === "register" ? (
+                          <CreditCard className="mr-2 h-5 w-5" />
+                        ) : null}
+                        {buttonState.text}
                       </Button>
-                    )}
-                    <p className="text-sm text-gray-600 mt-3 text-center">
-                      {classData?.courseFeeEnabled
-                        ? "Complete your payment to get access to the live class"
-                        : "You're all set! Click to join the live class"}
-                    </p>
-                  </div>
-                ) : userHasAccess ? (
-                  <Button
-                    onClick={() => handleJoinClass()}
-                    disabled={isJoining}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                  >
-                    {isJoining ? (
-                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    ) : (
-                      <Video className="h-5 w-5 mr-2" />
-                    )}
-                    {isJoining ? "Joining..." : "Join Live Class"}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handlePurchase}
-                    className="w-full bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <CreditCard className="mr-2 h-5 w-5" />
-                    Register for Class
-                  </Button>
-                )}
+
+                      {/* Status message below button */}
+                      <p className="text-sm text-gray-600 mt-3 text-center">
+                        {buttonState.type === "disabled" && "Registration is currently closed for this class"}
+                        {buttonState.type === "waiting" && "Your registration is being reviewed by our admin team"}
+                        {buttonState.type === "pay" && `Complete your payment (₹${classData.courseFee}) to access the live class`}
+                        {buttonState.type === "join" && "You're all set! Click to join the live class"}
+                        {buttonState.type === "register" && `Register now for ₹${classData.registrationFee} to join this live class`}
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="space-y-3">
@@ -767,33 +841,30 @@ export default function ClassDetails() {
                     </h4>
                     <p className="text-blue-800 text-sm leading-relaxed">
                       {isAuthenticated ? (
-                        hasAccessToLinks || classData?.hasAccessToLinks ? (
-                          <>
-                            You have full access to this live class. Click the
-                            "Join Live Class" button to participate at the
-                            scheduled time.
-                          </>
-                        ) : isRegistered || classData?.isRegistered ? (
-                          classData?.courseFeeEnabled ? (
-                            <>
-                              You're registered! Complete the course fee payment
-                              (₹{classData.courseFee}) to join the live class.
-                            </>
-                          ) : (
-                            <>
-                              Registration complete! You can now join the live
-                              class at the scheduled time.
-                            </>
-                          )
-                        ) : (
-                          <>
-                            Register now with a one-time fee of ₹
-                            {classData.registrationFee}.
-                            {classData?.courseFeeEnabled
-                              ? " After registration, you'll need to pay the course fee to join the live class."
-                              : " After registration, you'll get immediate access to join the live class."}
-                          </>
-                        )
+                        (() => {
+                          const { userIsRegistered, userHasAccess, userIsApproved } = determineUserStatus();
+
+                          if (userHasAccess) {
+                            return "You have full access to this live class. Click the 'Join Live Class' button to participate at the scheduled time.";
+                          }
+
+                          if (userIsRegistered && !userIsApproved) {
+                            return "Your registration is being reviewed by our admin team. You'll receive an email notification once approved.";
+                          }
+
+                          if (userIsRegistered && userIsApproved && classData?.courseFeeEnabled) {
+                            return `You're approved! Complete the course fee payment (₹${classData.courseFee}) to join the live class.`;
+                          }
+
+                          if (classData?.registrationEnabled === false) {
+                            return "Registration is currently closed for this class. Please check back later or contact support for more information.";
+                          }
+
+                          return `Register now with a one-time fee of ₹${classData.registrationFee}.${classData?.courseFeeEnabled
+                            ? " After approval, you'll need to pay the course fee to join the live class."
+                            : " After approval, you'll get immediate access to join the live class."
+                            }`;
+                        })()
                       ) : (
                         "Sign in to register for this live class and start your learning journey."
                       )}
@@ -866,7 +937,8 @@ export default function ClassDetails() {
         <div className="mt-8 lg:col-span-2">
           <ReviewSection
             zoomClassId={classData.id}
-            isRegistered={isRegistered || classData.isRegistered}
+            isRegistered={userIsRegistered}
+            hasAccess={userHasAccess}
           />
         </div>
       )}

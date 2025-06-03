@@ -32,6 +32,7 @@ interface FormData {
   registrationFee: string;
   courseFee: string;
   courseFeeEnabled: boolean;
+  registrationEnabled: boolean;
   currentRaga: string;
   currentOrientation: string;
   sessionDescription: string;
@@ -49,7 +50,8 @@ export default function CreateZoomLiveClassPage() {
     thumbnailUrl: "",
     registrationFee: "0",
     courseFee: "0",
-    courseFeeEnabled: false,
+    courseFeeEnabled: true,
+    registrationEnabled: true,
     currentRaga: "",
     currentOrientation: "",
     sessionDescription: "",
@@ -78,9 +80,9 @@ export default function CreateZoomLiveClassPage() {
     if (name === "slug") {
       const formattedSlug = value
         .toLowerCase()
-        .replace(/[^\w\s-]/g, "") // Remove special characters except spaces and hyphens
-        .replace(/\s+/g, "-") // Replace spaces with hyphens
-        .replace(/-+/g, "-"); // Replace multiple hyphens with a single hyphen
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
 
       setFormData((prev) => ({ ...prev, [name]: formattedSlug }));
       setSlugManuallyEdited(true);
@@ -133,7 +135,8 @@ export default function CreateZoomLiveClassPage() {
         startTime: formData.startTime,
         registrationFee: parseFloat(formData.registrationFee),
         courseFee: parseFloat(formData.courseFee),
-        courseFeeEnabled: formData.courseFeeEnabled,
+        courseFeeEnabled: true,
+        registrationEnabled: formData.registrationEnabled,
         currentRaga: formData.currentRaga || null,
         currentOrientation: formData.currentOrientation || null,
         sessionDescription: formData.sessionDescription || null,
@@ -361,22 +364,18 @@ export default function CreateZoomLiveClassPage() {
                       required
                     />
                   </div>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Switch
-                      id="courseFeeEnabled"
-                      checked={formData.courseFeeEnabled}
-                      onCheckedChange={(checked) =>
-                        handleSwitchChange("courseFeeEnabled", checked)
-                      }
-                    />
-                    <Label htmlFor="courseFeeEnabled" className="text-sm">
-                      Enable course fee requirement
-                    </Label>
+                  <div className="mt-2 p-3 rounded-md border border-blue-200 bg-blue-50">
+                    <div className="flex items-center space-x-2">
+                      <Info className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm text-blue-700 font-medium">
+                        Course fee requirement is always enabled
+                      </span>
+                    </div>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    When enabled, students must pay the course fee to access
-                    class links after registration. When disabled, students get
-                    access to links immediately after registration approval.
+                    Students must pay the course fee to access class links after
+                    registration. Course fee requirement is always required for
+                    all live classes.
                   </p>
                 </div>
               </div>

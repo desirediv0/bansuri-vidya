@@ -53,7 +53,7 @@ const createZoomMeeting = async (meetingData) => {
         start_time: meetingData.startTime,
         duration: Math.ceil(
           (new Date(meetingData.endTime) - new Date(meetingData.startTime)) /
-            (60 * 1000)
+          (60 * 1000)
         ),
         timezone: "Asia/Kolkata",
         settings: {
@@ -436,10 +436,10 @@ export const getUserZoomSessions = asyncHandler(async (req, res) => {
         subscribedUsers: {
           ...(req.user
             ? {
-                where: {
-                  userId: req.user.id,
-                },
-              }
+              where: {
+                userId: req.user.id,
+              },
+            }
             : {}),
         },
         createdBy: {
@@ -462,10 +462,10 @@ export const getUserZoomSessions = asyncHandler(async (req, res) => {
         subscribedUsers: {
           ...(req.user
             ? {
-                where: {
-                  userId: req.user.id,
-                },
-              }
+              where: {
+                userId: req.user.id,
+              },
+            }
             : {}),
         },
         createdBy: {
@@ -518,7 +518,7 @@ export const getUserZoomSessions = asyncHandler(async (req, res) => {
       }),
       duration: Math.ceil(
         (new Date(classData.endTime) - new Date(classData.startTime)) /
-          (60 * 1000)
+        (60 * 1000)
       ),
       subscribedUsers: undefined,
       createdBy: undefined,
@@ -583,7 +583,7 @@ export const getMyZoomSubscriptions = asyncHandler(async (req, res) => {
       duration: Math.ceil(
         (new Date(sub.zoomLiveClass.endTime || new Date()) -
           new Date(sub.zoomLiveClass.startTime)) /
-          (60 * 1000)
+        (60 * 1000)
       ),
     },
     zoomLiveClass: undefined, // Remove the original object to avoid duplication
@@ -970,6 +970,7 @@ export const cancelZoomSubscription = asyncHandler(async (req, res) => {
       status: "CANCELLED",
       isRegistered: false, // Reset registration status
       hasAccessToLinks: false, // Remove access to links
+      isApproved: false, // Reset approval status - user will need re-approval for future registrations
     },
   });
 
@@ -1737,6 +1738,7 @@ export const adminCancelZoomSubscription = asyncHandler(async (req, res) => {
       status: "CANCELLED",
       isRegistered: false, // Reset registration status
       hasAccessToLinks: false, // Remove access to links
+      isApproved: false, // Reset approval status - user will need re-approval for future registrations
     },
   });
 
@@ -1781,13 +1783,13 @@ export const getZoomSession = asyncHandler(async (req, res) => {
         // Only include user-specific subscription data if user is logged in
         ...(req.user
           ? {
-              where: {
-                userId: req.user.id,
-              },
-              include: {
-                zoomSession: true,
-              },
-            }
+            where: {
+              userId: req.user.id,
+            },
+            include: {
+              zoomSession: true,
+            },
+          }
           : {}),
       },
       createdBy: {
@@ -1811,10 +1813,10 @@ export const getZoomSession = asyncHandler(async (req, res) => {
           // Only include zoom details if user is authenticated and has proper access
           ...(req.user
             ? {
-                zoomLink: true,
-                zoomMeetingId: true,
-                zoomPassword: true,
-              }
+              zoomLink: true,
+              zoomMeetingId: true,
+              zoomPassword: true,
+            }
             : {}),
         },
       },
@@ -1864,7 +1866,7 @@ export const getZoomSession = asyncHandler(async (req, res) => {
     }),
     duration: Math.ceil(
       (new Date(zoomSession.endTime) - new Date(zoomSession.startTime)) /
-        (60 * 1000)
+      (60 * 1000)
     ),
     subscribedUsers: undefined, // Remove the user objects to avoid duplication
     createdBy: undefined, // Remove the user object to avoid duplication

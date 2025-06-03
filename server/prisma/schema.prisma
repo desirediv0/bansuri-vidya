@@ -490,29 +490,30 @@ model Contact {
 }
 
 model ZoomLiveClass {
-  id                 String  @id @default(cuid())
-  title              String
-  description        String
-  startTime          String
-  zoomLink           String?
-  zoomMeetingId      String?
-  zoomPassword       String?
-  author             String?
-  isActive           Boolean @default(true)
-  price              Float   @default(0)
-  getPrice           Boolean @default(false)
-  registrationFee    Float   @default(0)
-  courseFee          Float   @default(0)
-  courseFeeEnabled   Boolean @default(false)
-  capacity           Int?
-  recurringClass     Boolean @default(false)
-  thumbnailUrl       String
-  hasModules         Boolean @default(false)
-  isFirstModuleFree  Boolean @default(false)
-  currentRaga        String?
-  currentOrientation String?
-  sessionDescription String?
-  slug               String  @unique
+  id                  String  @id @default(cuid())
+  title               String
+  description         String
+  startTime           String
+  zoomLink            String?
+  zoomMeetingId       String?
+  zoomPassword        String?
+  author              String?
+  isActive            Boolean @default(true)
+  price               Float   @default(0)
+  getPrice            Boolean @default(false)
+  registrationFee     Float   @default(0)
+  courseFee           Float   @default(0)
+  courseFeeEnabled    Boolean @default(false)
+  registrationEnabled Boolean @default(true)
+  capacity            Int?
+  recurringClass      Boolean @default(false)
+  thumbnailUrl        String
+  hasModules          Boolean @default(false)
+  isFirstModuleFree   Boolean @default(false)
+  currentRaga         String?
+  currentOrientation  String?
+  sessionDescription  String?
+  slug                String  @unique
 
   // Relations
   createdBy     User                @relation(fields: [userId], references: [id])

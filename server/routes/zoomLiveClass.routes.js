@@ -9,6 +9,7 @@ import {
   getUserZoomLiveClasses,
   getZoomLiveClass,
   toggleCourseFeeEnabled,
+  toggleRegistrationEnabled,
 } from "../controllers/zoomLiveClass.controllers.js";
 
 import {
@@ -24,9 +25,11 @@ import {
   getMyZoomSubscriptions,
   checkSubscription,
   getAllZoomSubscriptions,
+  getClassRegistrations,
   getPendingApprovals,
   approveZoomSubscription,
   rejectZoomSubscription,
+  bulkApproveClassRegistrations,
 } from "../controllers/zoomPayment.controllers.js";
 
 const router = Router();
@@ -103,6 +106,18 @@ router.get(
   getAllZoomSubscriptions
 );
 router.get(
+  "/admin/class/:id/registrations",
+  verifyJWTToken,
+  verifyAdmin,
+  getClassRegistrations
+);
+router.post(
+  "/admin/class/:id/approve-registrations",
+  verifyJWTToken,
+  verifyAdmin,
+  bulkApproveClassRegistrations
+);
+router.get(
   "/admin/pending-approvals",
   verifyJWTToken,
   verifyAdmin,
@@ -127,6 +142,13 @@ router.post(
   verifyJWTToken,
   verifyAdmin,
   toggleCourseFeeEnabled
+);
+
+router.post(
+  "/admin/class/:id/toggle-registration",
+  verifyJWTToken,
+  verifyAdmin,
+  toggleRegistrationEnabled
 );
 
 export default router;

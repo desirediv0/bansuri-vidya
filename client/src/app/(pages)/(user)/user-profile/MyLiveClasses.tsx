@@ -75,12 +75,12 @@ interface Subscription {
   startDate: string;
   endDate: string;
   status:
-    | "ACTIVE"
-    | "EXPIRED"
-    | "CANCELLED"
-    | "PENDING_APPROVAL"
-    | "REGISTERED"
-    | "REJECTED";
+  | "ACTIVE"
+  | "EXPIRED"
+  | "CANCELLED"
+  | "PENDING_APPROVAL"
+  | "REGISTERED"
+  | "REJECTED";
   isApproved: boolean;
   isRegistered: boolean;
   hasAccessToLinks: boolean;
@@ -319,7 +319,7 @@ const MyLiveClasses = () => {
       console.error("Error initiating course access payment:", error);
       toast.error(
         error.response?.data?.message ||
-          "Failed to initiate payment. Please try again."
+        "Failed to initiate payment. Please try again."
       );
     } finally {
       setCoursePaymentInProgress(null);
@@ -331,6 +331,21 @@ const MyLiveClasses = () => {
   };
 
   const getStatusBadge = (subscription: any) => {
+    // Use the same logic as button state for consistency
+    if (subscription.status === "CANCELLED") {
+      return {
+        text: "Cancelled",
+        className: "bg-gray-500 text-white",
+      };
+    }
+
+    if (subscription.status === "REJECTED") {
+      return {
+        text: "Rejected",
+        className: "bg-red-500 text-white",
+      };
+    }
+
     if (subscription.hasAccessToLinks) {
       return {
         text: "Full Access",
@@ -338,45 +353,30 @@ const MyLiveClasses = () => {
       };
     }
 
-    if (subscription.status === "CANCELLED") {
+    if (subscription.isRegistered && !subscription.isApproved) {
       return {
-        text: "Cancelled",
-        className: "bg-gray-100 text-gray-800",
+        text: "Pending Approval",
+        className: "bg-yellow-500 text-white",
       };
     }
 
-    if (subscription.status === "REJECTED") {
-      return {
-        text: "Rejected",
-        className: "bg-red-100 text-red-800",
-      };
-    }
-
-    // If registered and course fee is not enabled, show ready to join
-    if (
-      subscription.isRegistered &&
-      !subscription.zoomSession.courseFeeEnabled
-    ) {
-      return {
-        text: "Ready to Join",
-        className: "bg-green-100 text-green-800",
-      };
-    }
-
-    // If registered and course fee is enabled, show course fee required
-    if (
-      subscription.isRegistered &&
-      subscription.zoomSession.courseFeeEnabled
-    ) {
+    if (subscription.isRegistered && subscription.isApproved && subscription.zoomSession.courseFeeEnabled) {
       return {
         text: "Course Fee Required",
-        className: "bg-blue-100 text-blue-800",
+        className: "bg-blue-500 text-white",
+      };
+    }
+
+    if (subscription.isRegistered && subscription.isApproved && !subscription.zoomSession.courseFeeEnabled) {
+      return {
+        text: "Ready to Join",
+        className: "bg-green-500 text-white",
       };
     }
 
     return {
-      text: "Registration Pending",
-      className: "bg-yellow-100 text-yellow-800",
+      text: "Unknown Status",
+      className: "bg-gray-400 text-white",
     };
   };
 
@@ -393,6 +393,83 @@ const MyLiveClasses = () => {
     if (status === "REJECTED") return "Rejected";
     if (status === "CANCELLED") return "Cancelled";
     return status;
+  };
+
+  // Function to determine button state based on subscription status
+  const getButtonState = (subscription: Subscription) => {
+    // If subscription is cancelled or rejected
+    if (subscription.status === "CANCELLED") {
+      return {
+        type: "cancelled",
+        text: "Cancelled",
+        color: "bg-gray-400 cursor-not-allowed text-gray-600",
+        disabled: true,
+        action: null
+      };
+    }
+
+    if (subscription.status === "REJECTED") {
+      return {
+        type: "rejected",
+        text: "Registration Rejected",
+        color: "bg-red-400 cursor-not-allowed text-red-600",
+        disabled: true,
+        action: null
+      };
+    }
+
+    // If user has full access (can join class)
+    if (subscription.hasAccessToLinks) {
+      return {
+        type: "join",
+        text: isJoining ? "Joining..." : "Join Live Class",
+        color: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white",
+        disabled: isJoining,
+        action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId)
+      };
+    }
+
+    // If user is registered but waiting for approval
+    if (subscription.isRegistered && !subscription.isApproved) {
+      return {
+        type: "waiting",
+        text: "Awaiting Admin Approval",
+        color: "bg-yellow-400 cursor-not-allowed text-yellow-800",
+        disabled: true,
+        action: null
+      };
+    }
+
+    // If user is registered and approved but needs to pay course fee
+    if (subscription.isRegistered && subscription.isApproved && subscription.zoomSession.courseFeeEnabled) {
+      return {
+        type: "pay",
+        text: coursePaymentInProgress === subscription.id ? "Processing..." : "Pay Course Fee",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: coursePaymentInProgress === subscription.id,
+        action: () => handlePayCourseAccess(subscription)
+      };
+    }
+
+    // If user is registered and approved but no course fee required
+    if (subscription.isRegistered && subscription.isApproved && !subscription.zoomSession.courseFeeEnabled) {
+      return {
+        type: "join",
+        text: isJoining ? "Joining..." : "Join Live Class",
+        color: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white",
+        disabled: isJoining,
+        action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId)
+      };
+    }
+
+    // Default case - subscription exists but something is wrong
+    return {
+      type: "error",
+      text: "Contact Support",
+      color: "bg-gray-400 cursor-not-allowed text-gray-600",
+      disabled: true,
+      action: null
+    };
   };
 
   const defaultThumbnail = "/images/default-class-thumbnail.jpg";
@@ -514,23 +591,48 @@ const MyLiveClasses = () => {
                 {subscription.isRegistered &&
                   !subscription.hasAccessToLinks && (
                     <div className="text-sm font-medium flex items-center bg-gray-50 p-2 rounded-lg">
-                      {subscription.zoomSession.courseFeeEnabled ? (
-                        <>
-                          <CreditCard className="h-4 w-4 text-blue-600 mr-2" />
-                          <span className="text-blue-800">
-                            Please pay the course fee to access class links
-                          </span>
-                        </>
+                      {subscription.isApproved ? (
+                        subscription.zoomSession.courseFeeEnabled ? (
+                          <>
+                            <CreditCard className="h-4 w-4 text-blue-600 mr-2" />
+                            <span className="text-blue-800">
+                              Course fee payment required to access class links
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-green-600 mr-2" />
+                            <span className="text-green-800">
+                              You're ready to join the live class
+                            </span>
+                          </>
+                        )
                       ) : (
                         <>
-                          <CheckCircle2 className="h-4 w-4 text-green-600 mr-2" />
-                          <span className="text-green-800">
-                            You can now join the live class
+                          <Clock className="h-4 w-4 text-yellow-600 mr-2" />
+                          <span className="text-yellow-800">
+                            Waiting for admin approval of your registration
                           </span>
                         </>
                       )}
                     </div>
                   )}
+                {subscription.status === "REJECTED" && (
+                  <div className="text-sm font-medium flex items-center bg-red-50 p-2 rounded-lg">
+                    <CheckCircle2 className="h-4 w-4 text-red-600 mr-2" />
+                    <span className="text-red-800">
+                      Registration was rejected. Please contact support.
+                    </span>
+                  </div>
+                )}
+                {subscription.status === "CANCELLED" && (
+                  <div className="text-sm font-medium flex items-center bg-gray-50 p-2 rounded-lg">
+                    <CheckCircle2 className="h-4 w-4 text-gray-600 mr-2" />
+                    <span className="text-gray-800">
+                      Subscription has been cancelled.
+                    </span>
+                  </div>
+                )}
                 {subscription.zoomSession.currentRange && (
                   <div className="flex items-center text-sm bg-gray-50 p-2 rounded-lg">
                     <span className="font-medium text-gray-700">Range:</span>
@@ -551,55 +653,39 @@ const MyLiveClasses = () => {
                 )}
               </CardContent>
               <CardFooter className="flex gap-2 pt-2 pb-4">
-                {subscription.isRegistered ? (
-                  subscription.hasAccessToLinks ||
-                  !subscription.zoomSession.courseFeeEnabled ? (
-                    // Show Join button if has access or course fee is not required
-                    <Button
-                      variant="default"
-                      onClick={() =>
-                        handleJoinClass(
-                          subscription.zoomSession.id,
-                          subscription.moduleId
-                        )
-                      }
-                      disabled={isJoining}
-                      className="w-full py-5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      {isJoining ? (
-                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                      ) : (
-                        <Video className="h-5 w-5 mr-2" />
-                      )}
-                      {isJoining ? "Joining..." : "Join Live Class"}
-                    </Button>
-                  ) : (
-                    // Show Pay Course Fee button if course fee is required
-                    <Button
-                      variant="default"
-                      disabled={coursePaymentInProgress === subscription.id}
-                      onClick={() => handlePayCourseAccess(subscription)}
-                      className="w-full py-5 bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      {coursePaymentInProgress === subscription.id ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <>
-                          <CreditCard className="h-5 w-5 mr-2" />
-                          Pay Course Fee
-                        </>
-                      )}
-                    </Button>
-                  )
-                ) : null}
+                {(() => {
+                  const buttonState = getButtonState(subscription);
 
-                <Button
-                  variant="outline"
-                  className="flex items-center hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
-                  onClick={() => handleCancelIntent(subscription)}
-                >
-                  Cancel
-                </Button>
+                  return (
+                    <div className="w-full flex gap-2">
+                      <Button
+                        onClick={buttonState.action || undefined}
+                        disabled={buttonState.disabled}
+                        className={`flex-1 py-5 shadow-lg hover:shadow-xl transition-all duration-300 ${buttonState.color}`}
+                      >
+                        {buttonState.type === "join" && isJoining ? (
+                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        ) : buttonState.type === "join" ? (
+                          <Video className="h-5 w-5 mr-2" />
+                        ) : buttonState.type === "pay" ? (
+                          <CreditCard className="h-5 w-5 mr-2" />
+                        ) : null}
+                        {buttonState.text}
+                      </Button>
+
+                      {/* Only show cancel button for active subscriptions */}
+                      {subscription.status !== "CANCELLED" && subscription.status !== "REJECTED" && (
+                        <Button
+                          variant="outline"
+                          className="flex items-center hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                          onClick={() => handleCancelIntent(subscription)}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
               </CardFooter>
             </Card>
           ))}

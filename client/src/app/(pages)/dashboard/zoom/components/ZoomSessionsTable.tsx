@@ -15,14 +15,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
-  Send,
   Edit,
   Trash2,
   Users,
   ChevronDown,
   ChevronUp,
   Layers,
-  UserPlus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +65,7 @@ interface ZoomLiveClass {
   registrationFee: number;
   courseFee: number;
   courseFeeEnabled: boolean;
+  registrationEnabled: boolean;
   isActive: boolean;
   hasModules: boolean;
   isFirstModuleFree: boolean;
@@ -99,7 +98,7 @@ export default function ZoomSessionsTable({
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
-  const [updatingCourseFee, setUpdatingCourseFee] = useState(false);
+  const [updatingRegistration, setUpdatingRegistration] = useState(false);
   const [processingAction, setProcessingAction] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
@@ -113,29 +112,6 @@ export default function ZoomSessionsTable({
     return new Date(dateString).toLocaleString();
   };
 
-  const handleSendReminders = async (classId: string): Promise<void> => {
-    setIsLoading(true);
-    try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/class/${classId}/send-reminders`,
-        {},
-        { withCredentials: true }
-      );
-      toast({
-        title: "Success",
-        description: "Reminders sent successfully",
-      });
-    } catch (error) {
-      console.error("Error sending reminders:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send reminders",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const toggleExpand = (classId: string) => {
     setExpandedSessions((prev) => ({
@@ -144,31 +120,31 @@ export default function ZoomSessionsTable({
     }));
   };
 
-  const handleToggleCourseFee = async (classId: string, enabled: boolean) => {
+
+  const handleToggleRegistration = async (classId: string, enabled: boolean) => {
     try {
-      setUpdatingCourseFee(true);
+      setUpdatingRegistration(true);
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/class/${classId}/toggle-course-fee`,
-        { courseFeeEnabled: enabled },
+        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/class/${classId}/toggle-registration`,
+        { registrationEnabled: enabled },
         { withCredentials: true }
       );
       refreshData();
       toast({
         title: "Success",
-        description: `Course fee requirement ${enabled ? "enabled" : "disabled"} successfully`,
+        description: `Registration ${enabled ? "enabled" : "disabled"} successfully`,
       });
     } catch (error) {
-      console.error("Error toggling course fee:", error);
+      console.error("Error toggling registration:", error);
       toast({
         title: "Error",
-        description: "Failed to update course fee setting",
+        description: "Failed to update registration setting",
         variant: "destructive",
       });
     } finally {
-      setUpdatingCourseFee(false);
+      setUpdatingRegistration(false);
     }
   };
-
   const handleViewRegistrations = async (liveClass: ZoomLiveClass) => {
     try {
       setSelectedClass(liveClass);
@@ -180,7 +156,7 @@ export default function ZoomSessionsTable({
         { withCredentials: true }
       );
 
-      setRegistrations(response.data.data);
+      setRegistrations(response.data.data.registrations);
     } catch (error) {
       console.error("Error fetching registrations:", error);
       toast({
@@ -199,11 +175,10 @@ export default function ZoomSessionsTable({
     setConfirmAction({
       type: "approve",
       title: "Confirm Approval",
-      message: `Are you sure you want to approve ${selectedUsers.length} selected user(s)? ${
-        selectedClass.courseFeeEnabled
-          ? "They will still need to pay the course fee to access the class."
-          : "They will get immediate access to the class."
-      }`,
+      message: `Are you sure you want to approve ${selectedUsers.length} selected user(s)? ${selectedClass.courseFeeEnabled
+        ? "They will still need to pay the course fee to access the class."
+        : "They will get immediate access to the class."
+        }`,
       action: async () => {
         try {
           setProcessingAction(true);
@@ -312,17 +287,15 @@ export default function ZoomSessionsTable({
     <div>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead></TableHead>
+          <TableRow>            <TableHead></TableHead>
             <TableHead>Thumbnail</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Start Time</TableHead>
             <TableHead>Reg. Fee</TableHead>
             <TableHead>Course Fee</TableHead>
-            <TableHead>Course Fee Status</TableHead>
+            <TableHead>Registration</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Subscribers</TableHead>
-            <TableHead>Modules</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -380,35 +353,35 @@ export default function ZoomSessionsTable({
                     </div>
                   )}
                 </TableCell>
-                <TableCell>{liveClass.startTime}</TableCell>
-                <TableCell>₹{liveClass.registrationFee}</TableCell>
+                <TableCell>{liveClass.startTime}</TableCell>                <TableCell>₹{liveClass.registrationFee}</TableCell>
                 <TableCell>₹{liveClass.courseFee}</TableCell>
+
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Switch
-                      checked={liveClass.courseFeeEnabled}
+                      checked={liveClass.registrationEnabled ?? true}
                       onCheckedChange={(checked) =>
-                        handleToggleCourseFee(liveClass.id, checked)
+                        handleToggleRegistration(liveClass.id, checked)
                       }
-                      disabled={updatingCourseFee}
+                      disabled={updatingRegistration}
                     />
-                    <Label>Course Fee Required</Label>
+                    <Label className="text-xs">
+                      {liveClass.registrationEnabled ?? true ? "Open" : "Closed"}
+                    </Label>
                   </div>
                 </TableCell>
+
                 <TableCell>
                   <span
-                    className={`px-2 py-1 rounded text-sm ${
-                      liveClass.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
+                    className={`px-2 py-1 rounded text-sm ${liveClass.isActive
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                      }`}
                   >
                     {liveClass.isActive ? "Active" : "Inactive"}
                   </span>
                 </TableCell>
-                <TableCell>{liveClass.subscriptions?.length || 0}</TableCell>
-                <TableCell>{liveClass.modules?.length || 0}</TableCell>
-                <TableCell className="flex space-x-2">
+                <TableCell>{liveClass.subscriptions?.length || 0}</TableCell>                <TableCell className="flex space-x-2">
                   <Link href={`/dashboard/zoom/edit/${liveClass.id}`}>
                     <Button variant="outline" size="sm" title="Edit Live Class">
                       <Edit size={16} />
@@ -417,67 +390,24 @@ export default function ZoomSessionsTable({
                   <Button
                     variant="outline"
                     size="sm"
+                    title="View Registrations"
+                    onClick={() => handleViewRegistrations(liveClass)}
+                  >
+                    <Users size={16} />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
                     title="Delete Live Class"
                     onClick={() => handleDeleteClass(liveClass)}
                   >
                     <Trash2 size={16} />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewRegistrations(liveClass)}
-                    title="Manage Registrations"
-                  >
-                    <UserPlus size={16} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendReminders(liveClass.id)}
-                    disabled={isLoading}
-                    title="Send Reminders"
-                  >
-                    <Send size={16} />
-                  </Button>
+
                 </TableCell>
               </TableRow>
-              {/* Expanded modules row */}
-              {expandedSessions[liveClass.id] &&
-                liveClass.hasModules &&
-                liveClass.modules && (
-                  <TableRow className="bg-gray-50">
-                    <TableCell colSpan={10} className="p-0">
-                      <div className="p-4">
-                        <h4 className="text-sm font-semibold mb-2">Modules</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {liveClass.modules.map((module) => (
-                            <div
-                              key={module.id}
-                              className="border rounded p-3 bg-white"
-                            >
-                              <div className="flex justify-between">
-                                <div className="font-medium">
-                                  {module.title}
-                                </div>
-                                {module.isFree && (
-                                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                                    Free
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                Position: {module.position}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Start: {module.startTime}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
+
             </React.Fragment>
           ))}
           {classes.length === 0 && (
@@ -730,7 +660,7 @@ export default function ZoomSessionsTable({
               <Button
                 variant={
                   confirmAction.type === "delete" ||
-                  confirmAction.type === "remove"
+                    confirmAction.type === "remove"
                     ? "destructive"
                     : "default"
                 }

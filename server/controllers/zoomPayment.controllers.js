@@ -4,14 +4,15 @@ import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { razorpay } from "../app.js";
 import crypto from "crypto";
-import { SendEmail } from "../email/SendEmail.js";
 
-// User: Get my subscribed Zoom classes
+// User: Get my subscribed Zoom classes (ALL registrations, but secure zoom details)
 export const getMyZoomSubscriptions = asyncHandler(async (req, res) => {
   try {
+    // Get ALL user subscriptions regardless of payment/approval status
     const subscriptions = await prisma.zoomSubscription.findMany({
       where: {
         userId: req.user.id,
+        isRegistered: true, // Only show actual registrations
       },
       include: {
         zoomLiveClass: {
@@ -24,40 +25,63 @@ export const getMyZoomSubscriptions = asyncHandler(async (req, res) => {
           },
         },
       },
-    });
+    });    // Transform data for better frontend display
+    const transformedSubscriptions = subscriptions.map((sub) => {
+      // Determine if user has full access to zoom details
+      const userHasAccess = sub.hasAccessToLinks ||
+        (!sub.zoomLiveClass.courseFeeEnabled && sub.isApproved);
 
-    // Transform data for better frontend display
-    const transformedSubscriptions = subscriptions.map((sub) => ({
-      ...sub,
-      zoomSession: {
+      const baseSession = {
         ...sub.zoomLiveClass,
         id: sub.zoomLiveClass.id,
         title: sub.zoomLiveClass.title,
         teacherName: sub.zoomLiveClass.createdBy?.name || "Instructor",
-        formattedDate: new Date(sub.zoomLiveClass.startTime).toLocaleDateString(
-          "en-US",
-          {
+        // Handle date formatting properly - check if startTime is a valid date
+        formattedDate: (() => {
+          const date = new Date(sub.zoomLiveClass.startTime);
+          if (isNaN(date.getTime())) {
+            // If invalid date, use the string as is or show a default message
+            return sub.zoomLiveClass.startTime || "Date to be announced";
+          }
+          return date.toLocaleDateString("en-US", {
             weekday: "long",
             year: "numeric",
             month: "long",
             day: "numeric",
+          });
+        })(),
+        formattedTime: (() => {
+          const date = new Date(sub.zoomLiveClass.startTime);
+          if (isNaN(date.getTime())) {
+            // If invalid date, return a default time message
+            return "Time to be announced";
           }
-        ),
-        formattedTime: new Date(sub.zoomLiveClass.startTime).toLocaleTimeString(
-          "en-US",
-          {
+          return date.toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
-          }
-        ),
+          });
+        })(),
         duration: Math.ceil(
           (new Date(sub.zoomLiveClass.endTime || new Date()) -
             new Date(sub.zoomLiveClass.startTime)) /
-            (60 * 1000)
+          (60 * 1000)
         ),
-      },
-      zoomLiveClass: undefined,
-    }));
+      };
+
+      // Only include zoom meeting details if user has full access
+      if (userHasAccess) {
+        baseSession.zoomMeetingId = sub.zoomLiveClass.zoomMeetingId;
+        baseSession.zoomMeetingPassword = sub.zoomLiveClass.zoomMeetingPassword;
+        baseSession.zoomJoinUrl = sub.zoomLiveClass.zoomJoinUrl;
+        baseSession.zoomStartUrl = sub.zoomLiveClass.zoomStartUrl;
+      }
+
+      return {
+        ...sub,
+        zoomSession: baseSession,
+        zoomLiveClass: undefined,
+      };
+    });
 
     return res
       .status(200)
@@ -88,6 +112,11 @@ export const registerForZoomLiveClass = asyncHandler(async (req, res) => {
 
   if (!zoomLiveClass.isActive) {
     throw new ApiError(400, "This Zoom live class is not active");
+  }
+
+  // Check if registration is enabled for this class
+  if (!zoomLiveClass.registrationEnabled) {
+    throw new ApiError(400, "Registration is currently disabled for this class");
   }
 
   // Validate that the registration fee is set
@@ -297,25 +326,7 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
       return { subscription, payment };
     });
 
-    // Send confirmation email
-    try {
-      await SendEmail({
-        email: req.user.email,
-        subject: "Registration Confirmed for Zoom Live Class",
-        message: {
-          name: req.user.name,
-          title: zoomLiveClass.title,
-          startTime: zoomLiveClass.startTime,
-          amount: zoomLiveClass.registrationFee,
-          receiptNumber: result.payment.receiptNumber,
-          paymentId: result.payment.razorpay_payment_id,
-          date: new Date(),
-        },
-        emailType: "ZOOM_REGISTRATION",
-      });
-    } catch (error) {
-      console.error("Error sending email:", error);
-    }
+
 
     return res
       .status(200)
@@ -334,12 +345,6 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
 // User: Pay course access fee
 export const payCourseAccess = asyncHandler(async (req, res) => {
   const { zoomLiveClassId, zoomSessionId } = req.body;
-
-  console.log("payCourseAccess called with params:", {
-    zoomLiveClassId,
-    zoomSessionId,
-    body: req.body,
-  });
 
   // If zoomSessionId is provided but zoomLiveClassId is not, use zoomSessionId
   const classId = zoomLiveClassId || zoomSessionId;
@@ -439,12 +444,7 @@ export const verifyCourseAccessPayment = asyncHandler(async (req, res) => {
     zoomSessionId,
   } = req.body;
 
-  console.log("verifyCourseAccessPayment called with params:", {
-    zoomLiveClassId,
-    zoomSessionId,
-    razorpay_payment_id,
-    razorpay_order_id,
-  });
+
 
   // Use zoomLiveClassId if provided, otherwise use zoomSessionId
   const classId = zoomLiveClassId || zoomSessionId;
@@ -529,28 +529,6 @@ export const verifyCourseAccessPayment = asyncHandler(async (req, res) => {
       return { subscription: updatedSubscription, payment };
     });
 
-    // Send confirmation email with the Zoom link details
-    try {
-      await SendEmail({
-        email: req.user.email,
-        subject: "Course Access Confirmed for Zoom Live Class",
-        message: {
-          name: req.user.name,
-          title: zoomLiveClass.title,
-          startDate: zoomLiveClass.startTime,
-          meetingLink: zoomLiveClass.zoomLink,
-          meetingId: zoomLiveClass.zoomMeetingId,
-          password: zoomLiveClass.zoomPassword,
-          amount: zoomLiveClass.courseFee,
-          receiptNumber: result.payment.receiptNumber,
-          paymentId: result.payment.razorpay_payment_id,
-          date: new Date(),
-        },
-        emailType: "ZOOM_ACCESS",
-      });
-    } catch (error) {
-      console.error("Error sending email:", error);
-    }
 
     return res
       .status(200)
@@ -588,14 +566,14 @@ export const cancelZoomSubscription = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Subscription not found");
   }
 
-  // Only active subscriptions can be cancelled
-  if (subscription.status !== "ACTIVE") {
+  // Check if subscription can be cancelled (allow multiple statuses)
+  const cancellableStatuses = ["ACTIVE", "PENDING_APPROVAL", "REGISTERED"];
+  if (!cancellableStatuses.includes(subscription.status)) {
     throw new ApiError(
       400,
       "This subscription is already cancelled or expired"
     );
   }
-
   // Update the subscription status to cancelled
   const updatedSubscription = await prisma.zoomSubscription.update({
     where: { id: subscriptionId },
@@ -603,24 +581,10 @@ export const cancelZoomSubscription = asyncHandler(async (req, res) => {
       status: "CANCELLED",
       isRegistered: false, // Reset registration status
       hasAccessToLinks: false, // Remove access to links
+      isApproved: false, // Reset approval status - user will need re-approval for future registrations
     },
   });
 
-  // Send cancellation email notification
-  try {
-    await SendEmail({
-      email: req.user.email,
-      subject: "Your Zoom Live Class Subscription Has Been Cancelled",
-      message: {
-        name: req.user.name,
-        title: subscription.zoomLiveClass.title,
-        cancelDate: new Date().toLocaleDateString(),
-      },
-      emailType: "ZOOM_CANCELLATION",
-    });
-  } catch (error) {
-    console.error("Error sending cancellation email:", error);
-  }
 
   return res
     .status(200)
@@ -650,47 +614,28 @@ export const adminCancelZoomSubscription = asyncHandler(async (req, res) => {
       zoomLiveClass: true,
     },
   });
-
   if (!subscription) {
     throw new ApiError(404, "Subscription not found");
   }
 
-  // Only active subscriptions can be cancelled
-  if (subscription.status !== "ACTIVE") {
+  // Check if subscription can be cancelled (allow multiple statuses)
+  const cancellableStatuses = ["ACTIVE", "PENDING_APPROVAL", "REGISTERED"];
+  if (!cancellableStatuses.includes(subscription.status)) {
     throw new ApiError(
       400,
       "This subscription is already cancelled or expired"
     );
   }
-
   const updatedSubscription = await prisma.zoomSubscription.update({
     where: { id },
     data: {
       status: "CANCELLED",
       isRegistered: false, // Reset registration status
       hasAccessToLinks: false, // Remove access to links
+      isApproved: false, // Reset approval status - user will need re-approval for future registrations
     },
   });
 
-  // Notify user about cancellation
-  try {
-    if (subscription.user && subscription.zoomLiveClass) {
-      await SendEmail({
-        email: subscription.user.email,
-        subject:
-          "Your Zoom Live Class Subscription Has Been Cancelled by Admin",
-        message: {
-          name: subscription.user.name,
-          title: subscription.zoomLiveClass.title,
-          cancelDate: new Date().toLocaleDateString(),
-          adminCancelled: true,
-        },
-        emailType: "ZOOM_CANCELLATION",
-      });
-    }
-  } catch (error) {
-    console.error("Error sending cancellation email:", error);
-  }
 
   return res
     .status(200)
@@ -1093,6 +1038,76 @@ export const getAllZoomSubscriptions = asyncHandler(async (req, res) => {
     );
 });
 
+// Admin: Get registrations for a specific class
+export const getClassRegistrations = asyncHandler(async (req, res) => {
+  const { id: classId } = req.params;
+
+  // Verify that the class exists
+  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id: classId },
+    select: {
+      id: true,
+      title: true,
+      registrationEnabled: true,
+      courseFeeEnabled: true,
+    },
+  });
+
+  if (!zoomLiveClass) {
+    throw new ApiError(404, "Zoom live class not found");
+  }
+
+  // Get all subscriptions/registrations for this specific class
+  const registrations = await prisma.zoomSubscription.findMany({
+    where: {
+      zoomLiveClassId: classId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      payments: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1, // Get the latest payment
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  // Transform the data to match the expected frontend structure
+  const transformedRegistrations = registrations.map((registration) => ({
+    ...registration,
+    zoomSession: {
+      id: zoomLiveClass.id,
+      title: zoomLiveClass.title,
+    },
+    latestPayment: registration.payments[0] || null,
+    payments: undefined, // Remove the payments array to avoid duplication
+  }));
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        {
+          registrations: transformedRegistrations,
+          classInfo: zoomLiveClass,
+          totalRegistrations: registrations.length,
+        },
+        `Registrations for class "${zoomLiveClass.title}" fetched successfully`
+      )
+    );
+});
+
 // Admin: Get pending approvals
 export const getPendingApprovals = asyncHandler(async (req, res) => {
   // Get all subscriptions waiting for approval
@@ -1215,36 +1230,7 @@ export const approveZoomSubscription = asyncHandler(async (req, res) => {
     },
   });
 
-  // Notify the user about the approval
-  try {
-    await SendEmail({
-      email: subscription.user.email,
-      subject: "Your Registration for Zoom Class Has Been Approved",
-      message: {
-        name: subscription.user.name,
-        title: subscription.zoomLiveClass.title,
-        date: new Date(
-          subscription.zoomLiveClass.startTime
-        ).toLocaleDateString(),
-        time: new Date(subscription.zoomLiveClass.startTime).toLocaleTimeString(
-          [],
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }
-        ),
-        courseFee: subscription.zoomLiveClass.courseFee,
-        // Inform the user they need to pay the course fee to access links
-        needsCourseFee:
-          !subscription.hasAccessToLinks &&
-          subscription.zoomLiveClass.courseFee > 0,
-      },
-      emailType: "ZOOM_APPROVAL",
-    });
-  } catch (error) {
-    console.error("Error sending approval email:", error);
-  }
+
 
   return res
     .status(200)
@@ -1295,20 +1281,7 @@ export const rejectZoomSubscription = asyncHandler(async (req, res) => {
     },
   });
 
-  // Notify the user about the rejection
-  try {
-    await SendEmail({
-      email: subscription.user.email,
-      subject: "Your Registration for Zoom Class Has Been Rejected",
-      message: {
-        name: subscription.user.name,
-        title: subscription.zoomLiveClass.title,
-      },
-      emailType: "ZOOM_REJECTION",
-    });
-  } catch (error) {
-    console.error("Error sending rejection email:", error);
-  }
+
 
   return res
     .status(200)
@@ -1317,6 +1290,114 @@ export const rejectZoomSubscription = asyncHandler(async (req, res) => {
         200,
         updatedSubscription,
         "Subscription rejected successfully"
+      )
+    );
+});
+
+// Admin: Bulk approve registrations for a specific class
+export const bulkApproveClassRegistrations = asyncHandler(async (req, res) => {
+  const { id: classId } = req.params;
+  const { userIds } = req.body;
+
+  if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+    throw new ApiError(400, "User IDs array is required and cannot be empty");
+  }
+
+  // Verify that the class exists
+  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id: classId },
+    select: {
+      id: true,
+      title: true,
+    },
+  });
+
+  if (!zoomLiveClass) {
+    throw new ApiError(404, "Zoom live class not found");
+  }
+
+  // Find all subscriptions for the specified users and class
+  const subscriptions = await prisma.zoomSubscription.findMany({
+    where: {
+      zoomLiveClassId: classId,
+      userId: { in: userIds },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (subscriptions.length === 0) {
+    throw new ApiError(404, "No subscriptions found for the specified users and class");
+  }
+
+  const results = {
+    approved: 0,
+    alreadyApproved: 0,
+    failed: 0,
+    details: [],
+  };
+
+  // Process each subscription
+  for (const subscription of subscriptions) {
+    try {
+      if (subscription.isRegistered && subscription.status === "ACTIVE") {
+        results.alreadyApproved++;
+        results.details.push({
+          userId: subscription.userId,
+          userName: subscription.user.name,
+          status: "already_approved",
+          message: "Already approved",
+        });
+        continue;
+      }
+
+      // Update subscription status
+      const updatedSubscription = await prisma.zoomSubscription.update({
+        where: { id: subscription.id },
+        data: {
+          isRegistered: true,
+          status: "ACTIVE",
+          isApproved: true,
+        },
+      });
+
+      results.approved++;
+      results.details.push({
+        userId: subscription.userId,
+        userName: subscription.user.name,
+        status: "approved",
+        message: "Successfully approved",
+      });
+
+
+    } catch (error) {
+      console.error(`Error approving subscription for user ${subscription.userId}:`, error);
+      results.failed++;
+      results.details.push({
+        userId: subscription.userId,
+        userName: subscription.user.name,
+        status: "failed",
+        message: error.message,
+      });
+    }
+  }
+
+  const message = `Bulk approval completed: ${results.approved} approved, ${results.alreadyApproved} already approved, ${results.failed} failed`;
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        results,
+        message
       )
     );
 });

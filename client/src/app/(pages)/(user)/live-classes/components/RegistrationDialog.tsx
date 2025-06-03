@@ -60,11 +60,17 @@ export default function RegistrationDialog({
       }
     };
   }, []);
-
   const initiateRegistration = async () => {
     try {
       setIsLoading(true);
       console.log("Initiating registration for class:", classData.id);
+
+      // Check if registration is enabled for this class before making API call
+      if (classData?.registrationEnabled === false) {
+        toast.error("Registration is currently disabled for this class. Please check back later or contact support.");
+        onClose();
+        return;
+      }
 
       // Create registration
       const response = await axios.post(
@@ -155,7 +161,7 @@ export default function RegistrationDialog({
       console.error("Registration initiation failed:", error);
       toast.error(
         error.response?.data?.message ||
-          "Unable to initiate registration. Please try again."
+        "Unable to initiate registration. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -263,18 +269,20 @@ export default function RegistrationDialog({
                 Note: Course fee will be payable later to access class links
               </i>
             </p>
-          </motion.div>
-
-          <motion.div
-            className="text-sm p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800"
+          </motion.div>          <motion.div
+            className={`text-sm p-3 border rounded-lg ${classData?.registrationEnabled === false
+                ? "bg-red-50 border-red-200 text-red-800"
+                : "bg-yellow-50 border-yellow-200 text-yellow-800"
+              }`}
             variants={item}
           >
-            Registration is the first step. After registering, you will need to
-            pay the course fee before the class to receive Zoom links.
+            {classData?.registrationEnabled === false ? (
+              "Registration is currently disabled for this class. Please check back later or contact support."
+            ) : (
+              "Registration is the first step. After registering, you will need to pay the course fee before the class to receive Zoom links."
+            )}
           </motion.div>
-        </motion.div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
+        </motion.div>        <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="outline"
             onClick={onClose}
@@ -285,14 +293,19 @@ export default function RegistrationDialog({
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               onClick={initiateRegistration}
-              disabled={isLoading || isProcessing}
-              className="bg-[#af1d33] hover:bg-[#8f1829] text-white rounded-full px-6 shadow-md"
+              disabled={isLoading || isProcessing || classData?.registrationEnabled === false}
+              className={`rounded-full px-6 shadow-md ${classData?.registrationEnabled === false
+                  ? "bg-gray-400 cursor-not-allowed text-gray-600"
+                  : "bg-[#af1d33] hover:bg-[#8f1829] text-white"
+                }`}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...
                 </>
+              ) : classData?.registrationEnabled === false ? (
+                "Registration Disabled"
               ) : (
                 "Pay Registration Fee"
               )}

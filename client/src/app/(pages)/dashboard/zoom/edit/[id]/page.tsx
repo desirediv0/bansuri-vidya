@@ -35,6 +35,7 @@ interface EditClassState {
   courseFee: number;
   courseFeeEnabled: boolean;
   registrationEnabled: boolean;
+  isOnClassroom?: boolean; // Add this field
   currentRaga?: string | null;
   currentOrientation?: string | null;
   isActive: boolean;
@@ -109,6 +110,35 @@ export default function EditZoomClassPage() {
     }
   };
 
+  const handleToggleClassroom = async (enabled: boolean) => {
+    if (!classData) return;
+
+    try {
+      setIsSaving(true);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/class/${classData.id}/toggle-classroom`,
+        { isOnClassroom: enabled },
+        { withCredentials: true }
+      );
+
+      setClassData({ ...classData, isOnClassroom: enabled });
+
+      toast({
+        title: "Success",
+        description: `Live class ${enabled ? "started" : "stopped"} successfully`,
+      });
+    } catch (error) {
+      console.error("Error toggling classroom:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update live class status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const updateClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!classData) return;
@@ -144,7 +174,7 @@ export default function EditZoomClassPage() {
           getPrice: false,
           registrationFee: parseFloat(classData.registrationFee.toString()),
           courseFee: parseFloat(classData.courseFee.toString()),
-          courseFeeEnabled: true, // Always true - course fee is always required
+          courseFeeEnabled: true,
           registrationEnabled: classData.registrationEnabled,
           currentRaga: classData.currentRaga,
           currentOrientation: classData.currentOrientation,
@@ -198,7 +228,6 @@ export default function EditZoomClassPage() {
 
     setClassData(newClassData);
   };
-
   // Handler for slug change
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!classData) return;
@@ -534,6 +563,24 @@ export default function EditZoomClassPage() {
                     checked={classData.isActive}
                     onCheckedChange={(checked) =>
                       setClassData({ ...classData, isActive: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <Label htmlFor="isOnClassroom" className="cursor-pointer">
+                      Live Class Control
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      Allow students to join the live class
+                    </p>
+                  </div>
+                  <Switch
+                    id="isOnClassroom"
+                    checked={classData.isOnClassroom ?? false}
+                    onCheckedChange={(checked) =>
+                      handleToggleClassroom(checked)
                     }
                   />
                 </div>

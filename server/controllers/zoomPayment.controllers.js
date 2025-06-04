@@ -31,11 +31,16 @@ export const getMyZoomSubscriptions = asyncHandler(async (req, res) => {
       const userHasAccess = sub.hasAccessToLinks ||
         (!sub.zoomLiveClass.courseFeeEnabled && sub.isApproved);
 
+      // Check if user can actually join (has access AND class is open)
+      const canJoinClass = userHasAccess && sub.zoomLiveClass.isOnClassroom;
+
       const baseSession = {
         ...sub.zoomLiveClass,
         id: sub.zoomLiveClass.id,
         title: sub.zoomLiveClass.title,
         teacherName: sub.zoomLiveClass.createdBy?.name || "Instructor",
+        isOnClassroom: sub.zoomLiveClass.isOnClassroom || false,
+        canJoinClass: canJoinClass,
         // Handle date formatting properly - check if startTime is a valid date
         formattedDate: (() => {
           const date = new Date(sub.zoomLiveClass.startTime);
@@ -68,12 +73,14 @@ export const getMyZoomSubscriptions = asyncHandler(async (req, res) => {
         ),
       };
 
-      // Only include zoom meeting details if user has full access
-      if (userHasAccess) {
+      // Only include zoom meeting details if user can actually join the class
+      if (canJoinClass) {
         baseSession.zoomMeetingId = sub.zoomLiveClass.zoomMeetingId;
         baseSession.zoomMeetingPassword = sub.zoomLiveClass.zoomMeetingPassword;
         baseSession.zoomJoinUrl = sub.zoomLiveClass.zoomJoinUrl;
         baseSession.zoomStartUrl = sub.zoomLiveClass.zoomStartUrl;
+        baseSession.zoomLink = sub.zoomLiveClass.zoomLink;
+        baseSession.zoomPassword = sub.zoomLiveClass.zoomPassword;
       }
 
       return {
@@ -274,9 +281,7 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
             userId: req.user.id,
             zoomLiveClassId,
           },
-        });
-
-        if (existingSubscription) {
+        }); if (existingSubscription) {
           // Update existing subscription
           subscription = await tx.zoomSubscription.update({
             where: { id: existingSubscription.id },
@@ -284,9 +289,10 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
               startDate,
               endDate,
               nextPaymentDate,
-              status: "PENDING_APPROVAL", // Set to pending approval
+              status: "PENDING_APPROVAL", // Set to PENDING_APPROVAL for admin review
               isRegistered: true,
-              hasAccessToLinks: false,
+              isApproved: false, // Require admin approval after registration
+              hasAccessToLinks: false, // No access until admin approval and course fee payment
               registrationPaymentId: razorpay_payment_id,
             },
           });
@@ -299,9 +305,10 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
               startDate,
               endDate,
               nextPaymentDate,
-              status: "PENDING_APPROVAL", // Set to pending approval
+              status: "PENDING_APPROVAL", // Set to PENDING_APPROVAL for admin review
               isRegistered: true,
-              hasAccessToLinks: false,
+              isApproved: false, // Require admin approval after registration
+              hasAccessToLinks: false, // No access until admin approval and course fee payment
               registrationPaymentId: razorpay_payment_id,
             },
           });
@@ -326,15 +333,13 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
       return { subscription, payment };
     });
 
-
-
     return res
       .status(200)
       .json(
         new ApiResponsive(
           200,
           result,
-          "Registration payment successful. You are now registered for this class."
+          "Registration payment successful. Your registration is pending admin approval."
         )
       );
   } catch (error) {
@@ -497,17 +502,16 @@ export const verifyCourseAccessPayment = asyncHandler(async (req, res) => {
     .toString(36)
     .substring(2, 8)
     .toUpperCase()}`;
-
   // Update subscription and create payment records in transaction
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Update subscription to provide access
+      // Update subscription to grant immediate access after course fee payment
       const updatedSubscription = await tx.zoomSubscription.update({
         where: { id: existingSubscription.id },
         data: {
-          status: "ACTIVE", // Ensure the status is active
-          isApproved: true, // Ensure it's approved
-          hasAccessToLinks: true, // Grant access to links
+          status: "ACTIVE", // Keep status as ACTIVE after course fee payment
+          hasAccessToLinks: true, // Grant immediate access to links
+          isApproved: true, // Confirm approval status
         },
       });
 
@@ -528,15 +532,13 @@ export const verifyCourseAccessPayment = asyncHandler(async (req, res) => {
 
       return { subscription: updatedSubscription, payment };
     });
-
-
     return res
       .status(200)
       .json(
         new ApiResponsive(
           200,
           result,
-          "Course access payment successful. You can now access the class."
+          "Course fee payment successful. You now have access to class materials. Classroom will be enabled by admin."
         )
       );
   } catch (error) {
@@ -893,39 +895,78 @@ export const checkSubscription = asyncHandler(async (req, res) => {
       },
     });
 
-    // Default response
+    // Default response structure
     const responseData = {
       isSubscribed: false,
       isRegistered: false,
       isApproved: false,
       hasAccessToLinks: false,
+      isOnClassroom: zoomLiveClassBySlug.isOnClassroom || false,
+      canJoinClass: false,
+      canRegister: zoomLiveClassBySlug.registrationEnabled || false,
+      showDemo: false,
+      showCourseFee: false,
+      showWaiting: false,
+      showClosed: false,
       meetingDetails: null,
       courseFeeEnabled: zoomLiveClassBySlug.courseFeeEnabled,
+      registrationEnabled: zoomLiveClassBySlug.registrationEnabled,
     };
 
-    if (subscription) {
-      // User is registered if they have a subscription and have paid registration fee
-      responseData.isRegistered = subscription.isRegistered || false;
+    if (subscription && subscription.isRegistered) {
+      // User has registered
+      responseData.isRegistered = true;
       responseData.isSubscribed = subscription.status === "ACTIVE";
       responseData.isApproved = subscription.isApproved || false;
 
-      // Determine access to links based on courseFeeEnabled flag
-      if (!zoomLiveClassBySlug.courseFeeEnabled) {
-        // If course fee is not enabled, grant access after registration
-        responseData.hasAccessToLinks = subscription.isRegistered;
-      } else {
-        // If course fee is enabled, check if user has paid course fee
-        responseData.hasAccessToLinks = subscription.hasAccessToLinks || false;
+      // Show demo access for ANY registered user (payment done, regardless of approval status)
+      // Only hide demo if status is REJECTED
+      if (subscription.status !== "REJECTED") {
+        responseData.showDemo = true;
       }
 
-      // If user has access, include Zoom details
-      if (responseData.hasAccessToLinks) {
-        responseData.meetingDetails = {
-          link: zoomLiveClassBySlug.zoomLink,
-          meetingId: zoomLiveClassBySlug.zoomMeetingId,
-          password: zoomLiveClassBySlug.zoomPassword,
-        };
+      if (subscription.isApproved) {
+        // User is approved
+        if (!zoomLiveClassBySlug.courseFeeEnabled) {
+          // No course fee required - direct access after approval
+          responseData.hasAccessToLinks = true;
+          responseData.canJoinClass = responseData.isOnClassroom;
+        } else {
+          // Course fee enabled
+          if (subscription.hasAccessToLinks) {
+            // User has paid course fee
+            responseData.hasAccessToLinks = true;
+            responseData.canJoinClass = responseData.isOnClassroom;
+            responseData.showWaiting = !responseData.isOnClassroom;
+          } else {
+            // User needs to pay course fee
+            responseData.showCourseFee = true;
+          }
+        }
+      } else if (subscription.status === "REJECTED") {
+        // User was rejected - reset to new user state
+        responseData.isRegistered = false;
+        responseData.showDemo = false;
+        responseData.showClosed = !zoomLiveClassBySlug.registrationEnabled;
+        responseData.canRegister = zoomLiveClassBySlug.registrationEnabled;
       }
+      // If PENDING_APPROVAL, user can see demo but nothing else
+    } else {
+      // User hasn't registered or registration was rejected/cancelled
+      if (zoomLiveClassBySlug.registrationEnabled) {
+        responseData.canRegister = true;
+      } else {
+        responseData.showClosed = true;
+      }
+    }
+
+    // Only provide meeting details if user can actually join
+    if (responseData.canJoinClass) {
+      responseData.meetingDetails = {
+        link: zoomLiveClassBySlug.zoomLink,
+        meetingId: zoomLiveClassBySlug.zoomMeetingId,
+        password: zoomLiveClassBySlug.zoomPassword,
+      };
     }
 
     return res
@@ -948,39 +989,75 @@ export const checkSubscription = asyncHandler(async (req, res) => {
     },
   });
 
-  // Default response
+  // Default response structure
   const responseData = {
     isSubscribed: false,
     isRegistered: false,
     isApproved: false,
     hasAccessToLinks: false,
+    isOnClassroom: zoomLiveClass.isOnClassroom || false,
+    canJoinClass: false,
+    canRegister: zoomLiveClass.registrationEnabled || false,
+    showDemo: false,
+    showCourseFee: false,
+    showWaiting: false,
+    showClosed: false,
     meetingDetails: null,
     courseFeeEnabled: zoomLiveClass.courseFeeEnabled,
+    registrationEnabled: zoomLiveClass.registrationEnabled,
   };
-
-  if (subscription) {
-    // User is registered if they have a subscription and have paid registration fee
-    responseData.isRegistered = subscription.isRegistered || false;
+  if (subscription && subscription.isRegistered) {
+    // User has registered
+    responseData.isRegistered = true;
     responseData.isSubscribed = subscription.status === "ACTIVE";
     responseData.isApproved = subscription.isApproved || false;
 
-    // Determine access to links based on courseFeeEnabled flag
-    if (!zoomLiveClass.courseFeeEnabled) {
-      // If course fee is not enabled, grant access after registration
-      responseData.hasAccessToLinks = subscription.isRegistered;
-    } else {
-      // If course fee is enabled, check if user has paid course fee
-      responseData.hasAccessToLinks = subscription.hasAccessToLinks || false;
+    // Show demo access for ANY registered user (payment done, regardless of approval status)
+    // Only hide demo if status is REJECTED
+    if (subscription.status !== "REJECTED") {
+      responseData.showDemo = true;
     }
 
-    // If user has access, include Zoom details
-    if (responseData.hasAccessToLinks) {
-      responseData.meetingDetails = {
-        link: zoomLiveClass.zoomLink,
-        meetingId: zoomLiveClass.zoomMeetingId,
-        password: zoomLiveClass.zoomPassword,
-      };
+    if (subscription.isApproved) {
+      // User is approved
+      if (!zoomLiveClass.courseFeeEnabled) {
+        // No course fee required - direct access after approval
+        responseData.hasAccessToLinks = true;
+        responseData.canJoinClass = responseData.isOnClassroom;
+      } else {
+        // Course fee enabled
+        if (subscription.hasAccessToLinks) {
+          // User has paid course fee
+          responseData.hasAccessToLinks = true;
+          responseData.canJoinClass = responseData.isOnClassroom;
+          responseData.showWaiting = !responseData.isOnClassroom;
+        } else {
+          // User needs to pay course fee
+          responseData.showCourseFee = true;
+        }
+      }
+    } else if (subscription.status === "REJECTED") {
+      // User was rejected - reset to new user state
+      responseData.isRegistered = false;
+      responseData.showDemo = false;
+      responseData.showClosed = !zoomLiveClass.registrationEnabled;
+      responseData.canRegister = zoomLiveClass.registrationEnabled;
     }
+    // If PENDING_APPROVAL, user can see demo but nothing else
+  } else {
+    // User hasn't registered or registration was rejected/cancelled
+    if (zoomLiveClass.registrationEnabled) {
+      responseData.canRegister = true;
+    } else {
+      responseData.showClosed = true;
+    }
+  }  // Only provide meeting details if user can actually join
+  if (responseData.canJoinClass) {
+    responseData.meetingDetails = {
+      link: zoomLiveClass.zoomLink,
+      meetingId: zoomLiveClass.zoomMeetingId,
+      password: zoomLiveClass.zoomPassword,
+    };
   }
 
   return res
@@ -1209,15 +1286,13 @@ export const approveZoomSubscription = asyncHandler(async (req, res) => {
       "This subscription is not in pending approval state"
     );
   }
-
   // Update the subscription status
   const updatedSubscription = await prisma.zoomSubscription.update({
     where: { id: subscriptionId },
     data: {
       status: "ACTIVE",
       isApproved: true,
-      // Note: We're not setting hasAccessToLinks to true here because
-      // this is just for approving the registration, user still needs to pay course fee
+      hasAccessToLinks: true, // Grant access to links upon course fee approval
     },
     include: {
       user: {
@@ -1272,16 +1347,17 @@ export const rejectZoomSubscription = asyncHandler(async (req, res) => {
     );
   }
 
-  // Update the subscription status
+  // Update the subscription status - Reset user completely as if they never registered
   const updatedSubscription = await prisma.zoomSubscription.update({
     where: { id: subscriptionId },
     data: {
       status: "REJECTED",
       isApproved: false,
+      isRegistered: false, // Reset registration status so they need to register again
+      hasAccessToLinks: false, // Remove any access
+      registrationPaymentId: null, // Clear payment reference
     },
   });
-
-
 
   return res
     .status(200)
@@ -1289,13 +1365,131 @@ export const rejectZoomSubscription = asyncHandler(async (req, res) => {
       new ApiResponsive(
         200,
         updatedSubscription,
-        "Subscription rejected successfully"
+        "Subscription rejected successfully. User will need to register again."
       )
     );
 });
 
 // Admin: Bulk approve registrations for a specific class
 export const bulkApproveClassRegistrations = asyncHandler(async (req, res) => {
+  const { id: classId } = req.params;
+  const { userIds } = req.body;
+
+  if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+    throw new ApiError(400, "User IDs array is required and cannot be empty");
+  }
+
+  // Verify that the class exists and get courseFeeEnabled status
+  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id: classId },
+    select: {
+      id: true,
+      title: true,
+      courseFeeEnabled: true,
+    },
+  });
+
+  if (!zoomLiveClass) {
+    throw new ApiError(404, "Zoom live class not found");
+  }
+
+  // Find all subscriptions for the specified users and class
+  const subscriptions = await prisma.zoomSubscription.findMany({
+    where: {
+      zoomLiveClassId: classId,
+      userId: { in: userIds },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (subscriptions.length === 0) {
+    throw new ApiError(404, "No subscriptions found for the specified users and class");
+  }
+
+  const results = {
+    approved: 0,
+    alreadyApproved: 0,
+    failed: 0,
+    details: [],
+  };
+
+  // Process each subscription
+  for (const subscription of subscriptions) {
+    try {
+      if (subscription.isRegistered && subscription.status === "ACTIVE" && subscription.isApproved) {
+        results.alreadyApproved++;
+        results.details.push({
+          userId: subscription.userId,
+          userName: subscription.user.name,
+          status: "already_approved",
+          message: "Already approved",
+        });
+        continue;
+      }
+
+      // Update subscription status based on courseFeeEnabled
+      const updateData = {
+        isRegistered: true,
+        status: "ACTIVE",
+        isApproved: true,
+      };
+
+      // If course fee is not enabled, grant immediate access
+      if (!zoomLiveClass.courseFeeEnabled) {
+        updateData.hasAccessToLinks = true;
+      }
+      // If course fee is enabled, user needs to pay course fee separately
+
+      await prisma.zoomSubscription.update({
+        where: { id: subscription.id },
+        data: updateData,
+      });
+
+      results.approved++;
+      results.details.push({
+        userId: subscription.userId,
+        userName: subscription.user.name,
+        status: "approved",
+        message: zoomLiveClass.courseFeeEnabled
+          ? "Approved - Course fee payment required for access"
+          : "Approved - Access granted immediately",
+      });
+
+    } catch (error) {
+      console.error(`Error approving subscription for user ${subscription.userId}:`, error);
+      results.failed++;
+      results.details.push({
+        userId: subscription.userId,
+        userName: subscription.user.name,
+        status: "failed",
+        message: error.message,
+      });
+    }
+  }
+
+  const message = `Bulk approval completed: ${results.approved} approved, ${results.alreadyApproved} already approved, ${results.failed} failed`;
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        results,
+        message
+      )
+    );
+});
+
+// Admin: Remove user access from a specific class
+export const removeUserAccess = asyncHandler(async (req, res) => {
   const { id: classId } = req.params;
   const { userIds } = req.body;
 
@@ -1338,8 +1532,8 @@ export const bulkApproveClassRegistrations = asyncHandler(async (req, res) => {
   }
 
   const results = {
-    approved: 0,
-    alreadyApproved: 0,
+    removed: 0,
+    alreadyRemoved: 0,
     failed: 0,
     details: [],
   };
@@ -1347,38 +1541,38 @@ export const bulkApproveClassRegistrations = asyncHandler(async (req, res) => {
   // Process each subscription
   for (const subscription of subscriptions) {
     try {
-      if (subscription.isRegistered && subscription.status === "ACTIVE") {
-        results.alreadyApproved++;
+      // Check if user already doesn't have access
+      if (!subscription.hasAccessToLinks && !subscription.isApproved) {
+        results.alreadyRemoved++;
         results.details.push({
           userId: subscription.userId,
           userName: subscription.user.name,
-          status: "already_approved",
-          message: "Already approved",
+          status: "already_removed",
+          message: "Access already removed",
         });
         continue;
       }
 
-      // Update subscription status
-      const updatedSubscription = await prisma.zoomSubscription.update({
+      // Remove access and reset approval status
+      await prisma.zoomSubscription.update({
         where: { id: subscription.id },
         data: {
-          isRegistered: true,
-          status: "ACTIVE",
-          isApproved: true,
+          isApproved: false, // Remove approval
+          hasAccessToLinks: false, // Remove access to zoom links
+          status: "PENDING_APPROVAL", // Set back to pending approval
         },
       });
 
-      results.approved++;
+      results.removed++;
       results.details.push({
         userId: subscription.userId,
         userName: subscription.user.name,
-        status: "approved",
-        message: "Successfully approved",
+        status: "removed",
+        message: "Access successfully removed",
       });
 
-
     } catch (error) {
-      console.error(`Error approving subscription for user ${subscription.userId}:`, error);
+      console.error(`Error removing access for user ${subscription.userId}:`, error);
       results.failed++;
       results.details.push({
         userId: subscription.userId,
@@ -1389,7 +1583,7 @@ export const bulkApproveClassRegistrations = asyncHandler(async (req, res) => {
     }
   }
 
-  const message = `Bulk approval completed: ${results.approved} approved, ${results.alreadyApproved} already approved, ${results.failed} failed`;
+  const message = `Access removal completed: ${results.removed} removed, ${results.alreadyRemoved} already removed, ${results.failed} failed`;
 
   return res
     .status(200)
@@ -1398,6 +1592,92 @@ export const bulkApproveClassRegistrations = asyncHandler(async (req, res) => {
         200,
         results,
         message
+      )
+    );
+});
+
+// User: Get demo access for registered users (after registration payment)
+export const getDemoAccess = asyncHandler(async (req, res) => {
+  const { zoomLiveClassId } = req.params;
+
+  // Check if ID is undefined or invalid
+  if (!zoomLiveClassId) {
+    throw new ApiError(400, "Invalid or missing class ID/slug");
+  }
+
+  // Try to find by ID first
+  let zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id: zoomLiveClassId },
+    select: {
+      id: true,
+      title: true,
+      zoomLink: true,
+      zoomPassword: true,
+      zoomMeetingId: true,
+      registrationEnabled: true,
+    },
+  });
+
+  // If not found by ID, try to find by slug
+  if (!zoomLiveClass) {
+    zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+      where: { slug: zoomLiveClassId },
+      select: {
+        id: true,
+        title: true,
+        zoomLink: true,
+        zoomPassword: true,
+        zoomMeetingId: true,
+        registrationEnabled: true,
+      },
+    });
+  }
+
+  if (!zoomLiveClass) {
+    console.log("Class not found by ID or slug:", zoomLiveClassId);
+    throw new ApiError(404, "Zoom live class not found");
+  }
+  // Check if user has registered for this class (paid registration fee)
+  const subscription = await prisma.zoomSubscription.findFirst({
+    where: {
+      userId: req.user.id,
+      zoomLiveClassId: zoomLiveClass.id, // Use the found class ID
+      isRegistered: true, // Must have paid registration fee
+    },
+  });
+
+  if (!subscription) {
+    throw new ApiError(403, "You must register and pay the registration fee to access demo");
+  }
+
+  // If subscription was rejected, deny demo access
+  if (subscription.status === "REJECTED") {
+    throw new ApiError(403, "Your registration was rejected. Please register again.");
+  }
+
+  // Use main zoom links as demo links for now
+  const demoDetails = {
+    classTitle: zoomLiveClass.title,
+    demoLink: zoomLiveClass.zoomLink || null,
+    demoPassword: zoomLiveClass.zoomPassword || null,
+    demoMeetingId: zoomLiveClass.zoomMeetingId || null,
+    isDemoConfigured: true, // Using main zoom links as demo
+    approvalStatus: subscription.isApproved ? "APPROVED" : "PENDING",
+    registrationStatus: subscription.status,
+    message: subscription.isApproved
+      ? "Your registration has been approved! You can now proceed with course fee payment if required."
+      : subscription.status === "PENDING_APPROVAL"
+        ? "Your registration payment is received! You can access demo class while waiting for admin approval."
+        : "Your registration is being processed. You have demo access.",
+  };
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        demoDetails,
+        "Demo access granted successfully"
       )
     );
 });

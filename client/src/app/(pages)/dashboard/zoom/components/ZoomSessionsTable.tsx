@@ -21,6 +21,8 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  Video,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +77,7 @@ interface ZoomLiveClass {
   subscriptions?: User[];
   modules?: Module[];
   slug: string;
+  isOnClassroom?: boolean; // Add this field
 }
 
 interface ZoomLiveClassTableProps {
@@ -99,6 +102,7 @@ export default function ZoomSessionsTable({
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
   const [updatingRegistration, setUpdatingRegistration] = useState(false);
+  const [joiningClass, setJoiningClass] = useState<string | null>(null);
   const [processingAction, setProcessingAction] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
@@ -283,21 +287,86 @@ export default function ZoomSessionsTable({
     setShowConfirmDialog(true);
   };
 
+  const handleToggleClassroom = async (classId: string, enabled: boolean) => {
+    try {
+      setUpdatingRegistration(true);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/class/${classId}/toggle-classroom`,
+        { isOnClassroom: enabled },
+        { withCredentials: true }
+      );
+      refreshData();
+      toast({
+        title: "Success",
+        description: `Live class ${enabled ? "started" : "stopped"} successfully`,
+      });
+    } catch (error) {
+      console.error("Error toggling classroom:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update live class status",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingRegistration(false);
+    }
+  };
+
+  const handleAdminJoinClass = async (classId: string) => {
+    try {
+      setJoiningClass(classId);
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/admin/class/${classId}/join`,
+        { withCredentials: true }
+      );
+
+      if (response.data.data.zoomLink) {
+        // Open zoom link in new tab
+        window.open(response.data.data.zoomLink, '_blank');
+        toast({
+          title: "Success",
+          description: "Joining class... Zoom should open in a new tab.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No zoom link available for this class",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error joining class:", error);
+      toast({
+        title: "Error",
+        description: "Failed to join class. Please check if the class is active.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningClass(null);
+    }
+  };
+
   return (
     <div>
       <Table>
-        <TableHeader>
-          <TableRow>            <TableHead></TableHead>
-            <TableHead>Thumbnail</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Start Time</TableHead>
-            <TableHead>Reg. Fee</TableHead>
-            <TableHead>Course Fee</TableHead>
-            <TableHead>Registration</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Subscribers</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
+        <TableHeader>          <TableRow>            <TableHead></TableHead>
+          <TableHead>Thumbnail</TableHead>
+          <TableHead>Title</TableHead>
+          <TableHead>Start Time</TableHead>
+          <TableHead>Reg. Fee</TableHead>
+          <TableHead>Course Fee</TableHead>
+          <TableHead>Registration</TableHead>
+          <TableHead className="text-center">
+            <div className="flex items-center justify-center space-x-1">
+              <Video size={14} />
+              <span>Live Status</span>
+            </div>
+          </TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Subscribers</TableHead>
+          <TableHead className="text-center">Actions</TableHead>
+        </TableRow>
         </TableHeader>
         <TableBody>
           {classes.map((liveClass) => (
@@ -354,9 +423,7 @@ export default function ZoomSessionsTable({
                   )}
                 </TableCell>
                 <TableCell>{liveClass.startTime}</TableCell>                <TableCell>₹{liveClass.registrationFee}</TableCell>
-                <TableCell>₹{liveClass.courseFee}</TableCell>
-
-                <TableCell>
+                <TableCell>₹{liveClass.courseFee}</TableCell>                <TableCell>
                   <div className="flex items-center space-x-2">
                     <Switch
                       checked={liveClass.registrationEnabled ?? true}
@@ -368,6 +435,27 @@ export default function ZoomSessionsTable({
                     <Label className="text-xs">
                       {liveClass.registrationEnabled ?? true ? "Open" : "Closed"}
                     </Label>
+                  </div>
+                </TableCell>                <TableCell className="text-center">
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={liveClass.isOnClassroom ?? false}
+                        onCheckedChange={(checked) =>
+                          handleToggleClassroom(liveClass.id, checked)
+                        }
+                        disabled={updatingRegistration}
+                      />
+                      <Label className={`text-xs font-medium ${liveClass.isOnClassroom ? 'text-green-600' : 'text-gray-500'}`}>
+                        {liveClass.isOnClassroom ? "LIVE" : "Offline"}
+                      </Label>
+                    </div>
+                    {liveClass.isOnClassroom && (
+                      <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-green-600 font-medium">On Air</span>
+                      </div>
+                    )}
                   </div>
                 </TableCell>
 
@@ -381,30 +469,47 @@ export default function ZoomSessionsTable({
                     {liveClass.isActive ? "Active" : "Inactive"}
                   </span>
                 </TableCell>
-                <TableCell>{liveClass.subscriptions?.length || 0}</TableCell>                <TableCell className="flex space-x-2">
-                  <Link href={`/dashboard/zoom/edit/${liveClass.id}`}>
-                    <Button variant="outline" size="sm" title="Edit Live Class">
-                      <Edit size={16} />
+                <TableCell>{liveClass.subscriptions?.length || 0}</TableCell>                <TableCell className="text-center">
+                  <div className="flex flex-wrap items-center justify-center gap-1">
+                    <Link href={`/dashboard/zoom/edit/${liveClass.id}`}>
+                      <Button variant="outline" size="sm" title="Edit Live Class">
+                        <Edit size={14} />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title="View Registrations"
+                      onClick={() => handleViewRegistrations(liveClass)}
+                    >
+                      <Users size={14} />
                     </Button>
-                  </Link>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    title="View Registrations"
-                    onClick={() => handleViewRegistrations(liveClass)}
-                  >
-                    <Users size={16} />
-                  </Button>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    title="Delete Live Class"
-                    onClick={() => handleDeleteClass(liveClass)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
+                    <Button
+                      variant={liveClass.isOnClassroom ? "default" : "outline"}
+                      size="sm"
+                      title={liveClass.isOnClassroom ? "Join Live Class" : "Class Not Started"}
+                      onClick={() => handleAdminJoinClass(liveClass.id)}
+                      disabled={!liveClass.isOnClassroom || joiningClass === liveClass.id}
+                      className={liveClass.isOnClassroom ? "bg-green-600 hover:bg-green-700" : ""}
+                    >
+                      {joiningClass === liveClass.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Video size={14} />
+                      )}
+                    </Button>
 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title="Delete Live Class"
+                      onClick={() => handleDeleteClass(liveClass)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
 

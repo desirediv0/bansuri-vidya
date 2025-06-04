@@ -29,7 +29,6 @@ export default function LiveClasses() {
       const response = await axios.get(apiUrl);
 
       const classesData = response.data.data;
-      console.log(`Received ${classesData.length} classes`);
 
       // Validate that each class has either id or slug for navigation
       const validatedClasses = classesData.map((classItem: any) => {

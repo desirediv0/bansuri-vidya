@@ -1,5 +1,4 @@
 "use client";
-// At the beginning of the file, before imports
 
 declare global {
   interface Window {
@@ -84,11 +83,22 @@ interface Subscription {
   isApproved: boolean;
   isRegistered: boolean;
   hasAccessToLinks: boolean;
+  canJoinClass?: boolean;
+  isOnClassroom?: boolean;
   lastPaymentDate: string;
   nextPaymentDate: string;
   zoomSession: ZoomSession;
   moduleId?: string;
   registrationPaymentId: string | null;
+  // Real-time API flags from check-subscription endpoint
+  apiFlags?: {
+    canRegister?: boolean;
+    showDemo?: boolean;
+    showCourseFee?: boolean;
+    showWaiting?: boolean;
+    showClosed?: boolean;
+    registrationEnabled?: boolean;
+  };
 }
 
 const MyLiveClasses = () => {
@@ -97,12 +107,12 @@ const MyLiveClasses = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] =
     useState<Subscription | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [coursePaymentInProgress, setCoursePaymentInProgress] = useState<
+  const [refreshing, setRefreshing] = useState(false); const [coursePaymentInProgress, setCoursePaymentInProgress] = useState<
     string | null
   >(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [demoAccessLoading, setDemoAccessLoading] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -137,7 +147,6 @@ const MyLiveClasses = () => {
       }
     };
   }, []);
-
   const fetchSubscriptions = async () => {
     setLoading(true);
     try {
@@ -146,13 +155,49 @@ const MyLiveClasses = () => {
         { withCredentials: true }
       );
 
-      // Check for subscriptions that should be active but aren't showing correctly
-      const potentialIssues = response.data.data.filter(
-        (sub: Subscription) =>
-          sub.status === "ACTIVE" && sub.isApproved && !sub.hasAccessToLinks
+      const subscriptionsData = response.data.data;
+
+      // For each subscription, get real-time status flags from check-subscription API
+      const enrichedSubscriptions = await Promise.all(
+        subscriptionsData.map(async (subscription: Subscription) => {
+          try {
+            const checkResponse = await axios.get(
+              `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/check-subscription/${subscription.zoomSession.id}${subscription.moduleId ? `?moduleId=${subscription.moduleId}` : ''
+              }`,
+              { withCredentials: true }
+            );
+
+            const apiFlags = checkResponse.data.data || {};
+
+            return {
+              ...subscription,
+              // Update with real-time status
+              isOnClassroom: apiFlags.isOnClassroom || false,
+              canJoinClass: apiFlags.canJoinClass || false,
+              hasAccessToLinks: apiFlags.hasAccessToLinks || subscription.hasAccessToLinks,
+              isApproved: apiFlags.isApproved !== undefined ? apiFlags.isApproved : subscription.isApproved,
+              // Store API flags for consistent button logic
+              apiFlags: {
+                canRegister: apiFlags.canRegister,
+                showDemo: apiFlags.showDemo,
+                showCourseFee: apiFlags.showCourseFee,
+                showWaiting: apiFlags.showWaiting,
+                showClosed: apiFlags.showClosed,
+                registrationEnabled: apiFlags.registrationEnabled,
+              }
+            };
+          } catch (error) {
+            console.error(`Error fetching real-time status for subscription ${subscription.id}:`, error);
+            // Return original subscription if API call fails
+            return {
+              ...subscription,
+              apiFlags: {}
+            };
+          }
+        })
       );
 
-      setSubscriptions(response.data.data);
+      setSubscriptions(enrichedSubscriptions);
     } catch (error) {
       console.error("Error fetching subscriptions:", error);
       toast.error("Failed to load your live classes. Please try again.");
@@ -239,12 +284,6 @@ const MyLiveClasses = () => {
         return;
       }
 
-      console.log(
-        "Initiating course access payment for class:",
-        subscription.zoomSession.id,
-        "subscription:",
-        subscription.id
-      );
 
       // Create course access payment
       const response = await axios.post(
@@ -324,14 +363,63 @@ const MyLiveClasses = () => {
     } finally {
       setCoursePaymentInProgress(null);
     }
+  }; const handleReRegister = async (subscription: Subscription) => {
+    try {
+      router.push(`/live-classes/${subscription.zoomSession.id}?reregister=true`);
+    } catch (error) {
+      console.error("Error redirecting to re-registration:", error);
+      toast.error("Failed to redirect to registration page.");
+    }
+  };
+  const handleDemoAccess = async (subscription: Subscription) => {
+    try {
+      setDemoAccessLoading(subscription.id);
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/demo-access/${subscription.zoomSession.id}`,
+        { withCredentials: true }
+      );
+
+      if (response.data.data) {
+        const demoData = response.data.data;
+
+        // Check if demo is configured and available
+        if (demoData.isDemoConfigured && demoData.demoLink) {
+          // Show demo access details in toast and open demo link
+          toast.success(`Demo access granted! Meeting ID: ${demoData.demoMeetingId}`);
+
+          // Open demo link in new tab
+          window.open(demoData.demoLink, '_blank');
+
+          // Also redirect to class page with demo flag for additional demo content
+          router.push(`/live-classes/${subscription.zoomSession.id}?demo=true`);
+        } else {
+          toast.info("Demo content will be available soon for this class.");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error accessing demo:", error);
+
+      if (error.response?.status === 403) {
+        toast.error("You need to register for this class to access demo content.");
+      } else {
+        toast.error("Failed to access demo content. Please try again.");
+      }
+    } finally {
+      setDemoAccessLoading(null);
+    }
   };
 
   const isUpcoming = (startTime: string) => {
     return new Date(startTime) > new Date();
-  };
+  }; const getStatusBadge = (subscription: any) => {
+    // Use the same logic as button state for consistency with API flags
+    const apiFlags = subscription.apiFlags || {};
+    const showDemo = apiFlags.showDemo || false;
+    const showCourseFee = apiFlags.showCourseFee || false;
+    const showWaiting = apiFlags.showWaiting || false;
+    const showClosed = apiFlags.showClosed || false;
 
-  const getStatusBadge = (subscription: any) => {
-    // Use the same logic as button state for consistency
     if (subscription.status === "CANCELLED") {
       return {
         text: "Cancelled",
@@ -346,6 +434,63 @@ const MyLiveClasses = () => {
       };
     }
 
+    // If can join class (highest priority)
+    if (subscription.canJoinClass) {
+      return {
+        text: "🔴 LIVE - Ready to Join",
+        className: "bg-green-500 text-white animate-pulse",
+      };
+    }
+
+    // If has access but waiting for class to start
+    if (subscription.hasAccessToLinks && !subscription.isOnClassroom) {
+      return {
+        text: "Full Access",
+        className: "bg-green-500 text-white",
+      };
+    }
+
+    // If API says show course fee
+    if (showCourseFee) {
+      return {
+        text: "Approved - Pay Course Fee",
+        className: "bg-blue-500 text-white",
+      };
+    }
+
+    // If API says show waiting
+    if (showWaiting) {
+      return {
+        text: "Waiting for Class",
+        className: "bg-gray-500 text-white",
+      };
+    }
+
+    // If registered and demo available
+    if (subscription.isRegistered && showDemo) {
+      return {
+        text: "Demo Available",
+        className: "bg-purple-500 text-white",
+      };
+    }
+
+    // If registered but waiting for approval
+    if (subscription.isRegistered && !subscription.isApproved) {
+      return {
+        text: "Awaiting Approval",
+        className: "bg-yellow-500 text-white",
+      };
+    }
+
+    // If registration is closed
+    if (showClosed) {
+      return {
+        text: "Registration Closed",
+        className: "bg-gray-500 text-white",
+      };
+    }
+
+    // Fallback to old logic for edge cases
     if (subscription.hasAccessToLinks) {
       return {
         text: "Full Access",
@@ -353,16 +498,9 @@ const MyLiveClasses = () => {
       };
     }
 
-    if (subscription.isRegistered && !subscription.isApproved) {
-      return {
-        text: "Pending Approval",
-        className: "bg-yellow-500 text-white",
-      };
-    }
-
     if (subscription.isRegistered && subscription.isApproved && subscription.zoomSession.courseFeeEnabled) {
       return {
-        text: "Course Fee Required",
+        text: "Approved - Pay Course Fee",
         className: "bg-blue-500 text-white",
       };
     }
@@ -393,72 +531,147 @@ const MyLiveClasses = () => {
     if (status === "REJECTED") return "Rejected";
     if (status === "CANCELLED") return "Cancelled";
     return status;
-  };
-
-  // Function to determine button state based on subscription status
+  };  // Function to determine button state based on subscription status
   const getButtonState = (subscription: Subscription) => {
-    // If subscription is cancelled or rejected
-    if (subscription.status === "CANCELLED") {
-      return {
-        type: "cancelled",
-        text: "Cancelled",
-        color: "bg-gray-400 cursor-not-allowed text-gray-600",
-        disabled: true,
-        action: null
-      };
-    }
+    // Use API response flags if available, otherwise fall back to subscription data
+    const apiFlags = subscription.apiFlags || {};
+    const showDemo = apiFlags.showDemo || false;
+    const canRegister = apiFlags.canRegister !== false; // Default to true if not specified
+    const showCourseFee = apiFlags.showCourseFee || false;
+    const showWaiting = apiFlags.showWaiting || false;
+    const showClosed = apiFlags.showClosed || false;
 
-    if (subscription.status === "REJECTED") {
-      return {
-        type: "rejected",
-        text: "Registration Rejected",
-        color: "bg-red-400 cursor-not-allowed text-red-600",
-        disabled: true,
-        action: null
-      };
-    }
+    console.log("Button state debug for subscription:", {
+      id: subscription.id,
+      title: subscription.zoomSession.title,
+      apiFlags,
+      showDemo,
+      showCourseFee,
+      showWaiting,
+      canJoinClass: subscription.canJoinClass,
+      isOnClassroom: subscription.isOnClassroom,
+      hasAccessToLinks: subscription.hasAccessToLinks,
+      isApproved: subscription.isApproved,
+      status: subscription.status
+    }); // Debug log
 
-    // If user has full access (can join class)
-    if (subscription.hasAccessToLinks) {
+    // If user can join class (has access AND admin has started the class)
+    if (subscription.canJoinClass) {
       return {
         type: "join",
         text: isJoining ? "Joining..." : "Join Live Class",
-        color: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white",
+        color: "bg-green-600 hover:bg-green-700 text-white",
         disabled: isJoining,
-        action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId)
+        action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId),
+        showDemo: false // Hide demo when can join
       };
     }
 
-    // If user is registered but waiting for approval
-    if (subscription.isRegistered && !subscription.isApproved) {
+    // If user has access but admin hasn't started the class yet
+    if (subscription.hasAccessToLinks && !subscription.isOnClassroom) {
       return {
-        type: "waiting",
-        text: "Awaiting Admin Approval",
-        color: "bg-yellow-400 cursor-not-allowed text-yellow-800",
+        type: "waiting-live",
+        text: "Waiting for Class to Start",
+        color: "bg-gray-500 cursor-not-allowed text-white",
         disabled: true,
-        action: null
+        action: null,
+        showDemo: false // Hide demo when waiting for live class
       };
     }
 
-    // If user is registered and approved but needs to pay course fee
-    if (subscription.isRegistered && subscription.isApproved && subscription.zoomSession.courseFeeEnabled) {
+    // If API says show course fee button
+    if (showCourseFee) {
       return {
         type: "pay",
         text: coursePaymentInProgress === subscription.id ? "Processing..." : "Pay Course Fee",
         color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
         disabled: coursePaymentInProgress === subscription.id,
-        action: () => handlePayCourseAccess(subscription)
+        action: () => handlePayCourseAccess(subscription),
+        showDemo: false // Hide demo when course fee is pending
       };
     }
 
-    // If user is registered and approved but no course fee required
-    if (subscription.isRegistered && subscription.isApproved && !subscription.zoomSession.courseFeeEnabled) {
+    // If API says show waiting message
+    if (showWaiting) {
       return {
-        type: "join",
-        text: isJoining ? "Joining..." : "Join Live Class",
-        color: "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white",
-        disabled: isJoining,
-        action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId)
+        type: "waiting-live",
+        text: "Waiting for Class to Start",
+        color: "bg-gray-500 cursor-not-allowed text-white",
+        disabled: true,
+        action: null,
+        showDemo: false
+      };
+    }
+
+    // If API says show demo access (for registered users) - Priority over waiting for approval
+    if (showDemo && subscription.isRegistered && subscription.status !== "REJECTED") {
+      return {
+        type: "demo",
+        text: "Demo Class Access",
+        color: "bg-gray-600 hover:bg-gray-700 text-white",
+        disabled: false,
+        action: () => handleDemoAccess(subscription),
+        showDemo: true
+      };
+    }
+
+    // If subscription is cancelled
+    if (subscription.status === "CANCELLED") {
+      return {
+        type: "cancelled",
+        text: "Re-Register",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: false,
+        action: () => handleReRegister(subscription),
+        showDemo: false
+      };
+    }
+
+    // If subscription is rejected
+    if (subscription.status === "REJECTED") {
+      return {
+        type: "rejected",
+        text: "Re-Register",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: false,
+        action: () => handleReRegister(subscription),
+        showDemo: false
+      };
+    }
+
+    // If user is registered but waiting for approval (only if demo is not available)
+    if (subscription.isRegistered && !subscription.isApproved && !showDemo) {
+      return {
+        type: "waiting",
+        text: "Awaiting Admin Approval",
+        color: "bg-gray-500 cursor-not-allowed text-white",
+        disabled: true,
+        action: null,
+        showDemo: false
+      };
+    }
+
+    // If API says show closed message (registration disabled and user not registered)
+    if (showClosed) {
+      return {
+        type: "disabled",
+        text: "Registration Closed",
+        color: "bg-gray-500 cursor-not-allowed text-white",
+        disabled: true,
+        action: null,
+        showDemo: false
+      };
+    }
+
+    // If user can register (new users when registration is open)
+    if (canRegister && !subscription.isRegistered) {
+      return {
+        type: "register",
+        text: "Register for Class",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: false,
+        action: () => handleReRegister(subscription),
+        showDemo: false
       };
     }
 
@@ -468,7 +681,8 @@ const MyLiveClasses = () => {
       text: "Contact Support",
       color: "bg-gray-400 cursor-not-allowed text-gray-600",
       disabled: true,
-      action: null
+      action: null,
+      showDemo: false
     };
   };
 
@@ -535,7 +749,7 @@ const MyLiveClasses = () => {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {subscriptions.map((subscription) => (
             <Card
               key={subscription.id}
@@ -551,8 +765,12 @@ const MyLiveClasses = () => {
                   style={{ objectFit: "cover" }}
                   className="transition-transform duration-300 hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                <div className="absolute top-4 right-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />                <div className="absolute top-4 right-4 flex flex-col items-end space-y-2">
+                  {subscription.isOnClassroom && (
+                    <Badge className="bg-red-600 text-white px-2 py-1 text-xs font-medium animate-pulse shadow-lg">
+                      🔴 LIVE
+                    </Badge>
+                  )}
                   {(() => {
                     const status = getStatusBadge(subscription);
                     return (
@@ -583,45 +801,46 @@ const MyLiveClasses = () => {
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="mr-2 h-4 w-4 text-[#af1d33]" />
                   <span>{subscription.zoomSession.formattedDate}</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="mr-2 h-4 w-4 text-[#af1d33]" />
-                  <span>{subscription.zoomSession.formattedTime}</span>
-                </div>
+                </div>                {/* Status Messages */}
                 {subscription.isRegistered &&
+                  subscription.isApproved &&
+                  subscription.zoomSession.courseFeeEnabled &&
                   !subscription.hasAccessToLinks && (
-                    <div className="text-sm font-medium flex items-center bg-gray-50 p-2 rounded-lg">
-                      {subscription.isApproved ? (
-                        subscription.zoomSession.courseFeeEnabled ? (
-                          <>
-                            <CreditCard className="h-4 w-4 text-blue-600 mr-2" />
-                            <span className="text-blue-800">
-                              Course fee payment required to access class links
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="h-4 w-4 text-green-600 mr-2" />
-                            <span className="text-green-800">
-                              You're ready to join the live class
-                            </span>
-                          </>
-                        )
-                      ) : (
-                        <>
-                          <Clock className="h-4 w-4 text-yellow-600 mr-2" />
-                          <span className="text-yellow-800">
-                            Waiting for admin approval of your registration
-                          </span>
-                        </>
-                      )}
+                    <div className="text-sm font-medium flex items-center bg-blue-50 p-2 rounded-lg">
+                      <CreditCard className="h-4 w-4 text-blue-600 mr-2" />
+                      <span className="text-blue-800">
+                        Admin approved! Pay course fee to access class links
+                      </span>
+                    </div>
+                  )}
+                {subscription.isRegistered &&
+                  subscription.isApproved &&
+                  !subscription.zoomSession.courseFeeEnabled &&
+                  subscription.hasAccessToLinks &&
+                  !subscription.isOnClassroom && (
+                    <div className="text-sm font-medium flex items-center bg-green-50 p-2 rounded-lg">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mr-2" />
+                      <span className="text-green-800">
+                        Approved! Waiting for admin to start the live class
+                      </span>
+                    </div>
+                  )}
+                {subscription.isRegistered &&
+                  !subscription.isApproved &&
+                  subscription.status !== "REJECTED" &&
+                  subscription.status !== "CANCELLED" && (
+                    <div className="text-sm font-medium flex items-center bg-yellow-50 p-2 rounded-lg">
+                      <Clock className="h-4 w-4 text-yellow-600 mr-2" />
+                      <span className="text-yellow-800">
+                        Registration received! Awaiting admin approval. You can access demo content below.
+                      </span>
                     </div>
                   )}
                 {subscription.status === "REJECTED" && (
                   <div className="text-sm font-medium flex items-center bg-red-50 p-2 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-red-600 mr-2" />
                     <span className="text-red-800">
-                      Registration was rejected. Please contact support.
+                      Registration was rejected. You can re-register for this class.
                     </span>
                   </div>
                 )}
@@ -629,7 +848,7 @@ const MyLiveClasses = () => {
                   <div className="text-sm font-medium flex items-center bg-gray-50 p-2 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-gray-600 mr-2" />
                     <span className="text-gray-800">
-                      Subscription has been cancelled.
+                      Subscription was cancelled. You can re-register if needed.
                     </span>
                   </div>
                 )}
@@ -651,38 +870,73 @@ const MyLiveClasses = () => {
                     </span>
                   </div>
                 )}
-              </CardContent>
-              <CardFooter className="flex gap-2 pt-2 pb-4">
+              </CardContent>              <CardFooter className="flex flex-col gap-3 pt-4 pb-6">
                 {(() => {
                   const buttonState = getButtonState(subscription);
 
                   return (
-                    <div className="w-full flex gap-2">
-                      <Button
-                        onClick={buttonState.action || undefined}
-                        disabled={buttonState.disabled}
-                        className={`flex-1 py-5 shadow-lg hover:shadow-xl transition-all duration-300 ${buttonState.color}`}
-                      >
-                        {buttonState.type === "join" && isJoining ? (
-                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                        ) : buttonState.type === "join" ? (
-                          <Video className="h-5 w-5 mr-2" />
-                        ) : buttonState.type === "pay" ? (
-                          <CreditCard className="h-5 w-5 mr-2" />
-                        ) : null}
-                        {buttonState.text}
-                      </Button>
+                    <div className="w-full space-y-3">
+                      {/* Main Action Button Row */}
+                      <div className="flex gap-2 w-full">
+                        <Button
+                          onClick={buttonState.action || undefined}
+                          disabled={buttonState.disabled}
+                          className={`flex-1 py-3 transition-all duration-300 ${buttonState.color}`}
+                        >
+                          {buttonState.type === "join" && isJoining ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : buttonState.type === "join" ? (
+                            <Video className="h-4 w-4 mr-2" />
+                          ) : buttonState.type === "pay" ? (
+                            <CreditCard className="h-4 w-4 mr-2" />
+                          ) : null}
+                          {buttonState.text}
+                        </Button>
 
-                      {/* Only show cancel button for active subscriptions */}
-                      {subscription.status !== "CANCELLED" && subscription.status !== "REJECTED" && (
+                        {/* Cancel button - proper size to prevent hiding */}
+                        {subscription.status !== "CANCELLED" && subscription.status !== "REJECTED" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="px-4 py-3 text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex-shrink-0"
+                            onClick={() => handleCancelIntent(subscription)}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Demo Access Button */}
+                      {buttonState.showDemo && (
                         <Button
                           variant="outline"
-                          className="flex items-center hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
-                          onClick={() => handleCancelIntent(subscription)}
+                          onClick={() => handleDemoAccess(subscription)}
+                          disabled={demoAccessLoading === subscription.id}
+                          className="w-full py-3 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
                         >
-                          Cancel
+                          {demoAccessLoading === subscription.id ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Loading Demo...
+                            </>
+                          ) : (
+                            <>
+                              <VideoIcon className="h-4 w-4 mr-2" />
+                              Access Demo Content
+                            </>
+                          )}
                         </Button>
                       )}
+
+                      {/* View Class Details Button */}
+                      <Button
+                        variant="ghost"
+                        onClick={() => router.push(`/live-classes/${subscription.zoomSession.id}`)}
+                        className="w-full py-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-300"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View Class Details
+                      </Button>
                     </div>
                   );
                 })()}
@@ -713,9 +967,7 @@ const MyLiveClasses = () => {
             >
               Yes, Cancel
             </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          </AlertDialogFooter>        </AlertDialogContent>      </AlertDialog>
     </section>
   );
 };

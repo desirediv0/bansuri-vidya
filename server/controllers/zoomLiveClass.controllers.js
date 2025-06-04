@@ -541,7 +541,6 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
       modules: true,
     },
   });
-
   // Process each class to add formatted data and remove sensitive information
   const processedClasses = zoomLiveClasses.map((liveClass) => {
     // Check if user has access to links
@@ -554,11 +553,14 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
       hasAccessToLinks = subscription.hasAccessToLinks || false;
     }
 
+    // Check if user can actually join (has access AND admin enabled classroom)
+    const canJoinClass = hasAccessToLinks && liveClass.isOnClassroom;
+
     // Create a copy of the class data
     const classData = { ...liveClass };
 
-    // Remove sensitive zoom details unless user has access
-    if (!req.user || !hasAccessToLinks) {
+    // Remove sensitive zoom details unless user can actually join
+    if (!req.user || !canJoinClass) {
       delete classData.zoomLink;
       delete classData.zoomMeetingId;
       delete classData.zoomPassword;
@@ -584,6 +586,8 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
       ...classData,
       isRegistered,
       hasAccessToLinks,
+      isOnClassroom: liveClass.isOnClassroom || false,
+      canJoinClass,
       author: classData.author || "",
       teacherName,
       formattedDate: liveClass.startTime || "",
@@ -639,7 +643,6 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
   if (!zoomLiveClass) {
     throw new ApiError(404, "Zoom live class not found");
   }
-
   // Check if user has access to links
   let isRegistered = false;
   let hasAccessToLinks = false;
@@ -650,11 +653,14 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
     hasAccessToLinks = subscription.hasAccessToLinks || false;
   }
 
+  // Check if user can actually join (has access AND admin enabled classroom)
+  const canJoinClass = hasAccessToLinks && zoomLiveClass.isOnClassroom;
+
   // Create a copy of the class data
   const classData = { ...zoomLiveClass };
 
-  // Remove sensitive zoom details unless user has access
-  if (!req.user || !hasAccessToLinks) {
+  // Remove sensitive zoom details unless user can actually join
+  if (!req.user || !canJoinClass) {
     delete classData.zoomLink;
     delete classData.zoomMeetingId;
     delete classData.zoomPassword;
@@ -679,6 +685,8 @@ export const getZoomLiveClass = asyncHandler(async (req, res) => {
     ...classData,
     isRegistered,
     hasAccessToLinks,
+    isOnClassroom: zoomLiveClass.isOnClassroom || false,
+    canJoinClass,
     author: classData.author || "",
     teacherName,
     formattedDate: zoomLiveClass.startTime || "",
@@ -759,6 +767,71 @@ export const toggleRegistrationEnabled = asyncHandler(async (req, res) => {
         updatedClass,
         `Registration ${registrationEnabled ? "enabled" : "disabled"
         } successfully`
+      )
+    );
+});
+
+// Admin: Toggle is on classroom status
+export const toggleIsOnClassroom = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { isOnClassroom } = req.body;
+
+  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id },
+  });
+
+  if (!zoomLiveClass) {
+    throw new ApiError(404, "Zoom live class not found");
+  }
+
+  const updatedClass = await prisma.zoomLiveClass.update({
+    where: { id },
+    data: { isOnClassroom: !!isOnClassroom },
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        updatedClass,
+        `Live class ${isOnClassroom ? "started" : "stopped"} successfully`
+      )
+    );
+});
+
+// Admin: Get join link for class
+export const getAdminJoinLink = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
+    where: { id },
+  });
+
+  if (!zoomLiveClass) {
+    throw new ApiError(404, "Zoom live class not found");
+  }
+
+  // Check if class is active
+  if (!zoomLiveClass.isActive) {
+    throw new ApiError(400, "Class is not active");
+  }
+
+  // Return zoom details for admin
+  const zoomDetails = {
+    zoomLink: zoomLiveClass.zoomLink || zoomLiveClass.zoomJoinUrl,
+    zoomMeetingId: zoomLiveClass.zoomMeetingId,
+    zoomPassword: zoomLiveClass.zoomPassword || zoomLiveClass.zoomMeetingPassword,
+    zoomStartUrl: zoomLiveClass.zoomStartUrl, // Admin can use start URL if available
+  };
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        zoomDetails,
+        "Admin zoom details retrieved successfully"
       )
     );
 });

@@ -123,13 +123,13 @@ export default function RegistrationDialog({
                 zoomLiveClassId: classData.id,
               },
               { withCredentials: true }
-            );
-
-            console.log(
+            ); console.log(
               "Registration verification result:",
               verifyResponse.data
             );
-            toast.success("Registration successful!");
+            toast.success("Registration successful! Awaiting admin approval.", {
+              description: "You'll be notified once approved to pay the course fee."
+            });
             onSuccess();
           } catch (error) {
             console.error("Payment verification failed:", error);
@@ -186,9 +186,8 @@ export default function RegistrationDialog({
           >
             <DialogTitle className="text-2xl font-bold text-gray-800">
               Register for Live Class
-            </DialogTitle>
-            <DialogDescription className="text-gray-600 mt-1">
-              Secure your spot by paying the registration fee
+            </DialogTitle>            <DialogDescription className="text-gray-600 mt-1">
+              Register now and await admin approval before course fee payment
             </DialogDescription>
           </motion.div>
         </DialogHeader>
@@ -271,15 +270,23 @@ export default function RegistrationDialog({
             </p>
           </motion.div>          <motion.div
             className={`text-sm p-3 border rounded-lg ${classData?.registrationEnabled === false
-                ? "bg-red-50 border-red-200 text-red-800"
-                : "bg-yellow-50 border-yellow-200 text-yellow-800"
+              ? "bg-red-50 border-red-200 text-red-800"
+              : "bg-blue-50 border-blue-200 text-blue-800"
               }`}
             variants={item}
           >
             {classData?.registrationEnabled === false ? (
               "Registration is currently disabled for this class. Please check back later or contact support."
             ) : (
-              "Registration is the first step. After registering, you will need to pay the course fee before the class to receive Zoom links."
+              <div className="space-y-2">
+                <p className="font-semibold">Registration Process:</p>
+                <div className="text-xs space-y-1">
+                  <p>1. Pay registration fee now</p>
+                  <p>2. Wait for admin approval (you'll be notified)</p>
+                  <p>3. Pay course fee after approval</p>
+                  <p>4. Receive Zoom links when class starts</p>
+                </div>
+              </div>
             )}
           </motion.div>
         </motion.div>        <DialogFooter className="gap-2 sm:gap-0">
@@ -295,8 +302,8 @@ export default function RegistrationDialog({
               onClick={initiateRegistration}
               disabled={isLoading || isProcessing || classData?.registrationEnabled === false}
               className={`rounded-full px-6 shadow-md ${classData?.registrationEnabled === false
-                  ? "bg-gray-400 cursor-not-allowed text-gray-600"
-                  : "bg-[#af1d33] hover:bg-[#8f1829] text-white"
+                ? "bg-gray-400 cursor-not-allowed text-gray-600"
+                : "bg-[#af1d33] hover:bg-[#8f1829] text-white"
                 }`}
             >
               {isLoading ? (

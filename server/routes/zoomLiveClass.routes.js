@@ -10,6 +10,8 @@ import {
   getZoomLiveClass,
   toggleCourseFeeEnabled,
   toggleRegistrationEnabled,
+  toggleIsOnClassroom,
+  getAdminJoinLink,
 } from "../controllers/zoomLiveClass.controllers.js";
 
 import {
@@ -30,6 +32,8 @@ import {
   approveZoomSubscription,
   rejectZoomSubscription,
   bulkApproveClassRegistrations,
+  removeUserAccess,
+  getDemoAccess,
 } from "../controllers/zoomPayment.controllers.js";
 
 const router = Router();
@@ -56,6 +60,11 @@ router.get(
   "/check-subscription/:zoomLiveClassId",
   verifyJWTToken,
   checkSubscription
+);
+router.get(
+  "/demo-access/:zoomLiveClassId",
+  verifyJWTToken,
+  getDemoAccess
 );
 
 // Admin routes
@@ -117,6 +126,12 @@ router.post(
   verifyAdmin,
   bulkApproveClassRegistrations
 );
+router.post(
+  "/admin/class/:id/remove-access",
+  verifyJWTToken,
+  verifyAdmin,
+  removeUserAccess
+);
 router.get(
   "/admin/pending-approvals",
   verifyJWTToken,
@@ -149,6 +164,34 @@ router.post(
   verifyJWTToken,
   verifyAdmin,
   toggleRegistrationEnabled
+);
+
+router.post(
+  "/admin/class/:id/toggle-classroom",
+  verifyJWTToken,
+  verifyAdmin,
+  toggleIsOnClassroom
+);
+
+router.get(
+  "/admin/class/:id/join",
+  verifyJWTToken,
+  verifyAdmin,
+  getAdminJoinLink
+);
+
+// Admin join class route
+router.post(
+  "/admin/join-class/:classId",
+  verifyJWTToken,
+  verifyAdmin,
+  async (req, res) => {
+    const { classId } = req.params;
+    // Logic for admin to join the class
+    // This might involve adding the admin to the class participants in the database
+    // For now, let's just send a success response
+    res.status(200).json({ message: `Admin joined the class ${classId}` });
+  }
 );
 
 export default router;

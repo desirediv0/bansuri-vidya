@@ -12,6 +12,7 @@ import {
   toggleRegistrationEnabled,
   toggleIsOnClassroom,
   getAdminJoinLink,
+  getAllLiveClassesSEO,
 } from "../controllers/zoomLiveClass.controllers.js";
 
 import {
@@ -41,6 +42,7 @@ const router = Router();
 // Public routes
 router.get("/classes", getUserZoomLiveClasses);
 router.get("/class/:idOrSlug", getZoomLiveClass);
+router.get("/seo-classes", getAllLiveClassesSEO)
 // Add compatibility route for the older "session" naming convention
 router.get("/session/:idOrSlug", getZoomLiveClass);
 

@@ -835,3 +835,35 @@ export const getAdminJoinLink = asyncHandler(async (req, res) => {
       )
     );
 });
+
+
+export const getAllLiveClassesSEO = asyncHandler(async (req, res) => {
+  const zoomLiveClasses = await prisma.zoomLiveClass.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      title: true,
+      description: true,
+      thumbnailUrl: true,
+      startTime: true,
+      slug: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        zoomLiveClasses,
+        "All active live classes fetched successfully"
+      )
+    );
+});
+

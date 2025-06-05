@@ -546,9 +546,21 @@ const MyLiveClasses = () => {
       hasAccessToLinks: subscription.hasAccessToLinks,
       isApproved: subscription.isApproved,
       status: subscription.status
-    }); // Debug log
+    });    // Debug log
 
-    // HIGHEST PRIORITY: If user can join class (has access AND admin has started the class)
+    // HIGHEST PRIORITY: If API says show course fee button
+    if (showCourseFee) {
+      return {
+        type: "pay",
+        text: coursePaymentInProgress === subscription.id ? "Processing..." : "Pay Course Fee",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: coursePaymentInProgress === subscription.id,
+        action: () => handlePayCourseAccess(subscription),
+        showDemo: false // Hide demo when course fee is pending
+      };
+    }
+
+    // SECOND PRIORITY: If user can join class (has access AND admin has started the class)
     if (subscription.canJoinClass) {
       return {
         type: "join",
@@ -558,7 +570,7 @@ const MyLiveClasses = () => {
         action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId),
         showDemo: false // Hide demo when can join
       };
-    }    // SECOND PRIORITY: If user is registered, check isOnline status immediately (no approval needed)
+    }    // THIRD PRIORITY: If user is registered, check isOnline status immediately (no approval needed)
     if (showDemo && subscription.isRegistered && subscription.status !== "REJECTED") {
       const isOnline = subscription.zoomSession.isOnline || subscription.apiFlags?.isOnline || subscription.isOnClassroom || false;
 
@@ -582,9 +594,7 @@ const MyLiveClasses = () => {
         showDemo: true,
         message: isOnline ? undefined : "This button will become active once your class session begins."
       };
-    }
-
-    // If user has access but admin hasn't started the class yet
+    }    // If user has access but admin hasn't started the class yet
     if (subscription.hasAccessToLinks && !subscription.isOnClassroom) {
       return {
         type: "waiting-live",
@@ -593,18 +603,6 @@ const MyLiveClasses = () => {
         disabled: true,
         action: null,
         showDemo: false // Hide demo when waiting for live class
-      };
-    }
-
-    // If API says show course fee button
-    if (showCourseFee) {
-      return {
-        type: "pay",
-        text: coursePaymentInProgress === subscription.id ? "Processing..." : "Pay Course Fee",
-        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
-        disabled: coursePaymentInProgress === subscription.id,
-        action: () => handlePayCourseAccess(subscription),
-        showDemo: false // Hide demo when course fee is pending
       };
     }
 

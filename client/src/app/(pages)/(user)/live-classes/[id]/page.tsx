@@ -102,9 +102,18 @@ export default function ClassDetails() {
     const canRegister = apiFlags.canRegister !== false; // Default to true if not specified
     const showCourseFee = apiFlags.showCourseFee || false;
     const showWaiting = apiFlags.showWaiting || false;
-    const showClosed = apiFlags.showClosed || false;
+    const showClosed = apiFlags.showClosed || false;    // HIGHEST PRIORITY: If API says show course fee button (admin approved but course fee not paid)
+    if (showCourseFee) {
+      return {
+        type: "pay",
+        text: "Pay Course Fee",
+        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
+        disabled: false,
+        action: () => setShowCourseAccessDialog(true)
+      };
+    }
 
-    // HIGHEST PRIORITY: If user can join class (has access AND admin has started the class)
+    // SECOND PRIORITY: If user can join class (has access AND admin has started the class)
     if (canJoinClass) {
       return {
         type: "join",
@@ -113,7 +122,7 @@ export default function ClassDetails() {
         disabled: isJoining,
         action: () => handleJoinClass()
       };
-    }    // SECOND PRIORITY: If user is registered, check isOnline status immediately (no approval needed for demo)
+    }// SECOND PRIORITY: If user is registered, check isOnline status immediately (no approval needed for demo)
     if (userIsRegistered && showDemo) {
       const isOnline = classData?.apiFlags?.isOnline || classData?.isOnClassroom || false;
 
@@ -146,20 +155,7 @@ export default function ClassDetails() {
         disabled: true,
         action: null
       };
-    }
-
-    // If API says show course fee button
-    if (showCourseFee) {
-      return {
-        type: "pay",
-        text: "Pay Course Fee",
-        color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
-        disabled: false,
-        action: () => setShowCourseAccessDialog(true)
-      };
-    }
-
-    // If API says show waiting message (for non-registered users or when demo not available)
+    }    // If API says show waiting message (for non-registered users or when demo not available)
     if (showWaiting) {
       return {
         type: "waiting-live",

@@ -26,12 +26,11 @@ export const getMyZoomSubscriptions = asyncHandler(async (req, res) => {
         },
       },
     });    // Transform data for better frontend display
-    const transformedSubscriptions = subscriptions.map((sub) => {
-      // Determine if user has full access to zoom details
+    const transformedSubscriptions = subscriptions.map((sub) => {      // Determine if user has full access to zoom details
       const userHasAccess = sub.hasAccessToLinks ||
         (!sub.zoomLiveClass.courseFeeEnabled && sub.isApproved);
 
-      // Check if user can actually join (has access AND class is open)
+      // Check if user can actually join (has access AND class is online)
       const canJoinClass = userHasAccess && sub.zoomLiveClass.isOnClassroom;
 
       const baseSession = {
@@ -922,13 +921,13 @@ export const checkSubscription = asyncHandler(async (req, res) => {
       if (subscription.status !== "REJECTED") {
         responseData.showDemo = true;
       }
-
       if (subscription.isApproved) {
         // User is approved
         if (!zoomLiveClassBySlug.courseFeeEnabled) {
           // No course fee required - direct access after approval
           responseData.hasAccessToLinks = true;
           responseData.canJoinClass = responseData.isOnClassroom;
+          responseData.showWaiting = !responseData.isOnClassroom;
         } else {
           // Course fee enabled
           if (subscription.hasAccessToLinks) {
@@ -939,6 +938,7 @@ export const checkSubscription = asyncHandler(async (req, res) => {
           } else {
             // User needs to pay course fee
             responseData.showCourseFee = true;
+            responseData.showWaiting = false;
           }
         }
       } else if (subscription.status === "REJECTED") {
@@ -1014,14 +1014,13 @@ export const checkSubscription = asyncHandler(async (req, res) => {
     // Only hide demo if status is REJECTED
     if (subscription.status !== "REJECTED") {
       responseData.showDemo = true;
-    }
-
-    if (subscription.isApproved) {
+    } if (subscription.isApproved) {
       // User is approved
       if (!zoomLiveClass.courseFeeEnabled) {
         // No course fee required - direct access after approval
         responseData.hasAccessToLinks = true;
         responseData.canJoinClass = responseData.isOnClassroom;
+        responseData.showWaiting = !responseData.isOnClassroom;
       } else {
         // Course fee enabled
         if (subscription.hasAccessToLinks) {
@@ -1032,6 +1031,7 @@ export const checkSubscription = asyncHandler(async (req, res) => {
         } else {
           // User needs to pay course fee
           responseData.showCourseFee = true;
+          responseData.showWaiting = false;
         }
       }
     } else if (subscription.status === "REJECTED") {
@@ -1283,14 +1283,15 @@ export const approveZoomSubscription = asyncHandler(async (req, res) => {
       400,
       "This subscription is not in pending approval state"
     );
-  }
-  // Update the subscription status
+  }  // Update the subscription status
   const updatedSubscription = await prisma.zoomSubscription.update({
     where: { id: subscriptionId },
     data: {
       status: "ACTIVE",
       isApproved: true,
-      hasAccessToLinks: true, // Grant access to links upon course fee approval
+      // Only grant access to links if course fee is disabled
+      // If course fee is enabled, user needs to pay it first
+      hasAccessToLinks: !subscription.zoomLiveClass.courseFeeEnabled,
     },
     include: {
       user: {

@@ -190,9 +190,7 @@ export default function ClassDetails() {
         disabled: true,
         action: null
       };
-    }
-
-    // If user can register (new users when registration is open)
+    }    // If user can register (new users when registration is open)
     if (canRegister) {
       return {
         type: "register",
@@ -200,6 +198,14 @@ export default function ClassDetails() {
         color: "bg-gradient-to-r from-[#af1d33] to-[#8f1729] hover:from-[#8f1729] hover:to-[#af1d33] text-white",
         disabled: false,
         action: () => {
+          // Check if user is authenticated before showing registration dialog
+          if (!isAuthenticated) {
+            // Redirect to auth page with live class ID and redirect URL
+            const currentUrl = window.location.pathname;
+            const authUrl = `/auth?live-class-id=${id}&redirect=${encodeURIComponent(currentUrl)}`;
+            router.push(authUrl);
+            return;
+          }
           setShowRegistrationDialog(true);
         }
       };

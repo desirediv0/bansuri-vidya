@@ -126,9 +126,8 @@ export default function RegistrationDialog({
             ); console.log(
               "Registration verification result:",
               verifyResponse.data
-            );
-            toast.success("Registration successful! Awaiting admin approval.", {
-              description: "You'll be notified once approved to pay the course fee."
+            ); toast.success("Registration successful!", {
+              description: "You can now access live class content."
             });
             onSuccess();
           } catch (error) {

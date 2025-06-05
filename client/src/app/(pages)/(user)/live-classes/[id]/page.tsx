@@ -104,13 +104,7 @@ export default function ClassDetails() {
     const showWaiting = apiFlags.showWaiting || false;
     const showClosed = apiFlags.showClosed || false;
 
-    console.log("Button state debug:", {
-      apiFlags,
-      showDemo,
-      userIsRegistered,
-      userIsApproved,
-      classData: classData?.title
-    }); // Debug log    // If user can join class (has access AND admin has started the class)
+    // HIGHEST PRIORITY: If user can join class (has access AND admin has started the class)
     if (canJoinClass) {
       return {
         type: "join",
@@ -118,6 +112,28 @@ export default function ClassDetails() {
         color: "bg-green-600 hover:bg-green-700 text-white",
         disabled: isJoining,
         action: () => handleJoinClass()
+      };
+    }    // SECOND PRIORITY: If user is registered, check isOnline status immediately (no approval needed for demo)
+    if (userIsRegistered && showDemo) {
+      const isOnline = classData?.apiFlags?.isOnline || classData?.isOnClassroom || false;
+
+      // Debug logging
+      console.log("Demo button state debug:", {
+        userIsRegistered,
+        showDemo,
+        isOnline,
+        "classData.apiFlags.isOnline": classData?.apiFlags?.isOnline,
+        "classData.isOnClassroom": classData?.isOnClassroom,
+        "classData.apiFlags": classData?.apiFlags
+      });
+
+      return {
+        type: "demo",
+        text: "Join Live Class",
+        color: isOnline ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-400 cursor-not-allowed text-gray-600",
+        disabled: !isOnline,
+        action: isOnline ? () => handleDemoAccess() : null,
+        message: isOnline ? undefined : "This button will become active once your class session begins."
       };
     }
 
@@ -141,7 +157,9 @@ export default function ClassDetails() {
         disabled: false,
         action: () => setShowCourseAccessDialog(true)
       };
-    }    // If API says show waiting message
+    }
+
+    // If API says show waiting message (for non-registered users or when demo not available)
     if (showWaiting) {
       return {
         type: "waiting-live",
@@ -150,25 +168,13 @@ export default function ClassDetails() {
         disabled: true,
         action: null
       };
-    }    // If API says show demo access (for registered users) - Priority over waiting for approval
-    if (showDemo) {
-      return {
-        type: "demo",
-        text: "Demo Class Access",
-        color: "bg-gray-600 hover:bg-gray-700 text-white",
-        disabled: false,
-        action: () => {
-          // Call demo access API
-          handleDemoAccess();
-        }
-      };
     }
 
     // If user is registered but waiting for approval (only if demo is not available)
     if (userIsRegistered && !userIsApproved) {
       return {
         type: "waiting",
-        text: "Waiting for Admin Approval",
+        text: "Please wait",
         color: "bg-gray-500 cursor-not-allowed text-white",
         disabled: true,
         action: null
@@ -212,7 +218,6 @@ export default function ClassDetails() {
   const fetchClassDetails = async () => {
     try {
       setLoading(true);
-      console.log("Fetching class details for ID:", id);
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/class/${id}`
@@ -220,12 +225,6 @@ export default function ClassDetails() {
 
       const classData = response.data.data;
 
-      console.log(
-        "Class details fetched, reg status:",
-        classData.isRegistered,
-        "access status:",
-        classData.hasAccessToLinks
-      );
       setClassData(classData);
 
       setApiChecksCompleted((prev) => ({ ...prev, fetchClassDetails: true }));
@@ -255,7 +254,6 @@ export default function ClassDetails() {
         { withCredentials: true }
       );
 
-      console.log("API Response:", response.data.data); // Debug log
 
       if (response.data.data) {
         const {
@@ -274,9 +272,8 @@ export default function ClassDetails() {
           showWaiting,
           showClosed,
           registrationEnabled,
+          isOnline,
         } = response.data.data;
-
-        console.log("Extracted API flags:", { canRegister, showDemo, showCourseFee, showWaiting, showClosed }); // Debug log
 
         setIsRegistered(!!isRegistered);
         setHasAccessToLinks(!!hasAccessToLinks);
@@ -296,7 +293,6 @@ export default function ClassDetails() {
             isOnClassroom: !!isOnClassroom,
             canJoinClass: !!canJoinClass,
             registrationEnabled: registrationEnabled,
-            // Store API flags for button logic
             apiFlags: {
               canRegister,
               showDemo,
@@ -304,6 +300,7 @@ export default function ClassDetails() {
               showWaiting,
               showClosed,
               registrationEnabled,
+              isOnline,
             },
             ...(canJoinClass && meetingDetails
               ? {
@@ -345,7 +342,6 @@ export default function ClassDetails() {
 
   const checkPaymentStatus = async () => {
     try {
-      console.log("Checking payment status for ID:", id);
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/zoom-live-class/check-subscription/${id}`,
@@ -354,11 +350,6 @@ export default function ClassDetails() {
 
       if (response.data.data) {
         const { isRegistered, hasAccessToLinks } = response.data.data;
-
-        console.log("Payment status results:", {
-          isRegistered,
-          hasAccessToLinks,
-        });
 
         setIsRegistered(!!isRegistered);
         setHasAccessToLinks(!!hasAccessToLinks);
@@ -401,7 +392,7 @@ export default function ClassDetails() {
 
     try {
       setIsJoining(true);
-      let targetId = id || classData.id;
+
       let queryParams = "";
 
       if (isModule && id) {
@@ -437,38 +428,7 @@ export default function ClassDetails() {
     }
   };
 
-  const handlePurchase = () => {
-    if (!isAuthenticated) {
-      router.push(
-        `/auth?redirect=${encodeURIComponent(window.location.pathname)}&course-slug=${classData?.courseSlug || ""}&live-class-id=${id}`
-      );
-      return;
-    }
 
-    // Check if registration is enabled for this class
-    if (classData?.registrationEnabled === false) {
-      toast({
-        title: "Registration Disabled",
-        description: "Registration is currently disabled for this class. Please check back later or contact support.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { userIsRegistered, userHasAccess } = determineUserStatus();
-
-    if (userIsRegistered || userHasAccess) {
-      toast({
-        title: "Already Registered",
-        description: userHasAccess
-          ? "You already have full access to this class."
-          : "You've already registered for this class. Please pay the course fee to access the links.",
-      });
-      return;
-    }
-
-    setShowPurchaseDialog(true);
-  };
 
   const handlePurchaseComplete = () => {
     setShowPurchaseDialog(false);
@@ -531,11 +491,9 @@ export default function ClassDetails() {
 
         if (demoLink) {
           // Open demo link in new tab
-          window.open(demoLink, "_blank");
-
-          toast({
-            title: "Demo Access Granted",
-            description: `Welcome to the demo class: ${classTitle}`,
+          window.open(demoLink, "_blank"); toast({
+            title: "Live Class Access Granted",
+            description: `Welcome to the live class: ${classTitle}`,
           });
         } else {
           toast({
@@ -598,15 +556,6 @@ export default function ClassDetails() {
   // Determine user status for all UI elements
   const { userIsRegistered, userHasAccess } = determineUserStatus();
 
-  console.log("Final render status:", {
-    stateIsRegistered: isRegistered,
-    stateHasAccess: hasAccessToLinks,
-    classDataIsRegistered: classData?.isRegistered,
-    classDataHasAccess: classData?.hasAccessToLinks,
-    computedIsRegistered: userIsRegistered,
-    computedHasAccess: userHasAccess,
-    apiChecks: apiChecksCompleted,
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F8F9FA] to-[#F3F8F8]">
@@ -887,7 +836,7 @@ export default function ClassDetails() {
                   if (userIsRegistered && !userHasAccess) {
                     return (
                       <div className="mt-2 pt-2 border-t border-gray-100">
-                        <div className="text-sm font-medium text-gray-500">
+                        {/* <div className="text-sm font-medium text-gray-500">
                           Registration Status:
                         </div>
                         <div
@@ -901,16 +850,14 @@ export default function ClassDetails() {
                             : classData?.courseFeeEnabled
                               ? "Approved - Ready for Payment"
                               : "Approved - Ready to Join"}
-                        </div>
+                        </div> */}
                       </div>
                     );
                   }
 
                   return null;
                 })()}
-              </div>
-
-              <div className="space-y-4">
+              </div>              <div className="space-y-4">
                 {(() => {
                   const buttonState = getButtonState();
 
@@ -929,9 +876,18 @@ export default function ClassDetails() {
                           <CreditCard className="mr-2 h-5 w-5" />
                         ) : buttonState.type === "register" ? (
                           <CreditCard className="mr-2 h-5 w-5" />
+                        ) : buttonState.type === "demo" ? (
+                          <Video className="mr-2 h-5 w-5" />
                         ) : null}
                         {buttonState.text}
                       </Button>
+
+                      {/* Offline message for demo button */}
+                      {buttonState.message && (
+                        <div className="text-sm text-gray-600 text-center mt-2 px-3 py-2 bg-gray-50 rounded-lg">
+                          {buttonState.message}
+                        </div>
+                      )}
 
                       {/* Status message below button */}
                       <p className="text-sm text-gray-600 mt-3 text-center">
@@ -940,6 +896,7 @@ export default function ClassDetails() {
                         {buttonState.type === "pay" && `Complete your payment (₹${classData.courseFee}) to access the live class`}
                         {buttonState.type === "join" && "You're all set! Click to join the live class"}
                         {buttonState.type === "register" && `Register now for ₹${classData.registrationFee} to join this live class`}
+                        {buttonState.type === "demo" && !buttonState.message && "Live class content available - click to access"}
                       </p>
                     </div>
                   );

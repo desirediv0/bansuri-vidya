@@ -335,12 +335,11 @@ export const verifyRegistrationPayment = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .json(
-        new ApiResponsive(
-          200,
-          result,
-          "Registration payment successful. Your registration is pending admin approval."
-        )
+      .json(new ApiResponsive(
+        200,
+        result,
+        "Registration payment successful. You can now access live class content."
+      )
       );
   } catch (error) {
     throw new ApiError(500, error.message || "Payment processing failed");
@@ -893,9 +892,7 @@ export const checkSubscription = asyncHandler(async (req, res) => {
         zoomLiveClassId: zoomLiveClassBySlug.id,
         ...(moduleId ? { moduleId } : {}),
       },
-    });
-
-    // Default response structure
+    });    // Default response structure
     const responseData = {
       isSubscribed: false,
       isRegistered: false,
@@ -911,6 +908,7 @@ export const checkSubscription = asyncHandler(async (req, res) => {
       meetingDetails: null,
       courseFeeEnabled: zoomLiveClassBySlug.courseFeeEnabled,
       registrationEnabled: zoomLiveClassBySlug.registrationEnabled,
+      isOnline: zoomLiveClassBySlug.isOnClassroom || false,  // ADD: isOnline status
     };
 
     if (subscription && subscription.isRegistered) {
@@ -988,7 +986,6 @@ export const checkSubscription = asyncHandler(async (req, res) => {
       ...(moduleId ? { moduleId } : {}),
     },
   });
-
   // Default response structure
   const responseData = {
     isSubscribed: false,
@@ -1005,6 +1002,7 @@ export const checkSubscription = asyncHandler(async (req, res) => {
     meetingDetails: null,
     courseFeeEnabled: zoomLiveClass.courseFeeEnabled,
     registrationEnabled: zoomLiveClass.registrationEnabled,
+    isOnline: zoomLiveClass.isOnClassroom || false,  // ADD: isOnline status
   };
   if (subscription && subscription.isRegistered) {
     // User has registered

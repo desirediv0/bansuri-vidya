@@ -67,6 +67,7 @@ interface ZoomSession {
   currentRange?: string;
   currentOrientation?: string;
   courseFeeEnabled: boolean;
+  isOnline?: boolean;
 }
 
 interface Subscription {
@@ -90,7 +91,6 @@ interface Subscription {
   zoomSession: ZoomSession;
   moduleId?: string;
   registrationPaymentId: string | null;
-  // Real-time API flags from check-subscription endpoint
   apiFlags?: {
     canRegister?: boolean;
     showDemo?: boolean;
@@ -98,6 +98,7 @@ interface Subscription {
     showWaiting?: boolean;
     showClosed?: boolean;
     registrationEnabled?: boolean;
+    isOnline?: boolean;
   };
 }
 
@@ -175,8 +176,7 @@ const MyLiveClasses = () => {
               isOnClassroom: apiFlags.isOnClassroom || false,
               canJoinClass: apiFlags.canJoinClass || false,
               hasAccessToLinks: apiFlags.hasAccessToLinks || subscription.hasAccessToLinks,
-              isApproved: apiFlags.isApproved !== undefined ? apiFlags.isApproved : subscription.isApproved,
-              // Store API flags for consistent button logic
+              isApproved: apiFlags.isApproved !== undefined ? apiFlags.isApproved : subscription.isApproved,              // Store API flags for consistent button logic
               apiFlags: {
                 canRegister: apiFlags.canRegister,
                 showDemo: apiFlags.showDemo,
@@ -184,6 +184,7 @@ const MyLiveClasses = () => {
                 showWaiting: apiFlags.showWaiting,
                 showClosed: apiFlags.showClosed,
                 registrationEnabled: apiFlags.registrationEnabled,
+                isOnline: apiFlags.isOnline,  // ADD: Include isOnline status
               }
             };
           } catch (error) {
@@ -381,12 +382,10 @@ const MyLiveClasses = () => {
       );
 
       if (response.data.data) {
-        const demoData = response.data.data;
-
-        // Check if demo is configured and available
+        const demoData = response.data.data;        // Check if demo is configured and available
         if (demoData.isDemoConfigured && demoData.demoLink) {
           // Show demo access details in toast and open demo link
-          toast.success(`Demo access granted! Meeting ID: ${demoData.demoMeetingId}`);
+          toast.success(`Live class access granted! Meeting ID: ${demoData.demoMeetingId}`);
 
           // Open demo link in new tab
           window.open(demoData.demoLink, '_blank');
@@ -394,16 +393,16 @@ const MyLiveClasses = () => {
           // Also redirect to class page with demo flag for additional demo content
           router.push(`/live-classes/${subscription.zoomSession.id}?demo=true`);
         } else {
-          toast.info("Demo content will be available soon for this class.");
+          toast.info("Live class content will be available soon for this class.");
         }
       }
     } catch (error: any) {
-      console.error("Error accessing demo:", error);
+      console.error("Error accessing live class:", error);
 
       if (error.response?.status === 403) {
-        toast.error("You need to register for this class to access demo content.");
+        toast.error("You need to register for this class to access live class content.");
       } else {
-        toast.error("Failed to access demo content. Please try again.");
+        toast.error("Failed to access live class content. Please try again.");
       }
     } finally {
       setDemoAccessLoading(null);
@@ -464,20 +463,16 @@ const MyLiveClasses = () => {
         text: "Waiting for Class",
         className: "bg-gray-500 text-white",
       };
-    }
-
-    // If registered and demo available
+    }    // If registered and demo available
     if (subscription.isRegistered && showDemo) {
       return {
-        text: "Demo Available",
+        text: "Live Class Available",
         className: "bg-purple-500 text-white",
       };
-    }
-
-    // If registered but waiting for approval
+    }    // If registered but waiting for approval
     if (subscription.isRegistered && !subscription.isApproved) {
       return {
-        text: "Awaiting Approval",
+        text: "Processing",
         className: "bg-yellow-500 text-white",
       };
     }
@@ -539,9 +534,7 @@ const MyLiveClasses = () => {
     const canRegister = apiFlags.canRegister !== false; // Default to true if not specified
     const showCourseFee = apiFlags.showCourseFee || false;
     const showWaiting = apiFlags.showWaiting || false;
-    const showClosed = apiFlags.showClosed || false;
-
-    console.log("Button state debug for subscription:", {
+    const showClosed = apiFlags.showClosed || false; console.log("Button state debug for subscription:", {
       id: subscription.id,
       title: subscription.zoomSession.title,
       apiFlags,
@@ -555,7 +548,7 @@ const MyLiveClasses = () => {
       status: subscription.status
     }); // Debug log
 
-    // If user can join class (has access AND admin has started the class)
+    // HIGHEST PRIORITY: If user can join class (has access AND admin has started the class)
     if (subscription.canJoinClass) {
       return {
         type: "join",
@@ -564,6 +557,30 @@ const MyLiveClasses = () => {
         disabled: isJoining,
         action: () => handleJoinClass(subscription.zoomSession.id, subscription.moduleId),
         showDemo: false // Hide demo when can join
+      };
+    }    // SECOND PRIORITY: If user is registered, check isOnline status immediately (no approval needed)
+    if (showDemo && subscription.isRegistered && subscription.status !== "REJECTED") {
+      const isOnline = subscription.zoomSession.isOnline || subscription.apiFlags?.isOnline || subscription.isOnClassroom || false;
+
+      // Debug logging
+      console.log("MyLiveClasses demo button debug:", {
+        showDemo,
+        isRegistered: subscription.isRegistered,
+        status: subscription.status,
+        isOnline,
+        "zoomSession.isOnline": subscription.zoomSession.isOnline,
+        "apiFlags.isOnline": subscription.apiFlags?.isOnline,
+        "isOnClassroom": subscription.isOnClassroom
+      });
+
+      return {
+        type: "demo",
+        text: "Join Live Class",
+        color: isOnline ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-400 cursor-not-allowed text-gray-600",
+        disabled: !isOnline,
+        action: isOnline ? () => handleDemoAccess(subscription) : null,
+        showDemo: true,
+        message: isOnline ? undefined : "This button will become active once your class session begins."
       };
     }
 
@@ -603,18 +620,6 @@ const MyLiveClasses = () => {
       };
     }
 
-    // If API says show demo access (for registered users) - Priority over waiting for approval
-    if (showDemo && subscription.isRegistered && subscription.status !== "REJECTED") {
-      return {
-        type: "demo",
-        text: "Demo Class Access",
-        color: "bg-gray-600 hover:bg-gray-700 text-white",
-        disabled: false,
-        action: () => handleDemoAccess(subscription),
-        showDemo: true
-      };
-    }
-
     // If subscription is cancelled
     if (subscription.status === "CANCELLED") {
       return {
@@ -637,13 +642,11 @@ const MyLiveClasses = () => {
         action: () => handleReRegister(subscription),
         showDemo: false
       };
-    }
-
-    // If user is registered but waiting for approval (only if demo is not available)
+    }    // If user is registered but waiting for approval (only if demo is not available)
     if (subscription.isRegistered && !subscription.isApproved && !showDemo) {
       return {
         type: "waiting",
-        text: "Awaiting Admin Approval",
+        text: "Please wait",
         color: "bg-gray-500 cursor-not-allowed text-white",
         disabled: true,
         action: null,
@@ -825,17 +828,6 @@ const MyLiveClasses = () => {
                       </span>
                     </div>
                   )}
-                {subscription.isRegistered &&
-                  !subscription.isApproved &&
-                  subscription.status !== "REJECTED" &&
-                  subscription.status !== "CANCELLED" && (
-                    <div className="text-sm font-medium flex items-center bg-yellow-50 p-2 rounded-lg">
-                      <Clock className="h-4 w-4 text-yellow-600 mr-2" />
-                      <span className="text-yellow-800">
-                        Registration received! Awaiting admin approval. You can access demo content below.
-                      </span>
-                    </div>
-                  )}
                 {subscription.status === "REJECTED" && (
                   <div className="text-sm font-medium flex items-center bg-red-50 p-2 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-red-600 mr-2" />
@@ -875,8 +867,7 @@ const MyLiveClasses = () => {
                   const buttonState = getButtonState(subscription);
 
                   return (
-                    <div className="w-full space-y-3">
-                      {/* Main Action Button Row */}
+                    <div className="w-full space-y-3">                      {/* Main Action Button Row */}
                       <div className="flex gap-2 w-full">
                         <Button
                           onClick={buttonState.action || undefined}
@@ -885,7 +876,7 @@ const MyLiveClasses = () => {
                         >
                           {buttonState.type === "join" && isJoining ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          ) : buttonState.type === "join" ? (
+                          ) : buttonState.type === "join" || buttonState.type === "demo" ? (
                             <Video className="h-4 w-4 mr-2" />
                           ) : buttonState.type === "pay" ? (
                             <CreditCard className="h-4 w-4 mr-2" />
@@ -906,26 +897,11 @@ const MyLiveClasses = () => {
                         )}
                       </div>
 
-                      {/* Demo Access Button */}
-                      {buttonState.showDemo && (
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDemoAccess(subscription)}
-                          disabled={demoAccessLoading === subscription.id}
-                          className="w-full py-3 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
-                        >
-                          {demoAccessLoading === subscription.id ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Loading Demo...
-                            </>
-                          ) : (
-                            <>
-                              <VideoIcon className="h-4 w-4 mr-2" />
-                              Access Demo Content
-                            </>
-                          )}
-                        </Button>
+                      {/* Offline Message for Demo Button */}
+                      {buttonState.message && (
+                        <div className="text-sm text-gray-600 text-center px-2 py-1 bg-gray-50 rounded">
+                          {buttonState.message}
+                        </div>
                       )}
 
                       {/* View Class Details Button */}

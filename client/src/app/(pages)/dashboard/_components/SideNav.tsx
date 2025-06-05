@@ -25,6 +25,7 @@ import {
   LogOut,
   ChevronDown,
   LucideIcon,
+  Code,
 } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -120,11 +121,15 @@ const navItems: NavItem[] = [
     title: "Live Classes",
     href: "/dashboard/zoom",
     icon: Video,
-  },
-  {
+  }, {
     title: "Contact Form",
     href: "/dashboard/contacts",
     icon: MessageSquare,
+  },
+  {
+    title: "Tracking Scripts",
+    href: "/dashboard/tracking-scripts",
+    icon: Code,
   },
 ];
 
@@ -204,8 +209,7 @@ const navGroups: NavGroups = {
         icon: MapPinHouse,
       },
     ],
-  },
-  feedback: {
+  }, feedback: {
     title: "Feedback & Support",
     items: [
       {
@@ -232,6 +236,16 @@ const navGroups: NavGroups = {
         title: "Certificates",
         href: "/dashboard/certificates",
         icon: Award,
+      },
+    ],
+  },
+  tools: {
+    title: "Tools & Settings",
+    items: [
+      {
+        title: "Tracking Scripts",
+        href: "/dashboard/tracking-scripts",
+        icon: Code,
       },
     ],
   },
@@ -392,9 +406,8 @@ function SidenavItems() {
               <span>View All Courses</span>
             </div>
             <ChevronDown
-              className={`h-4 w-4 transform transition-transform duration-200 ${
-                isCoursesDropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`h-4 w-4 transform transition-transform duration-200 ${isCoursesDropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
 
@@ -548,9 +561,8 @@ function MobileNav() {
                 <span>View All Courses</span>
               </div>
               <ChevronDown
-                className={`h-4 w-4 transform transition-transform duration-200 ${
-                  isCoursesDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`h-4 w-4 transform transition-transform duration-200 ${isCoursesDropdownOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
 

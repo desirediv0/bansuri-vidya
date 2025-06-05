@@ -19,9 +19,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const shouldShowFooter = !hideFooterPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
-  );
-
-  return (
+  ); return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         {shouldShowHeader && <Header />}

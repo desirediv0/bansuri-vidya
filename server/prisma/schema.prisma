@@ -517,6 +517,21 @@ model ZoomClassReview {
   @@index([zoomClassId])
 }
 
+model TrackingScript {
+  id          String         @id @default(uuid())
+  name        String // e.g., "Facebook Pixel", "Google Analytics"
+  description String? // Optional description
+  script      String         @db.Text // The actual script content
+  isActive    Boolean        @default(true)
+  position    ScriptPosition @default(HEAD) // Where to inject the script
+  priority    Int            @default(0) // Order of execution (higher priority loads first)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([isActive])
+  @@index([position])
+}
+
 enum Role {
   STUDENT
   ADMIN
@@ -561,4 +576,10 @@ enum PaymentType {
   REGISTRATION
   COURSE_ACCESS
   FULL_PAYMENT
+}
+
+enum ScriptPosition {
+  HEAD
+  BODY_START
+  BODY_END
 }

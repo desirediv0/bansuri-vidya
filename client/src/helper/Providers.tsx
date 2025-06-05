@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { GoogleAuthProvider } from "./GoogleAuthProvider";
 import { AuthProvider } from "./AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import TrackingScripts from "@/components/TrackingScripts";
 
 export default function ClientProviders({
   children,
@@ -16,6 +17,7 @@ export default function ClientProviders({
         <Suspense fallback={<div>Loading auth...</div>}>
           <AuthProvider>
             {children}
+            <TrackingScripts />
             <Toaster />
           </AuthProvider>
         </Suspense>

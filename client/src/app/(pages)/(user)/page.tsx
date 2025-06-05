@@ -3,7 +3,6 @@
 import { ThumbsUp, Youtube } from "lucide-react";
 import CustomButton from "../_components/CustomButton";
 import { HeroSection } from "../_components/HeroSectionProps";
-import Link from "next/link";
 import LearningLanding from "../_components/LearningLanding";
 import CourseHero from "../_components/CourseHero";
 import TestimonialsSection from "../_components/testimonial/testimonial-section";

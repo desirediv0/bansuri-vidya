@@ -948,13 +948,15 @@ export const checkSubscription = asyncHandler(async (req, res) => {
         responseData.showClosed = !zoomLiveClassBySlug.registrationEnabled;
         responseData.canRegister = zoomLiveClassBySlug.registrationEnabled;
       }
-      // If PENDING_APPROVAL, user can see demo but nothing else
-    } else {
+      // If PENDING_APPROVAL, user can see demo but nothing else    } else {
       // User hasn't registered or registration was rejected/cancelled
-      if (zoomLiveClassBySlug.registrationEnabled) {
-        responseData.canRegister = true;
-      } else {
+      // Always set showClosed if registration is disabled, regardless of user status
+      if (!zoomLiveClassBySlug.registrationEnabled) {
         responseData.showClosed = true;
+        responseData.canRegister = false;
+      } else {
+        responseData.canRegister = true;
+        responseData.showClosed = false;
       }
     }
 
@@ -1041,15 +1043,17 @@ export const checkSubscription = asyncHandler(async (req, res) => {
       responseData.showClosed = !zoomLiveClass.registrationEnabled;
       responseData.canRegister = zoomLiveClass.registrationEnabled;
     }
-    // If PENDING_APPROVAL, user can see demo but nothing else
-  } else {
+    // If PENDING_APPROVAL, user can see demo but nothing else  } else {
     // User hasn't registered or registration was rejected/cancelled
-    if (zoomLiveClass.registrationEnabled) {
-      responseData.canRegister = true;
-    } else {
+    // Always set showClosed if registration is disabled, regardless of user status
+    if (!zoomLiveClass.registrationEnabled) {
       responseData.showClosed = true;
+      responseData.canRegister = false;
+    } else {
+      responseData.canRegister = true;
+      responseData.showClosed = false;
     }
-  }  // Only provide meeting details if user can actually join
+  }// Only provide meeting details if user can actually join
   if (responseData.canJoinClass) {
     responseData.meetingDetails = {
       link: zoomLiveClass.zoomLink,

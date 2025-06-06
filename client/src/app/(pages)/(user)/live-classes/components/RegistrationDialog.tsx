@@ -59,14 +59,20 @@ export default function RegistrationDialog({
         existingScript.parentNode.removeChild(existingScript);
       }
     };
-  }, []);
-  const initiateRegistration = async () => {
+  }, []); const initiateRegistration = async () => {
     try {
       setIsLoading(true);
       console.log("Initiating registration for class:", classData.id);
 
       // Check if registration is enabled for this class before making API call
       if (classData?.registrationEnabled === false) {
+        toast.error("Registration is currently disabled for this class. Please check back later or contact support.");
+        onClose();
+        return;
+      }
+
+      // Double check registration status from API flags
+      if (classData?.apiFlags?.registrationEnabled === false) {
         toast.error("Registration is currently disabled for this class. Please check back later or contact support.");
         onClose();
         return;

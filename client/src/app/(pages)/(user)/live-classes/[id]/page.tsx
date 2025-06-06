@@ -16,6 +16,7 @@ import {
   Video,
   Copy,
   CreditCard,
+  Book,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -175,19 +176,11 @@ export default function ClassDetails() {
         disabled: true,
         action: null
       };
-    }
+    }    // Check registration status for button display
+    const registrationOpen = classData?.registrationEnabled !== false;
 
-    // If API says show closed message (registration disabled and user not registered)
-    if (showClosed) {
-      return {
-        type: "disabled",
-        text: "Registration Closed",
-        color: "bg-gray-500 cursor-not-allowed text-white",
-        disabled: true,
-        action: null
-      };
-    }    // If user can register (new users when registration is open)
-    if (canRegister) {
+    // If user can register (new users when registration is open)
+    if (canRegister && registrationOpen) {
       return {
         type: "register",
         text: "Register for Class",
@@ -204,6 +197,17 @@ export default function ClassDetails() {
           }
           setShowRegistrationDialog(true);
         }
+      };
+    }
+
+    // If registration is closed, show disabled button to all users (both registered and non-registered)
+    if (!registrationOpen || showClosed) {
+      return {
+        type: "disabled",
+        text: "Registration Closed",
+        color: "bg-gray-500 cursor-not-allowed text-white",
+        disabled: true,
+        action: null
       };
     }
 
@@ -557,372 +561,461 @@ export default function ClassDetails() {
 
   // Determine user status for all UI elements
   const { userIsRegistered, userHasAccess } = determineUserStatus();
-
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F8F9FA] to-[#F3F8F8]">
-      <HeroSection
-        smallText="Live Classes"
-        title="Learn from expert instructors in real-time"
-        variant="page"
-        image={{
-          src: "/rupak-sir.webp",
-          alt: "Live flute classes",
-        }}
-      />
-      <div className="container mx-auto px-4 py-12">
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/live-classes")}
-          className="mb-6 hover:bg-gray-100 transition-colors"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to all classes
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Enhanced Hero Section with bigger image like courses page */}
+      <div className="relative bg-gradient-to-r from-red-800 via-red-700 to-red-800 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+        </div>
+        <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl relative z-10 mt-10">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
+            {/* Hero Image - Left side */}
+            <div className="order-1 flex-shrink-0 w-full lg:w-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6 }}
+                className="relative"
+              >
+                <div className="w-full lg:w-[550px] h-56 lg:h-[350px] rounded-2xl overflow-hidden shadow-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+                  <Image
+                    src={classData.thumbnailUrl}
+                    alt={classData.title}
+                    fill
+                    priority
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Course Info - Right side */}
+            <div className="order-1 space-y-6 flex-1 ">
+
+
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2">
+
+                {isAuthenticated && userIsRegistered && (
+                  <Badge className="bg-green-600 text-white font-semibold px-4 py-2">
+                    ✓ Registered
+                  </Badge>
+                )}
+
+
+              </div>              {/* Title and Description */}
+              <div>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                  {classData.title}
+                </h1>
+                <p className="text-lg md:text-xl text-red-100 leading-relaxed mb-6">
+                  {classData.description || "Join our interactive live flute class and learn from expert instructors"}
+                </p>
+              </div>
+
+              {/* Class Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center text-red-100">
+                  <Calendar className="mr-2 h-5 w-5" />
+                  <span>{classData.formattedDate}</span>
+                </div>
+
+                <div className="flex items-center text-red-100">
+                  <User className="mr-2 h-5 w-5" />
+                  <span>{classData.teacherName}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Main Content - 60% width */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-2"
+            className="lg:col-span-3 order-2 lg:order-1 space-y-6 lg:space-y-8"
           >
-            <div className="relative h-64 md:h-96 w-full rounded-xl overflow-hidden mb-6">
-              <Image
-                src={
-                  classData.thumbnailUrl ||
-                  "/images/default-class-thumbnail.jpg"
-                }
-                alt={classData.title}
-                fill
-                priority
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-
-              {isAuthenticated && userIsRegistered && (
-                <div className="absolute top-4 right-4">
-                  <Badge
-                    variant="secondary"
-                    className="px-3 py-1.5 bg-green-600 text-white font-medium"
-                  >
-                    Registered
-                  </Badge>
-                </div>
-              )}
-
-              <div className="absolute bottom-4 left-4 right-4">
-                <h1 className="text-white text-2xl md:text-4xl font-bold mb-2">
-                  {classData.title}
-                </h1>
-                <div className="flex flex-wrap gap-2 items-center">
-                  <Badge
-                    variant="outline"
-                    className="bg-white/20 backdrop-blur-sm text-white border-white/30"
-                  >
-                    {classData.category || "Flute"}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="bg-white/20 backdrop-blur-sm text-white border-white/30"
-                  >
-                    {classData.level || "All Levels"}
-                  </Badge>
+            {/* About Class Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="p-8">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                  <Info className="mr-3 h-6 w-6 text-red-600" />
+                  About This Class
+                </h2>
+                <div className="prose max-w-none">
+                  <p className="text-gray-700 leading-relaxed text-lg">
+                    {classData.description ||
+                      "No description available for this class."}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">
-                About This Class
-              </h2>
-              <p className="text-gray-700 whitespace-pre-line">
-                {classData.description ||
-                  "No description available for this class."}
-              </p>
-            </div>
+            {/* Class Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-800 mb-2">Class Date</h3>
+                <p className="text-gray-600">{classData.formattedDate}</p>
+              </div>
 
-            {classData.hasModules &&
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-800 mb-2">Time</h3>
+                <p className="text-gray-600">{classData.formattedTime}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="font-semibold text-gray-800 mb-2">Instructor</h3>
+                <p className="text-gray-600">{classData.teacherName}</p>
+              </div>
+            </div>            {classData.hasModules &&
               classData.modules &&
               classData.modules.length > 0 && (
-                <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                  <h2 className="text-xl font-bold mb-4 text-gray-800">
-                    Class Modules
-                  </h2>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                      <Book className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">Class Modules</h2>
+                      <p className="text-sm text-gray-600">{classData.modules.length} sessions available</p>
+                    </div>
+                  </div>
                   <Accordion type="single" collapsible className="space-y-3">
                     {classData.modules.map((module: any, index: number) => (
                       <AccordionItem
                         key={module.id}
                         value={module.id}
-                        className="border rounded-lg overflow-hidden"
+                        className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
                       >
-                        <AccordionTrigger className="px-4 py-3 hover:bg-gray-50">
-                          <div className="flex items-center text-left">
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 mr-3">
+                        <AccordionTrigger className="px-6 py-4 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200">
+                          <div className="flex items-center text-left w-full">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center text-red-600 mr-4 font-bold">
                               {index + 1}
                             </div>
-                            <div>
-                              <h3 className="font-semibold text-base">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-base text-gray-800 mb-1">
                                 {module.title}
                               </h3>
-                              <div className="flex items-center text-gray-500 text-sm mt-1">
-                                <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                                <span>
-                                  {new Date(
-                                    module.startTime
-                                  ).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                                <Clock className="h-3.5 w-3.5 ml-3 mr-1.5" />
-                                <span>
-                                  {new Date(
-                                    module.startTime
-                                  ).toLocaleTimeString("en-US", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}
-                                </span>
+                              <div className="flex flex-wrap items-center text-gray-500 text-sm gap-2 md:gap-4">
+                                <div className="flex items-center">
+                                  <Calendar className="h-4 w-4 mr-1.5" />
+                                  <span>
+                                    {new Date(module.startTime).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1.5" />
+                                  <span>
+                                    {new Date(module.startTime).toLocaleTimeString("en-US", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                            {module.isFree && (
-                              <span className="ml-auto mr-4 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                                Free
-                              </span>
-                            )}
+                            <div className="flex items-center gap-2 ml-4">
+                              {module.isFree && (
+                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-green-200">
+                                  Free
+                                </Badge>
+                              )}
+                              {module.isOnClassroom && (
+                                <Badge className="bg-green-500 text-white animate-pulse">
+                                  Live
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="px-4 py-3 bg-gray-50 border-t">
-                          <p className="text-gray-700 mb-3">
-                            {module.description ||
-                              `Session ${index + 1} of this live class series.`}
-                          </p>
-                          {isAuthenticated && module.isFree && (
-                            <Button
-                              className="bg-green-600 hover:bg-green-700 text-white mt-2"
-                              size="sm"
-                              onClick={() => handleJoinClass(module.id, true)}
-                            >
-                              <CheckCircle2 className="mr-2 h-4 w-4" />
-                              Join Free Module
-                            </Button>
-                          )}
+                        <AccordionContent className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
+                          <div className="space-y-4">
+                            <p className="text-gray-700 leading-relaxed">
+                              {module.description ||
+                                `Session ${index + 1} of this live class series. Join us for an interactive learning experience.`}
+                            </p>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center">
+                                  <User className="h-4 w-4 mr-1" />
+                                  <span>Instructor: {classData.teacherName}</span>
+                                </div>
+                              </div>
+                              {isAuthenticated && module.isFree && (
+                                <Button
+                                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
+                                  size="sm"
+                                  onClick={() => handleJoinClass(module.id, true)}
+                                >
+                                  <Video className="mr-2 h-4 w-4" />
+                                  Join Free Session
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     ))}
                   </Accordion>
-                </div>
+                </motion.div>
+              )}{classData.currentRaga && classData.currentRaga.trim() !== "" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">🎵</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">Current Raga</h2>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">{classData.currentRaga}</p>
+                </motion.div>
               )}
-
-            {classData.currentRaga && classData.currentRaga.trim() !== "" && (
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-bold mb-4 text-gray-800">
-                  Current Raga
-                </h2>
-                <p className="text-gray-700">{classData.currentRaga}</p>
-              </div>
-            )}
 
             {classData.currentOrientation &&
               classData.currentOrientation.trim() !== "" && (
-                <div className="bg-white rounded-xl shadow-md p-6 mt-8">
-                  <h2 className="text-xl font-bold mb-4 text-gray-800">
-                    Current Orientation
-                  </h2>
-                  <p className="text-gray-700 whitespace-pre-line">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">📍</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">Current Orientation</h2>
+                  </div>
+                  <p className="text-gray-700 whitespace-pre-line leading-relaxed">
                     {classData.currentOrientation}
                   </p>
-                </div>
+                </motion.div>
               )}
 
             {classData.sessionDescription &&
               classData.sessionDescription.trim() !== "" && (
-                <div className="bg-white rounded-xl shadow-md p-6 mt-8">
-                  <h2 className="text-xl font-bold mb-4 text-gray-800">
-                    Session Description
-                  </h2>
-                  <p className="text-gray-700 whitespace-pre-line">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">📝</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">Session Description</h2>
+                  </div>
+                  <p className="text-gray-700 whitespace-pre-line leading-relaxed">
                     {classData.sessionDescription}
                   </p>
-                </div>
+                </motion.div>
               )}
-          </motion.div>
-
-          {/* Right Column - Class Details & CTA */}
+          </motion.div>          {/* Sidebar - 40% width */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:col-span-2 order-1 lg:order-2"
           >
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
-              <div className="mb-6">
-                <div className="flex flex-col gap-2">
-                  {isAuthenticated &&
-                    (isRegistered || classData.isRegistered) ? (
-                    hasAccessToLinks || classData.hasAccessToLinks ? (
-                      <div className="text-center py-2">
-                        <span className="text-green-600 font-semibold text-lg flex items-center justify-center">
-                          <CheckCircle2 className="mr-2 h-5 w-5" />
-                          You have full access to this class
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Course Fee:</span>
-                        <span className="text-xl font-bold text-[#af1d33]">
-                          ₹{classData.courseFee}
-                        </span>
-                      </div>
-                    )
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Registration Fee:</span>
-                        <span className="text-xl font-bold text-[#af1d33]">
-                          ₹{classData.registrationFee}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Course Fee:</span>
-                        <span className="text-xl font-bold text-[#af1d33]">
-                          ₹{classData.courseFee}
-                        </span>
-                      </div>
-                      <div className="h-px bg-gray-200 my-2"></div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700 font-medium">
-                          Total:
-                        </span>
-                        <span className="text-2xl font-bold text-[#af1d33]">
-                          ₹
-                          {(
-                            (classData.registrationFee || 0) +
-                            (classData.courseFee || 0)
-                          ).toFixed(2)}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+            <div className="sticky top-28 space-y-6">
+              {/* Main Action Card */}
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border-0 overflow-hidden">
+                {/* Price Header Section */}
+                <div className="relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10" />
+                  <div className="relative p-6 pb-4">
+                    {(() => {
+                      const { userIsRegistered, userHasAccess } = determineUserStatus();
 
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center text-gray-700">
-                  <Calendar className="mr-3 h-5 w-5 text-[#af1d33]" />
-                  <div>
-                    <div className="font-medium">Date</div>
-                    <div>{classData.formattedDate}</div>
-                  </div>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <Clock className="mr-3 h-5 w-5 text-[#af1d33]" />
-                  <div>
-                    <div className="font-medium">Time</div>
-                    <div>{classData.formattedTime}</div>
-                  </div>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <User className="mr-3 h-5 w-5 text-[#af1d33]" />
-                  <div>
-                    <div className="font-medium">Instructor</div>
-                    <div>{classData.teacherName}</div>
-                  </div>
-                </div>
-                {(() => {
-                  const { userIsRegistered, userHasAccess, userIsApproved } = determineUserStatus();
+                      if (userHasAccess) {
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center gap-3"
+                          >
+                            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                              <CheckCircle2 className="w-8 h-8 text-green-600" />
+                            </div>
+                            <Badge className="bg-green-50 text-green-700 text-base px-6 py-2 rounded-full border-green-200">
+                              Access Granted
+                            </Badge>
+                          </motion.div>
+                        );
+                      }
 
-                  // Only show status badge if user is registered but doesn't have full access
-                  if (userIsRegistered && !userHasAccess) {
-                    return (
-                      <div className="mt-2 pt-2 border-t border-gray-100">
-                        {/* <div className="text-sm font-medium text-gray-500">
-                          Registration Status:
+                      if (classData.registrationFee) {
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center"
+                          >
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <span className="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                                ₹{classData.registrationFee}
+                              </span>
+                              <Badge className="bg-red-100 text-red-700 uppercase text-xs">
+                                Registration
+                              </Badge>
+                            </div>
+                            {classData.courseFeeEnabled && classData.courseFee && (
+                              <div className="text-sm text-gray-600 mt-2">
+                                + ₹{classData.courseFee} course fee after approval
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      }
+
+                      return (
+                        <div className="text-center">
+                          <span className="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+                            Free
+                          </span>
+                          <Badge className="bg-green-100 text-green-700 uppercase text-xs ml-2">
+                            Demo Class
+                          </Badge>
                         </div>
-                        <div
-                          className={`mt-1 px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center ${!userIsApproved
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                            }`}
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Class Status and Information */}
+                <div className="px-6 pb-4">
+
+
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600 flex items-center">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Date
+                      </span>
+                      <span className="font-semibold text-gray-800">{classData.formattedDate}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-gray-600 flex items-center">
+                        <User className="h-4 w-4 mr-2" />
+                        Instructor
+                      </span>
+                      <span className="font-semibold text-gray-800">{classData.teacherName}</span>
+                    </div>
+                  </div>
+                </div>
+
+
+                {/* Action Buttons */}
+                <div className="p-6 pt-0 space-y-4">
+                  {(() => {
+                    const buttonState = getButtonState();
+
+                    return (
+                      <div>
+                        <Button
+                          onClick={buttonState.action || undefined}
+                          disabled={buttonState.disabled}
+                          className={`w-full py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ${buttonState.color}`}
                         >
-                          {!userIsApproved
-                            ? "Pending Admin Approval"
-                            : classData?.courseFeeEnabled
-                              ? "Approved - Ready for Payment"
-                              : "Approved - Ready to Join"}
-                        </div> */}
+                          {buttonState.type === "join" && isJoining ? (
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                          ) : buttonState.type === "join" ? (
+                            <Video className="h-5 w-5 mr-2" />
+                          ) : buttonState.type === "pay" ? (
+                            <CreditCard className="mr-2 h-5 w-5" />
+                          ) : buttonState.type === "register" ? (
+                            <CreditCard className="mr-2 h-5 w-5" />
+                          ) : buttonState.type === "demo" ? (
+                            <Video className="mr-2 h-5 w-5" />
+                          ) : null}
+                          {buttonState.text}
+                        </Button>
+
+                        {/* Offline message for demo button */}
+                        {buttonState.message && (
+                          <div className="text-sm text-gray-600 text-center mt-3 p-3 bg-gray-50 rounded-lg">
+                            {buttonState.message}
+                          </div>
+                        )}
+
+                        {/* Status message below button */}
+                        <p className="text-sm text-gray-600 mt-3 text-center leading-relaxed">
+                          {buttonState.type === "disabled" && buttonState.text === "Registration Closed" &&
+                            "Registration is currently closed for this class. Please check back later or contact support for more information."}
+                          {buttonState.type === "disabled" && buttonState.text === "Not Available" &&
+                            "This class is not available at the moment"}
+                          {buttonState.type === "waiting" &&
+                            "Your registration is being reviewed by our admin team"}
+                          {buttonState.type === "pay" &&
+                            `Complete your payment (₹${classData.courseFee}) to access the live class`}
+                          {buttonState.type === "join" &&
+                            "You're all set! Click to join the live class"}
+                          {buttonState.type === "register" &&
+                            `Register now for ₹${classData.registrationFee} to join this live class`}
+                          {buttonState.type === "demo" && !buttonState.message &&
+                            "Live class content available - click to access"}
+                        </p>
                       </div>
                     );
-                  }
+                  })()}
+                </div>
 
-                  return null;
-                })()}
-              </div>              <div className="space-y-4">
-                {(() => {
-                  const buttonState = getButtonState();
-
-                  return (
-                    <div>
-                      <Button
-                        onClick={buttonState.action || undefined}
-                        disabled={buttonState.disabled}
-                        className={`w-full py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ${buttonState.color}`}
-                      >
-                        {buttonState.type === "join" && isJoining ? (
-                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                        ) : buttonState.type === "join" ? (
-                          <Video className="h-5 w-5 mr-2" />
-                        ) : buttonState.type === "pay" ? (
-                          <CreditCard className="mr-2 h-5 w-5" />
-                        ) : buttonState.type === "register" ? (
-                          <CreditCard className="mr-2 h-5 w-5" />
-                        ) : buttonState.type === "demo" ? (
-                          <Video className="mr-2 h-5 w-5" />
-                        ) : null}
-                        {buttonState.text}
-                      </Button>
-
-                      {/* Offline message for demo button */}
-                      {buttonState.message && (
-                        <div className="text-sm text-gray-600 text-center mt-2 px-3 py-2 bg-gray-50 rounded-lg">
-                          {buttonState.message}
-                        </div>
-                      )}
-
-                      {/* Status message below button */}
-                      <p className="text-sm text-gray-600 mt-3 text-center">
-                        {buttonState.type === "disabled" && "Registration is currently closed for this class"}
-                        {buttonState.type === "waiting" && "Your registration is being reviewed by our admin team"}
-                        {buttonState.type === "pay" && `Complete your payment (₹${classData.courseFee}) to access the live class`}
-                        {buttonState.type === "join" && "You're all set! Click to join the live class"}
-                        {buttonState.type === "register" && `Register now for ₹${classData.registrationFee} to join this live class`}
-                        {buttonState.type === "demo" && !buttonState.message && "Live class content available - click to access"}
-                      </p>
-                    </div>
-                  );
-                })()}
+                {/* Share Button */}
+                <div className="px-6 pb-6">
+                  <Button
+                    variant="outline"
+                    className="w-full border-gray-300 text-gray-700 py-4 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
+                    onClick={handleShare}
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Share This Class
+                  </Button>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full border-gray-300 text-gray-700 py-6 rounded-full font-medium"
-                  onClick={handleShare}
-                >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share This Class
-                </Button>
-              </div>
-
-              <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">
+              {/* Information Card */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 shadow-lg p-6">
                 <div className="flex items-start gap-3">
-                  <Info className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Info className="h-5 w-5 text-white" />
+                  </div>
                   <div>
-                    <h4 className="font-semibold text-blue-900 mb-2">
-                      Access Information
-                    </h4>
+                    <h4 className="font-semibold text-blue-900 mb-3">Access Information</h4>
                     <p className="text-blue-800 text-sm leading-relaxed">
                       {isAuthenticated ? (
                         (() => {
@@ -957,35 +1050,34 @@ export default function ClassDetails() {
                 </div>
               </div>
 
-              {/* Display Zoom meeting details when user has access */}
+              {/* Live Class Access Card - When user has access */}
               {isAuthenticated &&
                 (hasAccessToLinks || classData.hasAccessToLinks) &&
                 classData.zoomLink && (
-                  <div className="mt-4 p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm">
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border border-green-200 shadow-lg p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-green-800 text-lg flex items-center">
+                        <h3 className="font-semibold text-green-800 text-lg flex items-center mb-2">
                           <Video className="h-5 w-5 text-green-600 mr-2" />
                           Live Class Access
                         </h3>
-                        <p className="text-green-700 mt-1 text-sm">
-                          Click the button below to join the live class at the
-                          scheduled time
+                        <p className="text-green-700 text-sm">
+                          Click the button below to join the live class at the scheduled time
                         </p>
                       </div>
-                      <Button
-                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white py-6 px-8 rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                        onClick={() => handleJoinClass()}
-                        disabled={isJoining}
-                      >
-                        {isJoining ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                        ) : (
-                          <Video className="h-5 w-5" />
-                        )}
-                        {isJoining ? "Joining..." : "Join Live Class"}
-                      </Button>
                     </div>
+                    <Button
+                      className="w-full mt-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                      onClick={() => handleJoinClass()}
+                      disabled={isJoining}
+                    >
+                      {isJoining ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Video className="h-5 w-5" />
+                      )}
+                      {isJoining ? "Joining..." : "Join Live Class"}
+                    </Button>
                   </div>
                 )}
             </div>

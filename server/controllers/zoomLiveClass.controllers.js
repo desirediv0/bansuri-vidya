@@ -46,16 +46,13 @@ const createZoomMeeting = async (meetingData) => {
     // Just use the startTime as provided, without converting it - this allows for any string time format
     const startTime = meetingData.startTime;
 
-
-    const durationInMinutes = 60; // Default 60 minutes duration
-
     const response = await axios.post(
       "https://api.zoom.us/v2/users/me/meetings",
       {
         topic: meetingData.title,
         type: 2, // Scheduled meeting
         start_time: startTime,
-        duration: durationInMinutes,
+        duration: 0, // 0 means no fixed duration - meeting can run until manually ended
         timezone: "Asia/Kolkata",
         settings: {
           host_video: true,
@@ -63,6 +60,8 @@ const createZoomMeeting = async (meetingData) => {
           join_before_host: false,
           mute_upon_entry: true,
           waiting_room: true,
+          auto_recording: "none", // Disable auto recording
+          allow_multiple_devices: true, // Allow joining from multiple devices
         },
       },
       {
@@ -81,6 +80,31 @@ const createZoomMeeting = async (meetingData) => {
   } catch (error) {
     console.error("Error creating Zoom meeting:", error);
     throw new ApiError(500, "Failed to create Zoom meeting");
+  }
+};
+
+// Delete Zoom meeting
+const deleteZoomMeeting = async (meetingId) => {
+  try {
+    const token = await getZoomAccessToken();
+
+    await axios.delete(
+      `https://api.zoom.us/v2/meetings/${meetingId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log(`Zoom meeting ${meetingId} deleted successfully`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting Zoom meeting:", error);
+    // Don't throw error for deletion failures to avoid breaking the flow
+    // Log the error and continue
+    return false;
   }
 };
 
@@ -135,14 +159,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       // If slug exists, append a random string to make it unique
       const randomStr = Math.random().toString(36).substring(2, 7);
       formattedSlug = `${formattedSlug}-${randomStr}`;
-    }
-
-    // Create Zoom meeting
-    const zoomData = await createZoomMeeting({
-      title,
-      startTime,
-      endTime,
-    });    // Initialize base data with required fields
+    }    // Initialize base data with required fields - DO NOT create Zoom meeting yet
     const zoomLiveClassData = {
       title,
       description,
@@ -151,9 +168,10 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       price: parseFloat(price || 0),
       getPrice: getPrice || false,
       userId: req.user.id,
-      zoomLink: zoomData.zoomLink,
-      zoomMeetingId: zoomData.zoomMeetingId,
-      zoomPassword: zoomData.zoomPassword,
+      // Zoom links will be null initially - created only when Live Status is turned ON
+      zoomLink: null,
+      zoomMeetingId: null,
+      zoomPassword: null,
       thumbnailUrl,
       slug: formattedSlug,
       author: author || "",
@@ -168,6 +186,7 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       sessionDescription: sessionDescription || null,
       isActive: isActive !== undefined ? isActive : true,
       recurringClass: recurringClass || false,
+      isOnClassroom: false, // Initially class is not live
     };
 
     // Add capacity if provided
@@ -180,25 +199,16 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
       // Create the main zoom live class
       const liveClass = await tx.zoomLiveClass.create({
         data: zoomLiveClassData,
-      });
-
-      // If modules are provided, create them
+      });      // If modules are provided, create them (but without Zoom links initially)
       if (
         hasModules &&
         modules &&
         Array.isArray(modules) &&
         modules.length > 0
       ) {
-        // Create each module
+        // Create each module without Zoom meeting initially
         for (let i = 0; i < modules.length; i++) {
           const module = modules[i];
-
-          // Create a separate Zoom meeting for each module
-          const moduleZoomData = await createZoomMeeting({
-            title: `${title} - ${module.title}`,
-            startTime: module.startTime,
-            endTime: module.endTime,
-          });
 
           await tx.zoomSessionModule.create({
             data: {
@@ -206,9 +216,10 @@ export const createZoomLiveClass = asyncHandler(async (req, res) => {
               description: module.description,
               startTime: module.startTime,
               endTime: module.endTime,
-              zoomLink: moduleZoomData.zoomLink,
-              zoomMeetingId: moduleZoomData.zoomMeetingId,
-              zoomPassword: moduleZoomData.zoomPassword,
+              // Zoom links will be null initially - created when Live Status is ON
+              zoomLink: null,
+              zoomMeetingId: null,
+              zoomPassword: null,
               position: i + 1,
               isFree: isFirstModuleFree && i === 0, // First module is free if isFirstModuleFree is true
               zoomLiveClassId: liveClass.id,
@@ -579,9 +590,7 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
 
     // Make sure teacherName is available even if author is empty
     const teacherName =
-      classData.author || liveClass.createdBy?.name || "Instructor";
-
-    // Return transformed class
+      classData.author || liveClass.createdBy?.name || "Instructor";    // Return transformed class
     return {
       ...classData,
       isRegistered,
@@ -592,6 +601,7 @@ export const getUserZoomLiveClasses = asyncHandler(async (req, res) => {
       teacherName,
       formattedDate: liveClass.startTime || "",
       formattedTime: liveClass.startTime || "",
+      registrationEnabled: liveClass.registrationEnabled, // Include registration status
       subscriptions: undefined,
       createdBy: undefined,
     };
@@ -778,15 +788,110 @@ export const toggleIsOnClassroom = asyncHandler(async (req, res) => {
 
   const zoomLiveClass = await prisma.zoomLiveClass.findUnique({
     where: { id },
+    include: {
+      modules: {
+        orderBy: { position: "asc" }
+      }
+    }
   });
 
   if (!zoomLiveClass) {
     throw new ApiError(404, "Zoom live class not found");
   }
 
-  const updatedClass = await prisma.zoomLiveClass.update({
-    where: { id },
-    data: { isOnClassroom: !!isOnClassroom },
+  // Use transaction to ensure all operations succeed or fail together
+  const updatedClass = await prisma.$transaction(async (tx) => {
+    if (isOnClassroom) {
+      // TURNING ON: Create Zoom meetings for main class and all modules
+      let mainClassZoomData = null;
+
+      // Create Zoom meeting for main class
+      try {
+        mainClassZoomData = await createZoomMeeting({
+          title: zoomLiveClass.title,
+          startTime: zoomLiveClass.startTime,
+        });
+      } catch (error) {
+        console.error("Error creating main class Zoom meeting:", error);
+        throw new ApiError(500, "Failed to create Zoom meeting for main class");
+      }
+
+      // Update main class with Zoom details
+      const updatedMainClass = await tx.zoomLiveClass.update({
+        where: { id },
+        data: {
+          isOnClassroom: true,
+          zoomLink: mainClassZoomData.zoomLink,
+          zoomMeetingId: mainClassZoomData.zoomMeetingId,
+          zoomPassword: mainClassZoomData.zoomPassword,
+        },
+      });
+
+      // Create Zoom meetings for modules if they exist
+      if (zoomLiveClass.modules && zoomLiveClass.modules.length > 0) {
+        for (const module of zoomLiveClass.modules) {
+          try {
+            const moduleZoomData = await createZoomMeeting({
+              title: `${zoomLiveClass.title} - ${module.title}`,
+              startTime: module.startTime,
+            });
+
+            await tx.zoomSessionModule.update({
+              where: { id: module.id },
+              data: {
+                zoomLink: moduleZoomData.zoomLink,
+                zoomMeetingId: moduleZoomData.zoomMeetingId,
+                zoomPassword: moduleZoomData.zoomPassword,
+              },
+            });
+          } catch (error) {
+            console.error(`Error creating Zoom meeting for module ${module.title}:`, error);
+            // Continue with other modules even if one fails
+          }
+        }
+      }
+
+      return updatedMainClass;
+    } else {
+      // TURNING OFF: Delete Zoom meetings and clear data
+
+      // Delete main class Zoom meeting if it exists
+      if (zoomLiveClass.zoomMeetingId) {
+        await deleteZoomMeeting(zoomLiveClass.zoomMeetingId);
+      }
+
+      // Delete module Zoom meetings if they exist
+      if (zoomLiveClass.modules && zoomLiveClass.modules.length > 0) {
+        for (const module of zoomLiveClass.modules) {
+          if (module.zoomMeetingId) {
+            await deleteZoomMeeting(module.zoomMeetingId);
+          }
+
+          // Clear module Zoom data
+          await tx.zoomSessionModule.update({
+            where: { id: module.id },
+            data: {
+              zoomLink: null,
+              zoomMeetingId: null,
+              zoomPassword: null,
+            },
+          });
+        }
+      }
+
+      // Update main class and clear Zoom data
+      const updatedMainClass = await tx.zoomLiveClass.update({
+        where: { id },
+        data: {
+          isOnClassroom: false,
+          zoomLink: null,
+          zoomMeetingId: null,
+          zoomPassword: null,
+        },
+      });
+
+      return updatedMainClass;
+    }
   });
 
   return res

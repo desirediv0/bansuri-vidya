@@ -68,6 +68,7 @@ interface ZoomSession {
   currentOrientation?: string;
   courseFeeEnabled: boolean;
   isOnline?: boolean;
+  registrationEnabled?: boolean;
 }
 
 interface Subscription {
@@ -475,10 +476,8 @@ const MyLiveClasses = () => {
         text: "Processing",
         className: "bg-yellow-500 text-white",
       };
-    }
-
-    // If registration is closed
-    if (showClosed) {
+    }    // If registration is closed
+    if (showClosed || subscription.zoomSession.registrationEnabled === false) {
       return {
         text: "Registration Closed",
         className: "bg-gray-500 text-white",
@@ -650,10 +649,11 @@ const MyLiveClasses = () => {
         action: null,
         showDemo: false
       };
-    }
+    }    // Check registration status for button display
+    const registrationOpen = subscription.zoomSession.registrationEnabled !== false;
 
-    // If API says show closed message (registration disabled and user not registered)
-    if (showClosed) {
+    // If registration is closed, show disabled button to all users (both registered and non-registered)
+    if (!registrationOpen || showClosed) {
       return {
         type: "disabled",
         text: "Registration Closed",
@@ -665,7 +665,7 @@ const MyLiveClasses = () => {
     }
 
     // If user can register (new users when registration is open)
-    if (canRegister && !subscription.isRegistered) {
+    if (canRegister && !subscription.isRegistered && registrationOpen) {
       return {
         type: "register",
         text: "Register for Class",

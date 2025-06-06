@@ -573,7 +573,7 @@ export default function ClassDetails() {
             }}
           />
         </div>
-        <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl relative z-10 mt-10">
+        <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl relative z-10 mt-20">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
             {/* Hero Image - Left side */}
             <div className="order-1 flex-shrink-0 w-full lg:w-auto">
@@ -583,7 +583,7 @@ export default function ClassDetails() {
                 transition={{ duration: 0.6 }}
                 className="relative"
               >
-                <div className="w-full lg:w-[550px] h-56 lg:h-[350px] rounded-2xl overflow-hidden shadow-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+                <div className="w-full lg:w-[600px] h-56 lg:h-[350px] rounded-2xl overflow-hidden shadow-2xl bg-white/10 backdrop-blur-sm border border-white/20">
                   <Image
                     src={classData.thumbnailUrl}
                     alt={classData.title}
@@ -663,7 +663,7 @@ export default function ClassDetails() {
             </div>
 
             {/* Class Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Calendar className="h-6 w-6 text-red-600" />
@@ -672,13 +672,7 @@ export default function ClassDetails() {
                 <p className="text-gray-600">{classData.formattedDate}</p>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-6 w-6 text-blue-600" />
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-2">Time</h3>
-                <p className="text-gray-600">{classData.formattedTime}</p>
-              </div>
+
 
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">

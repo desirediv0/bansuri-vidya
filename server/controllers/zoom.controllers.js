@@ -70,11 +70,10 @@ const createZoomMeeting = async (meetingData) => {
           "Content-Type": "application/json",
         },
       }
-    );
-
-    return {
+    ); return {
       zoomMeetingId: String(response.data.id),
       zoomLink: response.data.join_url,
+      zoomStartUrl: response.data.start_url,
       zoomPassword: response.data.password,
     };
   } catch (error) {

@@ -70,11 +70,10 @@ const createZoomMeeting = async (meetingData) => {
           "Content-Type": "application/json",
         },
       }
-    );
-
-    return {
+    ); return {
       zoomMeetingId: String(response.data.id),
       zoomLink: response.data.join_url,
+      zoomStartUrl: response.data.start_url,
       zoomPassword: response.data.password,
     };
   } catch (error) {
@@ -814,14 +813,13 @@ export const toggleIsOnClassroom = asyncHandler(async (req, res) => {
       } catch (error) {
         console.error("Error creating main class Zoom meeting:", error);
         throw new ApiError(500, "Failed to create Zoom meeting for main class");
-      }
-
-      // Update main class with Zoom details
+      }      // Update main class with Zoom details
       const updatedMainClass = await tx.zoomLiveClass.update({
         where: { id },
         data: {
           isOnClassroom: true,
           zoomLink: mainClassZoomData.zoomLink,
+          zoomStartUrl: mainClassZoomData.zoomStartUrl,
           zoomMeetingId: mainClassZoomData.zoomMeetingId,
           zoomPassword: mainClassZoomData.zoomPassword,
         },
@@ -834,12 +832,11 @@ export const toggleIsOnClassroom = asyncHandler(async (req, res) => {
             const moduleZoomData = await createZoomMeeting({
               title: `${zoomLiveClass.title} - ${module.title}`,
               startTime: module.startTime,
-            });
-
-            await tx.zoomSessionModule.update({
+            }); await tx.zoomSessionModule.update({
               where: { id: module.id },
               data: {
                 zoomLink: moduleZoomData.zoomLink,
+                zoomStartUrl: moduleZoomData.zoomStartUrl,
                 zoomMeetingId: moduleZoomData.zoomMeetingId,
                 zoomPassword: moduleZoomData.zoomPassword,
               },
@@ -865,13 +862,12 @@ export const toggleIsOnClassroom = asyncHandler(async (req, res) => {
         for (const module of zoomLiveClass.modules) {
           if (module.zoomMeetingId) {
             await deleteZoomMeeting(module.zoomMeetingId);
-          }
-
-          // Clear module Zoom data
+          }          // Clear module Zoom data
           await tx.zoomSessionModule.update({
             where: { id: module.id },
             data: {
               zoomLink: null,
+              zoomStartUrl: null,
               zoomMeetingId: null,
               zoomPassword: null,
             },
@@ -885,6 +881,7 @@ export const toggleIsOnClassroom = asyncHandler(async (req, res) => {
         data: {
           isOnClassroom: false,
           zoomLink: null,
+          zoomStartUrl: null,
           zoomMeetingId: null,
           zoomPassword: null,
         },
@@ -921,10 +918,9 @@ export const getAdminJoinLink = asyncHandler(async (req, res) => {
   if (!zoomLiveClass.isActive) {
     throw new ApiError(400, "Class is not active");
   }
-
-  // Return zoom details for admin
+  // Return zoom details for admin - use start URL if available, otherwise join URL
   const zoomDetails = {
-    zoomLink: zoomLiveClass.zoomLink || zoomLiveClass.zoomJoinUrl,
+    zoomLink: zoomLiveClass.zoomStartUrl || zoomLiveClass.zoomLink || zoomLiveClass.zoomJoinUrl,
     zoomMeetingId: zoomLiveClass.zoomMeetingId,
     zoomPassword: zoomLiveClass.zoomPassword || zoomLiveClass.zoomMeetingPassword,
     zoomStartUrl: zoomLiveClass.zoomStartUrl, // Admin can use start URL if available

@@ -1032,8 +1032,8 @@ export default function ClassDetails() {
                           }
 
                           return `Register now with a one-time fee of ₹${classData.registrationFee}.${classData?.courseFeeEnabled
-                            ? " After approval, you'll need to pay the course fee to join the live class."
-                            : " After approval, you'll get immediate access to join the live class."
+                            ? " After approval, you will have to pay the course fee to join the live class."
+                            : " After approval, you will get immediate access to join the live class."
                             }`;
                         })()
                       ) : (

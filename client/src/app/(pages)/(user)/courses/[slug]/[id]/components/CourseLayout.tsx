@@ -46,7 +46,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isPurchased, setIsPurchased] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [chapterProgress, setChapterProgress] = useState<{
     isCompleted: boolean;
@@ -57,6 +57,10 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
     completedChapters: [],
     isCompleted: false,
   });
+
+  useEffect(() => {
+    setIsSidebarOpen(isDesktop);
+  }, [isDesktop]);
 
   const makeAuthenticatedRequest = async (
     url: string,
@@ -319,6 +323,47 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
     return null;
   };
 
+  const getPreviousChapter = () => {
+    if (!selectedChapter || !course.sections) return null;
+
+    const currentSectionIndex = course.sections.findIndex((section) =>
+      section.chapters.some((chapter) => chapter.id === selectedChapter.id)
+    );
+    const currentSection = course.sections[currentSectionIndex];
+    const currentChapterIndex = currentSection.chapters.findIndex(
+      (chapter) => chapter.id === selectedChapter.id
+    );
+
+    if (currentChapterIndex > 0) {
+      return currentSection.chapters[currentChapterIndex - 1];
+    }
+
+    if (currentSectionIndex > 0) {
+      const prevSection = course.sections[currentSectionIndex - 1];
+      return prevSection.chapters[prevSection.chapters.length - 1];
+    }
+
+    return null;
+  };
+
+  const handleNextChapter = () => {
+    const nextChapter = getNextChapter();
+    if (nextChapter) {
+      handleChapterClick(nextChapter);
+    } else {
+      toast.info("You are at the last chapter.");
+    }
+  };
+
+  const handlePreviousChapter = () => {
+    const prevChapter = getPreviousChapter();
+    if (prevChapter) {
+      handleChapterClick(prevChapter);
+    } else {
+      toast.info("You are at the first chapter.");
+    }
+  };
+
   const handleChapterClick = async (chapter: ChapterDataNew) => {
     if (!canAccessCourse() && !chapter.isFree) {
       toast.error("Please purchase this course to access this chapter");
@@ -340,6 +385,10 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
       }
     } else {
       setIsDialogOpen(true);
+    }
+
+    if (!isDesktop) {
+      setIsSidebarOpen(false);
     }
   };
 
@@ -387,21 +436,58 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
 
         <div className="flex flex-col flex-1 overflow-hidden mt-20">
           <ScrollArea className="flex-1">
-            <div className="p-4 space-y-4 relative z-10">
-              <VideoPlayer
-                videoUrl={videoUrl}
-                isLoading={isVideoLoading}
-                onProgress={handleVideoProgress}
-                onDuration={() => {}}
-                onEnded={handleVideoEnded}
-                className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out ${
-                  isSidebarOpen ? "aspect-[21/9]" : "aspect-video"
-                }`}
-                initialProgress={chapterProgress?.watchedTime || 0}
-                isCompleted={chapterProgress?.isCompleted || false}
-                chapterId={selectedChapter?.id || ""}
-              />
-              <div className="bg-white rounded-lg shadow-md p-6 relative z-10">
+            <div className="p-4 space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                  {selectedChapter?.title || "Course"}
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleSidebar}
+                  className="bg-white/80 hover:bg-white backdrop-blur-sm"
+                >
+                  {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+                  <span className="ml-2 hidden md:inline">
+                    {isSidebarOpen ? "Hide" : "Show"} Content
+                  </span>
+                </Button>
+              </div>
+
+              <div className="relative">
+                <VideoPlayer
+                  videoUrl={videoUrl}
+                  isLoading={isVideoLoading}
+                  onProgress={handleVideoProgress}
+                  onDuration={() => {}}
+                  onEnded={handleVideoEnded}
+                  className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out aspect-video`}
+                  initialProgress={chapterProgress?.watchedTime || 0}
+                  isCompleted={chapterProgress?.isCompleted || false}
+                  chapterId={selectedChapter?.id || ""}
+                />
+              </div>
+
+              <div className="mt-4 flex justify-between items-center">
+                <Button
+                  onClick={handlePreviousChapter}
+                  disabled={!getPreviousChapter()}
+                  className="bg-gray-800 text-white hover:bg-gray-900"
+                >
+                  <ChevronLeft className="h-5 w-5 mr-2" />
+                  Previous
+                </Button>
+                <Button
+                  onClick={handleNextChapter}
+                  disabled={!getNextChapter()}
+                  className="bg-gray-800 text-white hover:bg-gray-900"
+                >
+                  Next
+                  <ChevronRight className="h-5 w-5 ml-2" />
+                </Button>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6 mt-4">
                 <ChapterDetails chapter={selectedChapter} />
               </div>
             </div>
@@ -411,7 +497,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
             variant="outline"
             size="sm"
             onClick={toggleSidebar}
-            className={`fixed z-50 h-10 px-2 bg-white/95 backdrop-blur-sm hover:bg-gradient-to-r hover:from-[#fce7ff] hover:to-[#fff1eb] border border-[#610981]/20 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out group left-0 top-1/2 -translate-y-1/2 rounded-r-lg`}
+            className={`fixed z-50 h-10 px-2 bg-white/95 backdrop-blur-sm hover:bg-gradient-to-r hover:from-[#fce7ff] hover:to-[#fff1eb] border border-[#610981]/20 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out group left-0 top-[70%] -translate-y-1/2 rounded-r-lg`}
           >
             {isSidebarOpen ? (
               <ChevronLeft className="h-5 w-5 text-[#610981] group-hover:scale-110 transition-transform duration-200" />

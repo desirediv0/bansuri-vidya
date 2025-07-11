@@ -277,6 +277,7 @@ const CourseClient: React.FC<CourseClientProps> = ({
         className="w-full bg-red-500 hover:bg-red-600 text-white transition-colors duration-300"
         size="lg"
         variant="default"
+        id="purchase"
         disabled={!hasSections}
       >
         {course.paid ? (

@@ -1,155 +1,290 @@
 "use client";
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState, useCallback, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 interface TrackingScript {
-    id: string;
-    name: string;
-    script: string;
-    position: 'HEAD' | 'BODY_START' | 'BODY_END';
-    priority: number;
-    isActive: boolean;
+  id: string;
+  name: string;
+  script: string;
+  position: "HEAD" | "BODY_START" | "BODY_END";
+  priority: number;
+  isActive: boolean;
 }
 
+// Debug logging only in development
+const isDev = process.env.NODE_ENV === "development";
+const log = (message: string, ...args: any[]) => {
+  if (isDev) console.log(message, ...args);
+};
+
 const useTrackingScripts = () => {
-    const pathname = usePathname();
+  const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoadingRef = useRef(false);
+  const lastPathnameRef = useRef<string>("");
 
-    useEffect(() => {        // Don't load tracking scripts on dashboard or admin pages
-        const excludedPaths = [
-            '/dashboard',
-            '/admin',
-            '/auth',
-            '/api',
-            '/login',
-            '/register',
-            '/profile',
-            '/_next',
-            '/favicon',
-            '/sitemap',
-            '/robots'
-        ];
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-        const shouldExclude = excludedPaths.some(path =>
-            pathname.startsWith(path)
-        );
+  // Function to inject script based on position
+  const injectScript = useCallback(
+    (scriptElement: HTMLScriptElement, position: string) => {
+      // Remove any existing script with the same ID to prevent duplicates
+      const existingScript = document.querySelector(
+        `[data-tracking-script-id="${scriptElement.getAttribute(
+          "data-tracking-script-id"
+        )}"]`
+      );
+      if (existingScript) {
+        existingScript.remove();
+      }
 
-        if (shouldExclude) {
-            console.log('🚫 Tracking scripts disabled for dashboard/admin pages:', pathname);
-            return;
-        }
+      switch (position) {
+        case "HEAD":
+          document.head.appendChild(scriptElement);
+          break;
+        case "BODY_START":
+          document.body.insertBefore(scriptElement, document.body.firstChild);
+          break;
+        case "BODY_END":
+        default:
+          document.body.appendChild(scriptElement);
+          break;
+      }
+    },
+    []
+  );
 
-        console.log('✅ Loading tracking scripts for public page:', pathname);
-        const loadTrackingScripts = async () => {
-            try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-                const fullUrl = `${apiUrl}/tracking-scripts/active`;
+  // Enhanced function to wrap script content in IIFE with better isolation
+  const wrapScriptInIIFE = useCallback(
+    (script: string, scriptId: string): string => {
+      // Check if script is already wrapped or contains HTML
+      if (
+        script.includes("<script") ||
+        script.trim().startsWith("(function()") ||
+        script.trim().startsWith("!function")
+      ) {
+        return script;
+      }
 
-                const response = await fetch(fullUrl);
+      // More aggressive variable isolation with timestamp
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substr(2, 9);
 
-                if (!response.ok) {
-                    console.warn('Failed to load tracking scripts');
-                    return;
-                }
+      return `
+;(function() {
+    "use strict";
+    
+    // Create isolated scope with unique namespace
+    const trackingScope_${timestamp}_${randomId} = {
+        scriptId: "${scriptId}",
+        timestamp: ${timestamp}
+    };
+    
+    try {
+        // Isolated execution
+        ${script}
+    } catch (trackingError) {
+        console.error('Tracking script error [${scriptId}]:', trackingError);
+    }
+    
+    // Clean up scope
+    delete window.trackingScope_${timestamp}_${randomId};
+})();`;
+    },
+    []
+  );
 
-                const data = await response.json();
-                const scripts: TrackingScript[] = (data.data || []);
+  // Stable load function with better controls
+  const loadTrackingScripts = useCallback(async () => {
+    // Prevent multiple simultaneous loads
+    if (isLoadingRef.current) {
+      log("⏸️ Skipping load - already in progress");
+      return;
+    }
 
-                // Sort scripts by priority
-                scripts.sort((a, b) => a.priority - b.priority);
+    // Prevent loading same pathname multiple times
+    if (isLoaded && lastPathnameRef.current === pathname) {
+      log("⏸️ Skipping load - already loaded for this path");
+      return;
+    }
 
-                scripts.forEach((script) => {
-                    const isActive = script.isActive !== undefined ? script.isActive : true;
+    isLoadingRef.current = true;
 
-                    if (!isActive) return;
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const fullUrl = `${apiUrl}/tracking-scripts/active`;
 
-                    // Create script element
-                    const scriptElement = document.createElement('script');
-                    scriptElement.setAttribute('data-tracking-script-id', script.id);
-                    scriptElement.setAttribute('data-tracking-script-name', script.name);                    // Check if script content contains <script> tags
-                    if (script.script.includes('<script')) {
-                        // If it contains HTML script tags, extract and execute the JavaScript
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = script.script;
+      const response = await fetch(fullUrl);
 
-                        const scriptTags = tempDiv.querySelectorAll('script');
+      if (!response.ok) {
+        console.warn("Failed to load tracking scripts");
+        return;
+      }
 
-                        scriptTags.forEach((tag) => {
-                            const newScript = document.createElement('script');
-                            newScript.setAttribute('data-tracking-script-id', script.id);
-                            newScript.setAttribute('data-tracking-script-name', script.name);
+      const data = await response.json();
+      const scripts: TrackingScript[] = data.data || [];
 
-                            // Copy attributes
-                            Array.from(tag.attributes).forEach(attr => {
-                                if (attr.name !== 'data-tracking-script-id' && attr.name !== 'data-tracking-script-name') {
-                                    newScript.setAttribute(attr.name, attr.value);
-                                }
-                            });
+      // Sort scripts by priority
+      scripts.sort((a, b) => a.priority - b.priority);
 
-                            // Set content
-                            if (tag.src) {
-                                newScript.src = tag.src;
-                            } else {
-                                newScript.textContent = tag.textContent;
-                            }
+      // Clear any existing tracking scripts first to prevent conflicts
+      const existingScripts = document.querySelectorAll(
+        "[data-tracking-script-id]"
+      );
+      existingScripts.forEach((script) => script.remove());
 
-                            // Inject based on position
-                            injectScript(newScript, script.position);
-                        });
+      scripts.forEach((script, scriptIndex) => {
+        const isActive = script.isActive !== undefined ? script.isActive : true;
 
-                        // Handle noscript tags
-                        const noscriptTags = tempDiv.querySelectorAll('noscript');
-                        noscriptTags.forEach((tag) => {
-                            const noscript = document.createElement('noscript');
-                            noscript.innerHTML = tag.innerHTML;
-                            noscript.setAttribute('data-tracking-script-id', script.id);
+        if (!isActive) return;
 
-                            // Always inject noscript in body
-                            document.body.appendChild(noscript);
-                        });
-                    } else {
-                        // Direct JavaScript content
-                        scriptElement.textContent = script.script;
-                        injectScript(scriptElement, script.position);
-                    }
-                });
+        // Create script element with unique identifier
+        const uniqueId = `${script.id}_${Date.now()}_${scriptIndex}`;
+        const scriptElement = document.createElement("script");
+        scriptElement.setAttribute("data-tracking-script-id", uniqueId);
+        scriptElement.setAttribute("data-tracking-script-name", script.name);
+        scriptElement.setAttribute("data-original-id", script.id);
 
-            } catch (error) {
-                console.error('Error loading tracking scripts:', error);
-            }
-        };        // Function to inject script based on position
-        const injectScript = (scriptElement: HTMLScriptElement, position: string) => {
-            // Remove any existing script with the same ID to prevent duplicates
-            const existingScript = document.querySelector(`[data-tracking-script-id="${scriptElement.getAttribute('data-tracking-script-id')}"]`);
-            if (existingScript) {
-                existingScript.remove();
-            }
+        // Check if script content contains <script> tags
+        if (script.script.includes("<script")) {
+          // If it contains HTML script tags, extract and execute the JavaScript
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = script.script;
 
-            switch (position) {
-                case 'HEAD':
-                    document.head.appendChild(scriptElement);
-                    break;
-                case 'BODY_START':
-                    document.body.insertBefore(scriptElement, document.body.firstChild);
-                    break;
-                case 'BODY_END':
-                default:
-                    document.body.appendChild(scriptElement);
-                    break;
-            }
-        };
+          const scriptTags = tempDiv.querySelectorAll("script");
 
-        // Only load scripts on client side
-        if (typeof window !== 'undefined') {
-            loadTrackingScripts();
-        }        // Cleanup function to remove scripts on unmount
-        return () => {
-            const trackingScripts = document.querySelectorAll('[data-tracking-script-id]');
-            trackingScripts.forEach(script => {
-                script.remove();
+          scriptTags.forEach((tag, index) => {
+            const newScript = document.createElement("script");
+            const subUniqueId = `${uniqueId}-sub-${index}`;
+            newScript.setAttribute("data-tracking-script-id", subUniqueId);
+            newScript.setAttribute("data-tracking-script-name", script.name);
+            newScript.setAttribute("data-original-id", script.id);
+
+            // Copy attributes
+            Array.from(tag.attributes).forEach((attr) => {
+              if (!attr.name.startsWith("data-tracking-script-")) {
+                newScript.setAttribute(attr.name, attr.value);
+              }
             });
-        };
-    }, [pathname]);
+
+            // Set content
+            if (tag.src) {
+              newScript.src = tag.src;
+            } else {
+              // Wrap inline scripts in enhanced IIFE
+              const wrappedContent = wrapScriptInIIFE(
+                tag.textContent || "",
+                subUniqueId
+              );
+              newScript.textContent = wrappedContent;
+            }
+
+            // Inject based on position
+            injectScript(newScript, script.position);
+          });
+
+          // Handle noscript tags
+          const noscriptTags = tempDiv.querySelectorAll("noscript");
+          noscriptTags.forEach((tag, index) => {
+            const noscript = document.createElement("noscript");
+            noscript.innerHTML = tag.innerHTML;
+            noscript.setAttribute(
+              "data-tracking-script-id",
+              `${uniqueId}-noscript-${index}`
+            );
+            noscript.setAttribute("data-original-id", script.id);
+
+            // Always inject noscript in body
+            document.body.appendChild(noscript);
+          });
+        } else {
+          // Direct JavaScript content - wrap in enhanced IIFE
+          const wrappedContent = wrapScriptInIIFE(script.script, uniqueId);
+          scriptElement.textContent = wrappedContent;
+          injectScript(scriptElement, script.position);
+        }
+      });
+
+      setIsLoaded(true);
+      lastPathnameRef.current = pathname;
+      log(`✅ Loaded ${scripts.length} tracking scripts for: ${pathname}`);
+    } catch (error) {
+      console.error("Error loading tracking scripts:", error);
+    } finally {
+      isLoadingRef.current = false;
+    }
+  }, [pathname, injectScript, wrapScriptInIIFE, isLoaded]);
+
+  useEffect(() => {
+    // Only run on client side after hydration
+    if (!isClient || typeof window === "undefined") return;
+
+    // Don't load tracking scripts on dashboard or admin pages
+    const excludedPaths = [
+      "/dashboard",
+      "/admin",
+      "/auth",
+      "/api",
+      "/login",
+      "/register",
+      "/profile",
+      "/_next",
+      "/favicon",
+      "/sitemap",
+      "/robots",
+    ];
+
+    const shouldExclude = excludedPaths.some((path) =>
+      pathname.startsWith(path)
+    );
+
+    if (shouldExclude) {
+      log("🚫 Tracking scripts disabled for dashboard/admin pages:", pathname);
+      return;
+    }
+
+    // Only load if pathname actually changed
+    if (lastPathnameRef.current === pathname && isLoaded) {
+      log("⏸️ Same pathname, skipping load");
+      return;
+    }
+
+    // Reset load state when pathname changes
+    if (lastPathnameRef.current !== pathname) {
+      setIsLoaded(false);
+      lastPathnameRef.current = pathname;
+    }
+
+    // Debounced loading with longer delay
+    const timeoutId = setTimeout(() => {
+      if (!isLoadingRef.current && !isLoaded) {
+        loadTrackingScripts();
+      }
+    }, 500);
+
+    // Cleanup function to remove scripts on unmount
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [pathname, isClient, isLoaded, loadTrackingScripts]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      const trackingScripts = document.querySelectorAll(
+        "[data-tracking-script-id]"
+      );
+      trackingScripts.forEach((script) => {
+        script.remove();
+      });
+      isLoadingRef.current = false;
+      setIsLoaded(false);
+    };
+  }, []);
 };
 
 export default useTrackingScripts;

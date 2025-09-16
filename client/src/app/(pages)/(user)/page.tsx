@@ -62,9 +62,9 @@ export default function Home() {
         videoUrl="https://www.youtube.com/watch?v=vT8gQHlPTK4"
       />
       <LearningLanding />
-      <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
+      {/* <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
         <LearningStyle />
-      </main>
+      </main> */}
       <CourseHero />
       <TestimonialsSection />
       <TablaTanpura />

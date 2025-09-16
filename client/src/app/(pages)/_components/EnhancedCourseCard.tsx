@@ -160,9 +160,8 @@ export default function EnhancedCourseCard({
   return (
     <div className={`block group ${isExpired ? "opacity-80" : ""}`}>
       <div
-        className={`relative w-full max-w-md mx-auto overflow-hidden bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full ${
-          isExpired ? "border-2 border-red-200 bg-gray-50" : ""
-        }`}
+        className={`relative w-full max-w-md mx-auto overflow-hidden bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full ${isExpired ? "border-2 border-red-200 bg-gray-50" : ""
+          }`}
       >
         {/* Thumbnail with Overlay */}
         <div className="relative h-48 overflow-hidden">
@@ -217,11 +216,10 @@ export default function EnhancedCourseCard({
                 daysLeft !== undefined && (
                   <Badge
                     variant={daysLeft < 7 ? "destructive" : "outline"}
-                    className={`backdrop-blur-sm ${
-                      daysLeft < 7
+                    className={`backdrop-blur-sm ${daysLeft < 7
                         ? "bg-amber-100 text-amber-800"
                         : "bg-blue-100 text-blue-800"
-                    }`}
+                      }`}
                   >
                     <Clock className="w-3.5 h-3.5 mr-1" /> {daysLeft} days left
                   </Badge>
@@ -235,9 +233,8 @@ export default function EnhancedCourseCard({
         <div className="p-4 space-y-4">
           {/* Title */}
           <h3
-            className={`text-lg font-bold text-gray-900 line-clamp-2 ${
-              isExpired ? "text-gray-600" : "group-hover:text-red-600"
-            } transition-colors`}
+            className={`text-lg font-bold text-gray-900 line-clamp-2 ${isExpired ? "text-gray-600" : "group-hover:text-red-600"
+              } transition-colors`}
           >
             {course.title}
           </h3>
@@ -274,11 +271,10 @@ export default function EnhancedCourseCard({
                 <div className="flex items-center justify-between">
                   <Badge
                     variant="secondary"
-                    className={`${
-                      isExpired
+                    className={`${isExpired
                         ? "bg-red-100 text-red-800"
                         : "bg-gradient-to-r from-blue-600 to-blue-800 text-white"
-                    } border-0`}
+                      } border-0`}
                   >
                     {isExpired ? (
                       <>
@@ -306,11 +302,10 @@ export default function EnhancedCourseCard({
                   </span>
                   {expiryDate && (
                     <span
-                      className={`${
-                        isExpired
+                      className={`${isExpired
                           ? "text-red-600 font-semibold"
                           : "text-gray-500"
-                      }`}
+                        }`}
                     >
                       {isExpired ? "Expired on: " : "Valid until: "}
                       {formatExpiryDate(expiryDate)}
@@ -351,7 +346,7 @@ export default function EnhancedCourseCard({
                       {Math.round(
                         ((course.price - (course.salePrice ?? 0)) /
                           course.price) *
-                          100
+                        100
                       )}
                       %
                     </Badge>

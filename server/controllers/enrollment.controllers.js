@@ -104,12 +104,12 @@ export const getUserEnrollments = asyncHandler(async (req, res) => {
       enrollment.expiryDate && new Date() > new Date(enrollment.expiryDate);
     const daysLeft = enrollment.expiryDate
       ? Math.max(
-          0,
-          Math.ceil(
-            (new Date(enrollment.expiryDate) - new Date()) /
-              (1000 * 60 * 60 * 24)
-          )
+        0,
+        Math.ceil(
+          (new Date(enrollment.expiryDate) - new Date()) /
+          (1000 * 60 * 60 * 24)
         )
+      )
       : null;
 
     return {
@@ -122,4 +122,45 @@ export const getUserEnrollments = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponsive(200, processedEnrollments, "User enrollments"));
+});
+
+// Admin: Get enrollments for a specific user (by userId or slug)
+export const AdminGetEnrollmentsByUser = asyncHandler(async (req, res) => {
+  const { userId, slug } = req.params;
+
+  let user;
+  if (slug) {
+    user = await prisma.user.findUnique({ where: { slug } });
+  } else if (userId) {
+    user = await prisma.user.findUnique({ where: { id: userId } });
+  }
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          validityDays: true,
+        },
+      },
+    },
+  });
+
+  const processed = enrollments.map((e) => ({
+    id: e.id,
+    courseId: e.courseId,
+    courseTitle: e.course?.title || "",
+    expiryDate: e.expiryDate,
+    createdAt: e.createdAt,
+  }));
+
+  return res.status(200).json(new ApiResponsive(200, { enrollments: processed }, "User enrollments fetched"));
 });

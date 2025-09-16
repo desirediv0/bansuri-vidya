@@ -232,11 +232,11 @@ export const getCourseProgress = asyncHandler(async (req, res) => {
 
   if (!course) throw new ApiError(404, "Course not found");
 
-  // Get all chapters
-  const allChapters = course.sections.flatMap(section => section.chapters);
+  // Get all published chapters only
+  const allChapters = course.sections.flatMap(section => section.chapters).filter(ch => ch.isPublished);
   const totalChapters = allChapters.length;
 
-  // Get completed chapters
+  // Get completed chapters among published chapters
   const completedChapters = allChapters.filter(
     chapter => chapter.userProgress.some(progress => progress.isCompleted)
   );
@@ -259,9 +259,13 @@ export const getCourseProgress = asyncHandler(async (req, res) => {
 
 // Helper function
 const calculateCourseProgress = async (userId, courseId) => {
-  const progress = await prisma.chapter.count({
+  // Chapters are associated to a Course via their Section -> Course relation,
+  // so count chapters by filtering on section.courseId instead of chapter.courseId
+  const completed = await prisma.chapter.count({
     where: {
-      courseId,
+      section: {
+        courseId
+      },
       userProgress: {
         some: {
           userId,
@@ -271,14 +275,22 @@ const calculateCourseProgress = async (userId, courseId) => {
     }
   });
 
+  // Only count published chapters towards total
   const total = await prisma.chapter.count({
-    where: { courseId }
+    where: {
+      section: {
+        courseId
+      },
+      isPublished: true
+    }
   });
 
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
   return {
-    completed: progress,
+    completed,
     total,
-    percentage: Math.round((progress / total) * 100)
+    percentage
   };
 };
 export const getProgress = asyncHandler(async (req, res) => {
@@ -341,5 +353,15 @@ export const getProgress = asyncHandler(async (req, res) => {
       nextChapterId: nextChapter?.id || null,
       courseProgress: await calculateCourseProgress(userId, chapter.section.courseId)
     }, "Progress retrieved successfully")
+  );
+});
+
+export const AdminGetUserProgress = asyncHandler(async (req, res) => {
+  const { userId, courseId } = req.params;
+
+  const progress = await calculateCourseProgress(userId, courseId);
+
+  return res.status(200).json(
+    new ApiResponsive(200, progress, "User progress retrieved successfully")
   );
 });

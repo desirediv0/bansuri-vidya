@@ -486,33 +486,64 @@ export const GetLoggedInUser = asyncHandler(async (req, res) => {
 });
 
 export const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      usertype: true,
-      isVerified: true,
-      provider: true,
-      slug: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  // Query params: page, limit, search, sort (createdAt_asc|createdAt_desc), from, to
+  const page = Math.max(1, parseInt(req.query.page)) || 1;
+  const limit = Math.min(1000, parseInt(req.query.limit)) || 50; // default 50, cap 1000
+  const search = req.query.search?.toString() || null;
+  const sort = req.query.sort?.toString() || "createdAt_desc";
+  const from = req.query.from ? new Date(req.query.from.toString()) : null;
+  const to = req.query.to ? new Date(req.query.to.toString()) : null;
 
-  if (!users || users.length === 0) {
-    throw new ApiError(404, "No users found");
+  // Build where clause
+  const where = {};
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
   }
 
-  const totalUsers = await prisma.user.count();
+  if (from || to) {
+    where.createdAt = {};
+    if (from) where.createdAt.gte = from;
+    if (to) where.createdAt.lte = to;
+  }
+
+  // Sorting
+  const orderBy = {};
+  if (sort === "createdAt_asc") orderBy.createdAt = "asc";
+  else orderBy.createdAt = "desc";
+
+  const skip = (page - 1) * limit;
+
+  const [users, totalUsers] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        usertype: true,
+        isVerified: true,
+        provider: true,
+        slug: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.user.count({ where }),
+  ]);
 
   return res
     .status(200)
     .json(
       new ApiResponsive(
         200,
-        { users, totalUsers },
+        { users, totalUsers, page, limit },
         "Users fetched successfully"
       )
     );

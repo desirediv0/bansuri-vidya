@@ -179,11 +179,11 @@ export const getMyPurchases = asyncHandler(async (req, res) => {
       purchase.expiryDate && new Date() > new Date(purchase.expiryDate);
     const daysLeft = purchase.expiryDate
       ? Math.max(
-          0,
-          Math.ceil(
-            (new Date(purchase.expiryDate) - new Date()) / (1000 * 60 * 60 * 24)
-          )
+        0,
+        Math.ceil(
+          (new Date(purchase.expiryDate) - new Date()) / (1000 * 60 * 60 * 24)
         )
+      )
       : null;
 
     return {
@@ -326,4 +326,89 @@ export const getPurchaseStatistics = asyncHandler(async (req, res) => {
       "Purchase statistics retrieved successfully"
     )
   );
+});
+
+// Admin: Get purchases for a specific user (by userId or slug)
+export const AdminGetPurchasesByUser = asyncHandler(async (req, res) => {
+  const { userId, slug } = req.params;
+
+  let user;
+  if (slug) {
+    user = await prisma.user.findUnique({ where: { slug } });
+  } else if (userId) {
+    user = await prisma.user.findUnique({ where: { id: userId } });
+  }
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const purchases = await prisma.purchase.findMany({
+    where: { userId: user.id },
+    include: {
+      course: {
+        select: { id: true, title: true, price: true, salePrice: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const processed = purchases.map((p) => ({
+    id: p.id,
+    courseId: p.courseId,
+    courseTitle: p.course?.title || "",
+    purchasePrice: p.purchasePrice,
+    discountPrice: p.discountPrice,
+    couponCode: p.couponCode,
+    purchaseDate: p.createdAt,
+    expiryDate: p.expiryDate,
+  }));
+
+  // Normalize pricing: compute originalPrice (course.price), discountAmount and finalPaid
+  const normalized = processed.map((item) => {
+    const course = purchases.find((x) => x.id === item.id)?.course;
+    const originalPrice = course?.price ?? null;
+    const purchasePrice = item.purchasePrice ?? null;
+    const discountValue = item.discountPrice ?? null;
+
+    let discountAmount = 0;
+    let finalPaid = purchasePrice != null ? Number(purchasePrice) : null;
+
+    if (originalPrice != null && purchasePrice != null) {
+      // If we have all three values, prefer the consistent interpretation:
+      // - If purchasePrice + discountValue === originalPrice (within 1 unit), then
+      //   purchasePrice is finalPaid and discountValue is discountAmount.
+      if (discountValue != null && Math.abs(Number(purchasePrice) + Number(discountValue) - Number(originalPrice)) <= 1) {
+        finalPaid = Number(purchasePrice);
+        discountAmount = Number(discountValue);
+      } else if (discountValue != null && Number(discountValue) >= Number(originalPrice)) {
+        // discountValue looks like a final paid (unlikely but handle): treat as finalPaid
+        finalPaid = Number(discountValue);
+        discountAmount = Math.max(0, Number(originalPrice) - finalPaid);
+      } else if (discountValue != null) {
+        // Otherwise, prefer purchasePrice as finalPaid and compute discountAmount by difference
+        finalPaid = Number(purchasePrice);
+        discountAmount = Math.max(0, Number(originalPrice) - finalPaid);
+      } else {
+        finalPaid = Number(purchasePrice);
+        discountAmount = Math.max(0, Number(originalPrice) - finalPaid);
+      }
+    } else if (purchasePrice != null) {
+      finalPaid = Number(purchasePrice);
+      discountAmount = discountValue != null ? Number(discountValue) : 0;
+    }
+
+    if (discountAmount < 0) discountAmount = 0;
+    if (finalPaid != null && finalPaid < 0) finalPaid = 0;
+
+    return {
+      ...item,
+      userId: user.id,
+      originalPrice,
+      discountAmount,
+      finalPaid,
+    };
+  });
+
+  return res.status(200).json(new ApiResponsive(200, { purchases: normalized, userId: user.id }, "User purchases fetched"));
 });

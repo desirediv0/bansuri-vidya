@@ -8,9 +8,12 @@ import SkeletonCardGrid from "../../_components/SkeletonCardGrid";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, ThumbsUp, Youtube } from "lucide-react";
 import { useCustomDebounce } from "@/hooks/useCustomDebounce";
 import CourseCards from "../../_components/CourseCards";
+import CustomButton from "../../_components/CustomButton";
+import VideoDialog from "../../_components/VideoDialog";
+import { scrollToSection } from "../../_components/smoothScroll";
 
 const Course = () => {
   const searchParams = useSearchParams();
@@ -24,7 +27,7 @@ const Course = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("oldest");
   const [categories, setCategories] = useState<{ id: string; name: string; }[]>([]);
-
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const debouncedSearch = useCustomDebounce(searchQuery, 500);
 
   const fetchCategories = async () => {
@@ -99,16 +102,47 @@ const Course = () => {
   return (
     <>
       <HeroSection
-        smallText="All Courses"
-        title="Explore our courses."
+        title="Online Courses"
+        description="At Bansuri Vidya Mandir, we believe in making quality education accessible to everyone, anytime, anywhere. Our Online Courses are designed to provide a flexible and engaging learning experience, ensuring that students receive the best education from the comfort of their homes."
         variant="page"
-        image={{
-          src: "/rupak-sir.webp",
-          alt: "Courses",
-        }}
+        backgroundImage="/online-course-n.png"
+        buttons={
+          <>
+            <CustomButton
+              primaryText="Get Started"
+              secondaryText="Learn More"
+              icon={<ThumbsUp size={20} />}
+              onClick={() => scrollToSection("courses-section")}
+              className="!px-6 py-3 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white/10 transition-colors w-[200px]"
+            />
+            <button
+              onClick={() => setIsVideoOpen(true)}
+              className="group flex items-center justify-center text-white gap-1
+              hover:text-white/90 transition-all duration-300 relative
+              hover:-translate-x-2"
+            >
+              <Youtube
+                size={20}
+                className="transform transition-all duration-300 
+                group-hover:translate-x-[-2px]"
+              />
+              <span>How it works</span>
+            </button>
+          </>
+        }
+        stats={[
+          { number: "1200+", label: "Students Enrolled", endValue: 1200 },
+          { number: "240+", label: "5 Star Google Reviews", endValue: 240 },
+          { number: "20", label: "Years of Experience", endValue: 20 }
+        ]}
+      />
+      <VideoDialog
+        isOpen={isVideoOpen}
+        onClose={() => setIsVideoOpen(false)}
+        videoUrl="https://www.youtube.com/watch?v=9Jk5C2cgPQU"
       />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex flex-col gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-8" id="courses-section" >
           <div className="w-full">
             <div className="relative">
               <Input

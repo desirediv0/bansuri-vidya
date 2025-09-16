@@ -19,8 +19,8 @@ import MobileBottomNav from "./MobileBottomNav";
 const menuItems = [
   { name: "Home", href: "/" },
   { name: "Online Courses", href: "/online-courses" },
-  { name: "Live Classes", href: "/live-classes" },
-  { name: "Offline Batches", href: "/offline-batches" },
+  // { name: "Live Classes", href: "/live-classes" },
+  // { name: "Offline Batches", href: "/offline-batches" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
 ];
@@ -90,13 +90,12 @@ export default function Header() {
   // Apply different styles for user profile page
   const headerStyles = isUserProfilePage
     ? "bg-[#f5f5f5] text-black shadow-sm"
-    : `${
-        headerState === "transparent"
-          ? "bg-transparent text-white"
-          : headerState === "visible"
-            ? "bg-white text-black shadow-md"
-            : "bg-transparent text-white"
-      }`;
+    : `${headerState === "transparent"
+      ? "bg-transparent text-white"
+      : headerState === "visible"
+        ? "bg-white text-black shadow-md"
+        : "bg-transparent text-white"
+    }`;
 
   return (
     <>

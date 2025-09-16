@@ -231,12 +231,12 @@ const UserProfile = () => {
               : false;
             const daysLeft = expiryDate
               ? Math.max(
-                  0,
-                  Math.ceil(
-                    (new Date(expiryDate).getTime() - new Date().getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )
+                0,
+                Math.ceil(
+                  (new Date(expiryDate).getTime() - new Date().getTime()) /
+                  (1000 * 60 * 60 * 24)
                 )
+              )
               : null;
 
             return {
@@ -262,12 +262,12 @@ const UserProfile = () => {
             : false;
           const daysLeft = expiryDate
             ? Math.max(
-                0,
-                Math.ceil(
-                  (new Date(expiryDate).getTime() - new Date().getTime()) /
-                    (1000 * 60 * 60 * 24)
-                )
+              0,
+              Math.ceil(
+                (new Date(expiryDate).getTime() - new Date().getTime()) /
+                (1000 * 60 * 60 * 24)
               )
+            )
             : null;
 
           return {
@@ -322,12 +322,12 @@ const UserProfile = () => {
                 : false;
               const daysLeft = expiryDate
                 ? Math.max(
-                    0,
-                    Math.ceil(
-                      (new Date(expiryDate).getTime() - new Date().getTime()) /
-                        (1000 * 60 * 60 * 24)
-                    )
+                  0,
+                  Math.ceil(
+                    (new Date(expiryDate).getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24)
                   )
+                )
                 : null;
 
               return {
@@ -353,12 +353,12 @@ const UserProfile = () => {
               : false;
             const daysLeft = expiryDate
               ? Math.max(
-                  0,
-                  Math.ceil(
-                    (new Date(expiryDate).getTime() - new Date().getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )
+                0,
+                Math.ceil(
+                  (new Date(expiryDate).getTime() - new Date().getTime()) /
+                  (1000 * 60 * 60 * 24)
                 )
+              )
               : null;
 
             return {
@@ -448,7 +448,7 @@ const UserProfile = () => {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             <div className="relative">
-              <div className="h-24 w-24 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-2xl font-bold">
+              <div className="h-28 w-28 md:h-24 md:w-24 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-3xl md:text-2xl font-bold">
                 {user?.name.charAt(0)}
               </div>
               {user?.isVerified && (
@@ -702,31 +702,31 @@ const UserProfile = () => {
                 <TabsList className="w-full grid grid-cols-4 bg-white shadow-sm rounded-lg p-1">
                   <TabsTrigger
                     value="dashboard"
-                    className="data-[state=active]:bg-red-50 data-[state=active]:text-red-600"
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
                   >
-                    <LayoutDashboard className="h-4 w-4 mr-2 sm:mr-0 lg:mr-2" />
-                    <span className="hidden sm:inline">Dashboard</span>
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span className="text-xs">Dashboard</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="certificates"
-                    className="data-[state=active]:bg-red-50 data-[state=active]:text-red-600"
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
                   >
-                    <GraduationCap className="h-4 w-4 mr-2 sm:mr-0 lg:mr-2" />
-                    <span className="hidden sm:inline">Certificates</span>
+                    <GraduationCap className="h-5 w-5" />
+                    <span className="text-xs">Certificates</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="live-classes"
-                    className="data-[state=active]:bg-red-50 data-[state=active]:text-red-600"
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
                   >
-                    <Video className="h-4 w-4 mr-2 sm:mr-0 lg:mr-2" />
-                    <span className="hidden sm:inline">Live Classes</span>
+                    <Video className="h-5 w-5" />
+                    <span className="text-xs">Live</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="my-courses"
-                    className="data-[state=active]:bg-red-50 data-[state=active]:text-red-600"
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
                   >
-                    <BookOpenIcon className="h-4 w-4 mr-2 sm:mr-0 lg:mr-2" />
-                    <span className="hidden sm:inline">My Courses</span>
+                    <BookOpenIcon className="h-5 w-5" />
+                    <span className="text-xs">Courses</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -743,11 +743,10 @@ const UserProfile = () => {
               <div className="p-3 space-y-1">
                 <Button
                   variant={activeTab === "dashboard" ? "default" : "ghost"}
-                  className={`w-full justify-start font-medium ${
-                    activeTab === "dashboard"
+                  className={`w-full justify-start font-medium ${activeTab === "dashboard"
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
-                  }`}
+                    }`}
                   onClick={() => updateTab("dashboard")}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-2" />
@@ -755,11 +754,10 @@ const UserProfile = () => {
                 </Button>
                 <Button
                   variant={activeTab === "certificates" ? "default" : "ghost"}
-                  className={`w-full justify-start font-medium ${
-                    activeTab === "certificates"
+                  className={`w-full justify-start font-medium ${activeTab === "certificates"
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
-                  }`}
+                    }`}
                   onClick={() => updateTab("certificates")}
                 >
                   <GraduationCap className="h-4 w-4 mr-2" />
@@ -767,11 +765,10 @@ const UserProfile = () => {
                 </Button>
                 <Button
                   variant={activeTab === "live-classes" ? "default" : "ghost"}
-                  className={`w-full justify-start font-medium ${
-                    activeTab === "live-classes"
+                  className={`w-full justify-start font-medium ${activeTab === "live-classes"
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
-                  }`}
+                    }`}
                   onClick={() => updateTab("live-classes")}
                 >
                   <Video className="h-4 w-4 mr-2" />
@@ -781,11 +778,10 @@ const UserProfile = () => {
                   variant={
                     activeTab === "enrolled-courses" ? "default" : "ghost"
                   }
-                  className={`w-full justify-start font-medium ${
-                    activeTab === "enrolled-courses"
+                  className={`w-full justify-start font-medium ${activeTab === "enrolled-courses"
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
-                  }`}
+                    }`}
                   onClick={() => updateTab("enrolled-courses")}
                 >
                   <BookOpenIcon className="h-4 w-4 mr-2" />
@@ -795,11 +791,10 @@ const UserProfile = () => {
                   variant={
                     activeTab === "purchased-courses" ? "default" : "ghost"
                   }
-                  className={`w-full justify-start font-medium ${
-                    activeTab === "purchased-courses"
+                  className={`w-full justify-start font-medium ${activeTab === "purchased-courses"
                       ? "bg-red-600 hover:bg-red-700"
                       : "hover:bg-red-50 hover:text-red-600"
-                  }`}
+                    }`}
                   onClick={() => updateTab("purchased-courses")}
                 >
                   <ShoppingCartIcon className="h-4 w-4 mr-2" />

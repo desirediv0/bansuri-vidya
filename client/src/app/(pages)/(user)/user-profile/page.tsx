@@ -744,8 +744,8 @@ const UserProfile = () => {
                 <Button
                   variant={activeTab === "dashboard" ? "default" : "ghost"}
                   className={`w-full justify-start font-medium ${activeTab === "dashboard"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "hover:bg-red-50 hover:text-red-600"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "hover:bg-red-50 hover:text-red-600"
                     }`}
                   onClick={() => updateTab("dashboard")}
                 >
@@ -755,8 +755,8 @@ const UserProfile = () => {
                 <Button
                   variant={activeTab === "certificates" ? "default" : "ghost"}
                   className={`w-full justify-start font-medium ${activeTab === "certificates"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "hover:bg-red-50 hover:text-red-600"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "hover:bg-red-50 hover:text-red-600"
                     }`}
                   onClick={() => updateTab("certificates")}
                 >
@@ -766,8 +766,8 @@ const UserProfile = () => {
                 <Button
                   variant={activeTab === "live-classes" ? "default" : "ghost"}
                   className={`w-full justify-start font-medium ${activeTab === "live-classes"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "hover:bg-red-50 hover:text-red-600"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "hover:bg-red-50 hover:text-red-600"
                     }`}
                   onClick={() => updateTab("live-classes")}
                 >
@@ -779,8 +779,8 @@ const UserProfile = () => {
                     activeTab === "enrolled-courses" ? "default" : "ghost"
                   }
                   className={`w-full justify-start font-medium ${activeTab === "enrolled-courses"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "hover:bg-red-50 hover:text-red-600"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "hover:bg-red-50 hover:text-red-600"
                     }`}
                   onClick={() => updateTab("enrolled-courses")}
                 >
@@ -792,8 +792,8 @@ const UserProfile = () => {
                     activeTab === "purchased-courses" ? "default" : "ghost"
                   }
                   className={`w-full justify-start font-medium ${activeTab === "purchased-courses"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "hover:bg-red-50 hover:text-red-600"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "hover:bg-red-50 hover:text-red-600"
                     }`}
                   onClick={() => updateTab("purchased-courses")}
                 >
@@ -815,15 +815,12 @@ const UserProfile = () => {
                   <UserCertificates />
                 </TabsContent>
                 <TabsContent value="certificates" className="mt-0">
-                  <UserInfo />
                   <UserCertificates />
                 </TabsContent>
                 <TabsContent value="live-classes" className="mt-0">
-                  <UserInfo />
                   <MyLiveClasses />
                 </TabsContent>
                 <TabsContent value="my-courses" className="mt-0">
-                  <UserInfo />
                   <div className="space-y-8">
                     <EnrolledCoursesContent />
                     <PurchasedCoursesContent />
@@ -834,10 +831,9 @@ const UserProfile = () => {
 
             {/* Desktop Content */}
             <div className="hidden lg:block">
-              <UserInfo />
-
               {activeTab === "dashboard" && (
                 <div className="space-y-6">
+                  <UserInfo />
                   <DashboardStats />
                   <UserCertificates />
                 </div>

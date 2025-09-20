@@ -29,30 +29,104 @@ const useTrackingScripts = () => {
     setIsClient(true);
   }, []);
 
+  // Function to report script errors to admin
+  const reportScriptError = useCallback(async (scriptId: string, scriptName: string, error: Error) => {
+    try {
+      const errorData = {
+        scriptId,
+        scriptName,
+        error: error.message,
+        stack: error.stack,
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString()
+      };
+
+      // Log to console for immediate debugging
+      console.error('🚨 Tracking Script Error Report:', errorData);
+
+      // Send to server for admin tracking (optional - only if API exists)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (apiUrl) {
+        fetch(`${apiUrl}/tracking-scripts/error-report`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(errorData),
+        }).catch((reportError) => {
+          console.warn('Failed to report script error to server:', reportError);
+        });
+      }
+    } catch (reportError) {
+      console.error('Failed to report script error:', reportError);
+    }
+  }, []);
+
   // Function to inject script based on position
   const injectScript = useCallback(
     (scriptElement: HTMLScriptElement, position: string) => {
-      // Remove any existing script with the same ID to prevent duplicates
-      const existingScript = document.querySelector(
-        `[data-tracking-script-id="${scriptElement.getAttribute(
-          "data-tracking-script-id"
-        )}"]`
-      );
-      if (existingScript) {
-        existingScript.remove();
+      // Validate script element
+      if (!scriptElement || !(scriptElement instanceof HTMLElement)) {
+        console.error('Invalid script element provided to injectScript');
+        return false;
       }
 
-      switch (position) {
-        case "HEAD":
-          document.head.appendChild(scriptElement);
-          break;
-        case "BODY_START":
-          document.body.insertBefore(scriptElement, document.body.firstChild);
-          break;
-        case "BODY_END":
-        default:
+      // Validate script content doesn't contain HTML tags
+      const scriptContent = scriptElement.textContent || '';
+      if (scriptContent.includes('<') && scriptContent.includes('>')) {
+        console.error('Script contains HTML content, skipping injection:', scriptContent.substring(0, 100));
+        return false;
+      }
+
+      // Remove any existing script with the same ID to prevent duplicates
+      const scriptId = scriptElement.getAttribute("data-tracking-script-id");
+      const scriptName = scriptElement.getAttribute("data-tracking-script-name");
+      if (scriptId) {
+        const existingScript = document.querySelector(
+          `[data-tracking-script-id="${scriptId}"]`
+        );
+        if (existingScript) {
+          existingScript.remove();
+        }
+      }
+
+      try {
+        switch (position) {
+          case "HEAD":
+            document.head.appendChild(scriptElement);
+            break;
+          case "BODY_START":
+            // Safe insertBefore with null check
+            if (document.body.firstChild) {
+              document.body.insertBefore(scriptElement, document.body.firstChild);
+            } else {
+              document.body.appendChild(scriptElement);
+            }
+            break;
+          case "BODY_END":
+          default:
+            document.body.appendChild(scriptElement);
+            break;
+        }
+        log(`✅ Successfully injected script: ${scriptName || 'Unnamed'} (${position})`);
+        return true;
+      } catch (error) {
+        console.error(`❌ Failed to inject script "${scriptName || 'Unnamed'}":`, error);
+
+        // Report error to admin tracking
+        reportScriptError(scriptId || 'unknown', scriptName || 'Unnamed', error as Error);
+
+        // Fallback to body append
+        try {
           document.body.appendChild(scriptElement);
-          break;
+          log(`⚠️ Fallback injection successful for: ${scriptName || 'Unnamed'}`);
+          return true;
+        } catch (fallbackError) {
+          console.error(`❌ Failed fallback injection for "${scriptName || 'Unnamed'}":`, fallbackError);
+          reportScriptError(scriptId || 'unknown', scriptName || 'Unnamed', fallbackError as Error);
+          return false;
+        }
       }
     },
     []
@@ -152,60 +226,114 @@ const useTrackingScripts = () => {
         // Check if script content contains <script> tags
         if (script.script.includes("<script")) {
           // If it contains HTML script tags, extract and execute the JavaScript
-          const tempDiv = document.createElement("div");
-          tempDiv.innerHTML = script.script;
+          try {
+            // Use DOMParser to safely parse HTML content
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(script.script, 'text/html');
 
-          const scriptTags = tempDiv.querySelectorAll("script");
+            // Check for parsing errors
+            const parserError = doc.querySelector('parsererror');
+            if (parserError) {
+              console.warn('HTML parsing error in tracking script, treating as plain JavaScript');
+              // Fallback to treating as plain JavaScript
+              const wrappedContent = wrapScriptInIIFE(script.script, uniqueId);
+              scriptElement.textContent = wrappedContent;
+              injectScript(scriptElement, script.position);
+              return;
+            }
 
-          scriptTags.forEach((tag, index) => {
-            const newScript = document.createElement("script");
-            const subUniqueId = `${uniqueId}-sub-${index}`;
-            newScript.setAttribute("data-tracking-script-id", subUniqueId);
-            newScript.setAttribute("data-tracking-script-name", script.name);
-            newScript.setAttribute("data-original-id", script.id);
+            const scriptTags = doc.querySelectorAll("script");
 
-            // Copy attributes
-            Array.from(tag.attributes).forEach((attr) => {
-              if (!attr.name.startsWith("data-tracking-script-")) {
-                newScript.setAttribute(attr.name, attr.value);
+            scriptTags.forEach((tag: Element, index: number) => {
+              const newScript = document.createElement("script");
+              const subUniqueId = `${uniqueId}-sub-${index}`;
+              newScript.setAttribute("data-tracking-script-id", subUniqueId);
+              newScript.setAttribute("data-tracking-script-name", script.name);
+              newScript.setAttribute("data-original-id", script.id);
+
+              // Copy attributes from the parsed script tag
+              const scriptElement = tag as HTMLScriptElement;
+              Array.from(scriptElement.attributes).forEach((attr: Attr) => {
+                if (!attr.name.startsWith("data-tracking-script-")) {
+                  newScript.setAttribute(attr.name, attr.value);
+                }
+              });
+
+              // Set content
+              if (scriptElement.src) {
+                newScript.src = scriptElement.src;
+              } else {
+                const scriptContent = scriptElement.textContent || "";
+
+                // Skip empty scripts
+                if (!scriptContent.trim()) {
+                  log(`⚠️ Skipping empty script: ${script.name}`);
+                  return;
+                }
+
+                // Additional validation - ensure it's JavaScript, not HTML
+                if (scriptContent.includes('<') && scriptContent.includes('>')) {
+                  console.warn(`⚠️ Script contains HTML, skipping: ${script.name}`);
+                  reportScriptError(script.id, script.name, new Error('Script contains HTML content'));
+                  return;
+                }
+
+                // Wrap inline scripts in enhanced IIFE
+                const wrappedContent = wrapScriptInIIFE(scriptContent, subUniqueId);
+                newScript.textContent = wrappedContent;
+              }
+
+              // Inject based on position
+              const injected = injectScript(newScript, script.position);
+              if (!injected) {
+                console.warn(`Failed to inject script: ${script.name}`);
               }
             });
 
-            // Set content
-            if (tag.src) {
-              newScript.src = tag.src;
-            } else {
-              // Wrap inline scripts in enhanced IIFE
-              const wrappedContent = wrapScriptInIIFE(
-                tag.textContent || "",
-                subUniqueId
+            // Handle noscript tags
+            const noscriptTags = doc.querySelectorAll("noscript");
+            noscriptTags.forEach((tag: Element, index: number) => {
+              const noscript = document.createElement("noscript");
+              noscript.innerHTML = tag.innerHTML;
+              noscript.setAttribute(
+                "data-tracking-script-id",
+                `${uniqueId}-noscript-${index}`
               );
-              newScript.textContent = wrappedContent;
-            }
+              noscript.setAttribute("data-original-id", script.id);
 
-            // Inject based on position
-            injectScript(newScript, script.position);
-          });
-
-          // Handle noscript tags
-          const noscriptTags = tempDiv.querySelectorAll("noscript");
-          noscriptTags.forEach((tag, index) => {
-            const noscript = document.createElement("noscript");
-            noscript.innerHTML = tag.innerHTML;
-            noscript.setAttribute(
-              "data-tracking-script-id",
-              `${uniqueId}-noscript-${index}`
-            );
-            noscript.setAttribute("data-original-id", script.id);
-
-            // Always inject noscript in body
-            document.body.appendChild(noscript);
-          });
+              // Always inject noscript in body
+              document.body.appendChild(noscript);
+            });
+          } catch (htmlParseError) {
+            console.error('Error parsing HTML tracking script:', htmlParseError);
+            // Fallback to treating as plain JavaScript
+            const wrappedContent = wrapScriptInIIFE(script.script, uniqueId);
+            scriptElement.textContent = wrappedContent;
+            injectScript(scriptElement, script.position);
+          }
         } else {
           // Direct JavaScript content - wrap in enhanced IIFE
-          const wrappedContent = wrapScriptInIIFE(script.script, uniqueId);
+          const scriptContent = script.script.trim();
+
+          if (!scriptContent) {
+            log(`⚠️ Skipping empty script: ${script.name}`);
+            return;
+          }
+
+          // Final validation for plain JS
+          if (scriptContent.includes('<script') || scriptContent.includes('</script>')) {
+            console.error(`❌ Plain script still contains HTML tags: ${script.name}`);
+            reportScriptError(script.id, script.name, new Error('Plain script contains HTML script tags'));
+            return;
+          }
+
+          const wrappedContent = wrapScriptInIIFE(scriptContent, uniqueId);
           scriptElement.textContent = wrappedContent;
-          injectScript(scriptElement, script.position);
+
+          const injected = injectScript(scriptElement, script.position);
+          if (!injected) {
+            console.warn(`Failed to inject plain script: ${script.name}`);
+          }
         }
       });
 

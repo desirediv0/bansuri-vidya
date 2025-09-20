@@ -72,7 +72,7 @@ export interface VerificationResponse {
 
 export interface RegisterFormProps {
   handleLoading: (isLoading: boolean) => void;
-  handleRegistrationSuccess: () => void;
+  handleRegistrationSuccess: (email: string) => void;
   courseSlug?: string;
   liveClassId?: string;
   redirect?: string;

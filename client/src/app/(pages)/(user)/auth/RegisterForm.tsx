@@ -43,9 +43,11 @@ export default function RegisterForm({
       );
 
       toast.success(
-        "Registration successful! Please check your email to verify your account."
+        "Registration successful! Please check your email for 6-digit OTP."
       );
-      handleRegistrationSuccess();
+
+      // Show OTP verification form with email
+      handleRegistrationSuccess(data.email);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.message || "Registration failed");

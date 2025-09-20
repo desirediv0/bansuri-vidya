@@ -14,6 +14,7 @@ import ForgotPasswordForm from "./ForgotPasswordForm";
 import ResendVerificationForm from "./ResendVerificationForm";
 import RegistrationSuccessMessage from "./RegistrationSuccessMessage";
 import AuthModeToggle from "./AuthModeToggle";
+import OTPVerificationForm from "./OTPVerificationForm";
 import { AuthMode } from "@/type";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -31,25 +32,41 @@ export default function AuthComponent({
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   const handleLoading = (isLoading: boolean) => setLoading(isLoading);
-  const handleRegistrationSuccess = () => setRegistrationSuccess(true);
+  const handleRegistrationSuccess = (email: string) => {
+    setUserEmail(email);
+    setShowOTPVerification(true);
+    setRegistrationSuccess(false);
+  };
 
-  const getCardTitle = (mode: AuthMode): string =>
-    ({
+  const handleBackToRegistration = () => {
+    setShowOTPVerification(false);
+    setUserEmail("");
+    setAuthMode("register");
+  };
+
+  const getCardTitle = (mode: AuthMode): string => {
+    if (showOTPVerification) return "Verify Your Email";
+    return ({
       login: "Welcome to Bansuri Vidya Mandir",
       register: "Join Bansuri Vidya Mandir",
       forgotPassword: "Reset Your Password",
       resendVerification: "Verify Your Email",
     })[mode] || "";
+  };
 
-  const getCardDescription = (mode: AuthMode): string =>
-    ({
+  const getCardDescription = (mode: AuthMode): string => {
+    if (showOTPVerification) return `Enter the 6-digit OTP sent to ${userEmail}`;
+    return ({
       login: "Access your musical journey",
       register: "Begin your musical journey today",
       forgotPassword: "We'll help you reset your password",
-      resendVerification: "Verify your email to continue",
+      resendVerification: "Resend your 6-digit OTP to continue",
     })[mode] || "";
+  };
 
   return (
     <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm p-5">
@@ -76,7 +93,16 @@ export default function AuthComponent({
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {registrationSuccess ? (
+            {showOTPVerification ? (
+              <OTPVerificationForm
+                email={userEmail}
+                handleLoading={handleLoading}
+                courseSlug={courseSlug}
+                liveClassId={liveClassId}
+                redirect={redirect}
+                onBack={handleBackToRegistration}
+              />
+            ) : registrationSuccess ? (
               <RegistrationSuccessMessage />
             ) : (
               <>
@@ -110,7 +136,9 @@ export default function AuthComponent({
                     setAuthMode={setAuthMode}
                   />
                 )}
-                <AuthModeToggle authMode={authMode} setAuthMode={setAuthMode} />
+                {!showOTPVerification && (
+                  <AuthModeToggle authMode={authMode} setAuthMode={setAuthMode} />
+                )}
               </>
             )}
           </motion.div>

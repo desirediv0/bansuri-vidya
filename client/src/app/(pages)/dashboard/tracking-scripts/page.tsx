@@ -49,13 +49,25 @@ interface TrackingScript {
     updatedAt: string;
 }
 
+interface ScriptError {
+    scriptId: string;
+    scriptName: string;
+    error: string;
+    url: string;
+    timestamp: string;
+    count: number;
+}
+
 const TrackingScriptsPage = () => {
     const [scripts, setScripts] = useState<TrackingScript[]>([]);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [editingScript, setEditingScript] = useState<TrackingScript | null>(null);
-    const [previewScript, setPreviewScript] = useState<TrackingScript | null>(null); const [formData, setFormData] = useState({
+    const [previewScript, setPreviewScript] = useState<TrackingScript | null>(null);
+    const [scriptErrors, setScriptErrors] = useState<ScriptError[]>([]);
+    const [showErrors, setShowErrors] = useState(false);
+    const [formData, setFormData] = useState({
         name: "",
         description: "",
         scriptContent: "",
@@ -84,8 +96,67 @@ const TrackingScriptsPage = () => {
         }
     };
 
+    // Error monitoring functions
+    const monitorConsoleErrors = () => {
+        const originalError = console.error;
+        console.error = (...args) => {
+            originalError.apply(console, args);
+
+            const errorMessage = args.join(' ');
+            if (errorMessage.includes('tracking script') || errorMessage.includes('insertBefore') ||
+                errorMessage.includes('SyntaxError') || errorMessage.includes('Failed to execute')) {
+                reportScriptError('Console Error', errorMessage);
+            }
+        };
+    };
+
+    const reportScriptError = (scriptName: string, errorMessage: string) => {
+        const newError: ScriptError = {
+            scriptId: Date.now().toString(),
+            scriptName,
+            error: errorMessage,
+            url: window.location.href,
+            timestamp: new Date().toISOString(),
+            count: 1
+        };
+
+        setScriptErrors(prev => {
+            const existingError = prev.find(err => err.scriptName === scriptName && err.error === errorMessage);
+            if (existingError) {
+                return prev.map(err =>
+                    err === existingError
+                        ? { ...err, count: err.count + 1, timestamp: new Date().toISOString() }
+                        : err
+                );
+            }
+            return [...prev, newError];
+        });
+    };
+
+    const checkScriptHealth = async () => {
+        try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tracking-scripts/health`, { withCredentials: true });
+            if (response.data?.errors) {
+                response.data.errors.forEach((error: any) => {
+                    reportScriptError(error.scriptName || 'Unknown Script', error.message);
+                });
+            }
+        } catch (error) {
+            console.error('Error checking script health:', error);
+        }
+    };
+
     useEffect(() => {
         fetchScripts();
+        monitorConsoleErrors();
+        checkScriptHealth();
+
+        // Check for script errors every 30 seconds
+        const errorCheckInterval = setInterval(checkScriptHealth, 30000);
+
+        return () => {
+            clearInterval(errorCheckInterval);
+        };
     }, []);
 
     // Handle form submission
@@ -193,6 +264,37 @@ const TrackingScriptsPage = () => {
     const handlePreview = (script: TrackingScript) => {
         setPreviewScript(script);
         setPreviewOpen(true);
+    };
+
+    // Error action handlers
+    const handleFixScript = (error: ScriptError) => {
+        const script = scripts.find(s => s.name === error.scriptName);
+        if (script) {
+            setEditingScript(script);
+            setFormData({
+                name: script.name,
+                description: script.description || '',
+                scriptContent: script.scriptContent,
+                position: script.position,
+                priority: script.priority,
+                isActive: script.isActive
+            });
+            setDialogOpen(true);
+        }
+    };
+
+    const handleDisableScript = async (error: ScriptError) => {
+        const script = scripts.find(s => s.name === error.scriptName);
+        if (script && script.isActive) {
+            await toggleScript(script.id);
+            // Remove error from list after disabling
+            setScriptErrors(prev => prev.filter(err => err.scriptId !== error.scriptId));
+            toast.success(`Disabled script: ${error.scriptName}`);
+        }
+    };
+
+    const dismissError = (errorId: string) => {
+        setScriptErrors(prev => prev.filter(err => err.scriptId !== errorId));
     };
 
     if (loading) {
@@ -328,6 +430,94 @@ const TrackingScriptsPage = () => {
                     </DialogContent>
                 </Dialog>
             </div>
+
+            {/* Script Error Monitoring */}
+            {scriptErrors.length > 0 && (
+                <Card className="border-red-200 bg-red-50">
+                    <CardHeader>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <CardTitle className="text-red-800 flex items-center gap-2">
+                                    🚨 Script Errors Detected
+                                </CardTitle>
+                                <p className="text-red-600 text-sm">
+                                    {scriptErrors.length} script(s) are causing errors on your website
+                                </p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowErrors(!showErrors)}
+                            >
+                                {showErrors ? 'Hide' : 'Show'} Details
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    {showErrors && (
+                        <CardContent>
+                            <div className="space-y-3">
+                                {scriptErrors.map((error, index) => (
+                                    <div key={index} className="p-3 bg-red-100 rounded border border-red-200">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 className="font-medium text-red-800">{error.scriptName}</h4>
+                                                <p className="text-xs text-red-600">Script ID: {error.scriptId}</p>
+                                            </div>
+                                            <Badge variant="destructive" className="text-xs">
+                                                {error.count} errors
+                                            </Badge>
+                                        </div>
+                                        <p className="text-sm text-red-700 mb-2">
+                                            <strong>Error:</strong> {error.error}
+                                        </p>
+                                        <p className="text-xs text-red-600">
+                                            <strong>Last seen:</strong> {new Date(error.timestamp).toLocaleString()}
+                                        </p>
+                                        <p className="text-xs text-red-600">
+                                            <strong>URL:</strong> {error.url}
+                                        </p>
+                                        <div className="flex gap-2 mt-2">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    const script = scripts.find(s => s.id === error.scriptId);
+                                                    if (script) {
+                                                        setEditingScript(script);
+                                                        setFormData({
+                                                            name: script.name,
+                                                            description: script.description || "",
+                                                            scriptContent: script.scriptContent,
+                                                            position: script.position,
+                                                            priority: script.priority,
+                                                            isActive: script.isActive,
+                                                        });
+                                                        setDialogOpen(true);
+                                                    }
+                                                }}
+                                            >
+                                                Fix Script
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    const script = scripts.find(s => s.id === error.scriptId);
+                                                    if (script) {
+                                                        handleDisableScript(error); // Disable the problematic script
+                                                    }
+                                                }}
+                                            >
+                                                Disable Script
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
+            )}
 
             {/* Scripts List */}
             <div className="grid gap-4">

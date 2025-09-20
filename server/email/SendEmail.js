@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import {
   getVerificationTemplate,
+  getOTPVerificationTemplate,
   getResetTemplate,
   getDeleteTemplate,
   getFeeReceiptTemplate,
@@ -30,6 +31,10 @@ export const SendEmail = async ({ email, subject, message, emailType, attachment
       case "VERIFY":
         subject = "Verify your email - Bansuri Vidya Mandir ";
         htmlContent = getVerificationTemplate(message);
+        break;
+      case "VERIFY_OTP":
+        subject = "Your OTP for Email Verification - Bansuri Vidya Mandir";
+        htmlContent = getOTPVerificationTemplate(message);
         break;
       case "DELETE":
         subject = "Delete your account - Bansuri Vidya Mandir ";

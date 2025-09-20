@@ -12,7 +12,7 @@ import { useAuth } from "@/helper/AuthContext";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Cart from "../Cart";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import MobileMenu from "./MobileMenu";
 import MobileBottomNav from "./MobileBottomNav";
 
@@ -30,6 +30,7 @@ export default function Header() {
   const { headerState } = useScrollEffect();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const isUserProfilePage =
     pathname === "/user-profile" ||
@@ -38,8 +39,27 @@ export default function Header() {
     pathname === "/reset-password" ||
     pathname === "/verify-email";
 
-  const { isAuthenticated } = useAuth();
+  // Check if we're on main user profile page (not on tabs)
+  const isMainUserProfilePage = pathname === "/user-profile";
+
+  // Check if we're on user profile tab pages where dropdown should be hidden
+  const isUserProfileTabPage =
+    pathname === "/user-profile" && (
+      searchParams?.get("tab") === "certificates" ||
+      searchParams?.get("tab") === "live-classes" ||
+      searchParams?.get("tab") === "my-courses"
+    );
+
+  const { isAuthenticated, user } = useAuth();
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Helper function to get user initials
+  const getUserInitials = (name: string) => {
+    if (!name) return "U";
+    const names = name.trim().split(" ");
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -146,44 +166,66 @@ export default function Header() {
                   ))}
                 </nav>
                 <div className="flex items-center space-x-6">
-                  <div className="relative hidden lg:block">
-                    <button
-                      onClick={() =>
-                        setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                      }
-                      className="flex items-center space-x-2 text-gray-700 hover:text-red-500"
+                  {/* My Learning Button */}
+                  {isAuthenticated && (
+                    <Link
+                      href="/user-profile?tab=live-classes"
+                      className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
-                      <User className="h-6 w-6" />
-                      <ChevronDown className="h-4 w-4" />
-                    </button>
-                    <AnimatePresence>
-                      {isProfileDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
-                        >
-                          <Link
-                            href="/user-profile"
-                            className="block px-4 py-2 text-gray-800 hover:bg-red-50"
-                            onClick={() => setIsProfileDropdownOpen(false)}
+                      <span className="font-medium">My Learning</span>
+                    </Link>
+                  )}
+
+                  {/* Profile Dropdown - Only show on main profile page, not on tabs */}
+                  {isAuthenticated && !isUserProfileTabPage && (
+                    <div className="relative hidden lg:block">
+                      <button
+                        onClick={() =>
+                          setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                        }
+                        className="flex items-center space-x-2 text-gray-700 hover:text-red-500"
+                      >
+                        {user?.name ? (
+                          <>
+                            <div className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                              {getUserInitials(user.name)}
+                            </div>
+                            <span className="font-medium">{user.name}</span>
+                          </>
+                        ) : (
+                          <User className="h-6 w-6" />
+                        )}
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                      <AnimatePresence>
+                        {isProfileDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
                           >
-                            Profile
-                          </Link>
-                          <button
-                            onClick={() => {
-                              handleLogout();
-                              setIsProfileDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50"
-                          >
-                            Logout
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                            <Link
+                              href="/user-profile"
+                              className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                              onClick={() => setIsProfileDropdownOpen(false)}
+                            >
+                              Profile
+                            </Link>
+                            <button
+                              onClick={() => {
+                                handleLogout();
+                                setIsProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50"
+                            >
+                              Logout
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                   <Cart headerState="visible" />
                   <div className="lg:hidden">
                     <button
@@ -213,45 +255,65 @@ export default function Header() {
                 <div className="hidden lg:block">
                   <div className="hidden md:flex items-center space-x-4">
                     {isAuthenticated ? (
-                      <div className="relative">
-                        <button
-                          onClick={() =>
-                            setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                          }
-                          className={`flex items-center space-x-2  ${headerState === "transparent" ? "text-white hover:text-red-500" : "text-black hover:text-red-500"}`}
+                      <>
+                        {/* My Learning Button */}
+                        <Link
+                          href="/user-profile?tab=live-classes"
+                          className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                         >
-                          <User className="h-5 w-5" />
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
+                          <span className="font-medium">My Learning</span>
+                        </Link>
 
-                        <AnimatePresence>
-                          {isProfileDropdownOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 10 }}
-                              className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
-                            >
-                              <Link
-                                href="/user-profile"
-                                className="block px-4 py-2 text-gray-800 hover:bg-red-50"
-                                onClick={() => setIsProfileDropdownOpen(false)}
+                        <div className="relative">
+                          <button
+                            onClick={() =>
+                              setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                            }
+                            className={`flex items-center space-x-2  ${headerState === "transparent" ? "text-white hover:text-red-500" : "text-black hover:text-red-500"}`}
+                          >
+                            {user?.name ? (
+                              <>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${headerState === "transparent" ? "bg-white text-red-500" : "bg-red-500 text-white"
+                                  }`}>
+                                  {getUserInitials(user.name)}
+                                </div>
+
+                              </>
+                            ) : (
+                              <User className="h-5 w-5" />
+                            )}
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+
+                          <AnimatePresence>
+                            {isProfileDropdownOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
                               >
-                                Profile
-                              </Link>
-                              <button
-                                onClick={() => {
-                                  handleLogout();
-                                  setIsProfileDropdownOpen(false);
-                                }}
-                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50"
-                              >
-                                Logout
-                              </button>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                                <Link
+                                  href="/user-profile"
+                                  className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                                  onClick={() => setIsProfileDropdownOpen(false)}
+                                >
+                                  Profile
+                                </Link>
+                                <button
+                                  onClick={() => {
+                                    handleLogout();
+                                    setIsProfileDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50"
+                                >
+                                  Logout
+                                </button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </>
                     ) : (
                       <CustomButton
                         primaryText="Login"

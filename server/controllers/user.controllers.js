@@ -61,6 +61,22 @@ const sendResetPasswordEmail = async (user, token) => {
 
 const generateToken = () => crypto.randomBytes(32).toString("hex");
 
+// Generate 6-digit OTP using crypto
+const generateOTP = () => {
+  const randomBytes = crypto.randomBytes(3); // 3 bytes = 24 bits
+  const randomNumber = randomBytes.readUIntBE(0, 3); // Convert to integer
+  const otp = (randomNumber % 900000) + 100000; // Ensure 6 digits (100000-999999)
+  return otp.toString();
+};
+
+const sendVerificationOTP = async (user, otp) => {
+  await SendEmail({
+    email: user.email,
+    emailType: "VERIFY_OTP",
+    message: { otp, name: user.name },
+  });
+};
+
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role, provider, slug, usertype } = req.body;
 
@@ -80,7 +96,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  const verificationToken = generateToken();
+  const verificationOTP = generateOTP();
 
   let uniqueSlug = slug ? createSlug(slug) : createSlug(name);
   let existingSlug = await prisma.user.findUnique({
@@ -104,11 +120,11 @@ export const registerUser = asyncHandler(async (req, res) => {
     provider,
     usertype,
     slug: uniqueSlug,
-    verificationToken,
+    verificationToken: verificationOTP, // Store OTP in verificationToken field
     verificationTokenExpiry: new Date(Date.now() + TOKEN_EXPIRY),
   });
 
-  await sendVerificationEmail(newUser, verificationToken);
+  await sendVerificationOTP(newUser, verificationOTP);
 
   return res.status(201).json(
     new ApiResponsive(
@@ -121,20 +137,20 @@ export const registerUser = asyncHandler(async (req, res) => {
           role: newUser.role,
         },
       },
-      "User registered successfully. Please check your email to verify your account."
+      "User registered successfully. Please check your email for 6-digit OTP to verify your account."
     )
   );
 });
 
 export const verifyEmail = asyncHandler(async (req, res) => {
-  const { token, id } = req.body;
+  const { otp, email } = req.body;
 
-  if (!token || !id) {
-    throw new ApiError(400, "Invalid token or ID");
+  if (!otp || !email) {
+    throw new ApiError(400, "Please provide OTP and email");
   }
 
   const user = await prisma.user.findUnique({
-    where: { id },
+    where: { email },
     select: {
       id: true,
       isVerified: true,
@@ -156,10 +172,10 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   }
 
   if (
-    user.verificationToken !== token ||
+    user.verificationToken !== otp ||
     user.verificationTokenExpiry < new Date()
   ) {
-    throw new ApiError(400, "Invalid or expired token");
+    throw new ApiError(400, "Invalid or expired OTP");
   }
 
   const updatedUser = await updateUser(user.id, {
@@ -201,6 +217,49 @@ export const verifyEmail = asyncHandler(async (req, res) => {
         "Email verified and user logged in successfully"
       )
     );
+});
+
+export const resendOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new ApiError(400, "Please provide email");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isVerified: true,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(400, "Email already verified");
+  }
+
+  const newOTP = generateOTP();
+
+  await updateUser(user.id, {
+    verificationToken: newOTP,
+    verificationTokenExpiry: new Date(Date.now() + TOKEN_EXPIRY),
+  });
+
+  await sendVerificationOTP(user, newOTP);
+
+  return res.status(200).json(
+    new ApiResponsive(
+      200,
+      null,
+      "OTP resent successfully. Please check your email."
+    )
+  );
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
@@ -984,18 +1043,36 @@ export const ImportDataFromExcel = asyncHandler(async (req, res) => {
           counter++;
         }
 
+        // Determine if user should be auto-verified or needs OTP
+        const shouldAutoVerify = row.autoVerify === true || row.autoVerify === "true";
+        let verificationData = {};
+
+        if (!shouldAutoVerify) {
+          const verificationOTP = generateOTP();
+          verificationData = {
+            verificationToken: verificationOTP,
+            verificationTokenExpiry: new Date(Date.now() + TOKEN_EXPIRY),
+          };
+        }
+
         // Create user
-        await prisma.user.create({
+        const newUser = await prisma.user.create({
           data: {
             name: row.name,
             email: row.email,
             password: row.password,
             slug: uniqueSlug,
-            isVerified: true,
+            isVerified: shouldAutoVerify,
             provider: "credentials",
             role: "STUDENT",
+            ...verificationData,
           },
         });
+
+        // Send OTP if user needs verification
+        if (!shouldAutoVerify) {
+          await sendVerificationOTP(newUser, verificationData.verificationToken);
+        }
 
         results.successful++;
       } catch (error) {

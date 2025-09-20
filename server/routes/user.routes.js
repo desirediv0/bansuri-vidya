@@ -9,6 +9,7 @@ import {
   refreshToken,
   registerUser,
   reSendVerificationEmail,
+  resendOTP,
   updateName,
   updatePassword,
   verifyEmail,
@@ -35,6 +36,7 @@ router.route("/google-auth").post(googleAuth);
 router.route("/verify-email").post(verifyEmail);
 router.route("/login").post(loginUser);
 router.route("/resend-verification-email").post(reSendVerificationEmail);
+router.route("/resend-otp").post(resendOTP);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/check-logged-in").get(checkUserLoggedIn);
 router.route("/reset-password").post(resetPassword);

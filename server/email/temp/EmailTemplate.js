@@ -253,6 +253,152 @@ export const getDeleteTemplate = (deletionLink) => `
 </html>
 `;
 
+export const getOTPVerificationTemplate = ({ otp, name }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Bansuri Vidya Mandir</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            color: #ffffff;
+            text-align: center;
+            padding: 40px;
+        }
+        .content {
+            padding: 40px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1a1a1a;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        p {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #333333;
+        }
+        .otp-container {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px dashed #ff0000;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .otp-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff0000;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .otp-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        .features {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .feature-item {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+        .feature-item:before {
+            content: '🎵';
+            position: absolute;
+            left: 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #666666;
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Bansuri Vidya Mandir</h1>
+        </div>
+        <div class="content">
+            <h2>Verify Your Email Address</h2>
+            <p>Dear ${name},</p>
+            <p>Thank you for registering with Bansuri Vidya Mandir! To complete your registration and start your musical journey, please verify your email address using the OTP below:</p>
+            
+            <div class="otp-container">
+                <div class="otp-code">${otp}</div>
+                <div class="otp-label">Your 6-Digit Verification Code</div>
+            </div>
+            
+            <p><strong>Please enter this OTP on the verification page to activate your account.</strong></p>
+            
+            <div class="warning">
+                <strong>Security Note:</strong> This OTP is valid for 2 hours only. Do not share this code with anyone. If you didn't request this verification, please ignore this email.
+            </div>
+            
+            <div class="features">
+                <h3>What awaits you at Bansuri Vidya Mandir:</h3>
+                <div class="feature-item">Expert guidance from renowned Bansuri masters</div>
+                <div class="feature-item">Structured courses from beginner to advanced levels</div>
+                <div class="feature-item">Live interactive classes and personalized feedback</div>
+                <div class="feature-item">Rich library of classical compositions and techniques</div>
+                <div class="feature-item">Certificate courses in Indian Classical Music</div>
+            </div>
+            
+            <p>If you need assistance, please contact our support team at bansurividya@gmail.com</p>
+        </div>
+        <div class="footer">
+            © ${new Date().getFullYear()} Bansuri Vidya Mandir | Indian Classical Music Institute<br>
+            This is an automated message. Please do not reply to this email.
+        </div>
+    </div>
+</body>
+</html>
+`;
+
 export const getResetTemplate = (resetLink) => `
 <!DOCTYPE html>
 <html lang="en">

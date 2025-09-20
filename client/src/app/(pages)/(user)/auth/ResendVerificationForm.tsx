@@ -24,18 +24,19 @@ export default function ResendVerificationForm({
     handleLoading(true);
     try {
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/user/resend-verification-email`,
+        `${process.env.NEXT_PUBLIC_API_URL}/user/resend-otp`,
         data
       );
       if (result.status === 200) {
         toast.success(
-          "Verification email has been resent. Please check your inbox."
+          "OTP has been resent to your email. Please check your inbox."
         );
-        setAuthMode("login");
+        // Redirect to OTP verification page
+        window.location.href = `/verify-email?email=${encodeURIComponent(data.email)}`;
       } else {
         toast.error(
           result.data.message ||
-          "Failed to resend verification email. Please try again."
+          "Failed to resend OTP. Please try again."
         );
       }
     } catch (error: any) {
@@ -97,7 +98,7 @@ export default function ResendVerificationForm({
             <Loader2 className="h-4 w-4" />
           </motion.div>
         ) : (
-          "Resend Verification Email"
+          "Resend OTP"
         )}
       </Button>
     </motion.form>

@@ -36,7 +36,15 @@ export default function MobileMenu({
   headerState,
   handleLogout,
 }: MobileMenuProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
+  // Helper function to get user initials
+  const getUserInitials = (name: string) => {
+    if (!name) return "U";
+    const names = name.trim().split(" ");
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
 
   // Handle menu item click to ensure dropdown closes
   const handleMenuItemClick = () => {
@@ -101,6 +109,32 @@ export default function MobileMenu({
           >
             {isAuthenticated ? (
               <>
+                {/* User Info with Name and Initials */}
+                <div className="flex items-center space-x-3 p-4 bg-white/10 rounded-lg">
+                  {user?.name ? (
+                    <>
+                      <div className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-semibold text-lg">
+                        {getUserInitials(user.name)}
+                      </div>
+                      <span className="text-white text-lg font-medium">{user.name}</span>
+                    </>
+                  ) : (
+                    <>
+                      <User className="h-8 w-8 text-white" />
+                      <span className="text-white text-lg font-medium">User</span>
+                    </>
+                  )}
+                </div>
+
+                {/* My Learning Button */}
+                <Link
+                  href="/user-profile?tab=live-classes"
+                  className="flex items-center justify-center space-x-2 bg-red-500 text-white hover:bg-red-600 text-xl font-medium py-3 px-4 rounded-lg transition-colors"
+                  onClick={handleMenuItemClick}
+                >
+                  <span>My Learning</span>
+                </Link>
+
                 <Link
                   href="/user-profile"
                   className="flex items-center space-x-2 text-white/90 hover:text-[#ba1c33] text-xl font-medium"

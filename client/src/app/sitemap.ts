@@ -40,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             // Check if we're in a server context where API might be available
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 2000) // Shorter timeout
-            
+
             try {
                 const [coursesResponse, liveClassesResponse] = await Promise.allSettled([
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/get-courses-for-seo`, {
@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                         headers: { 'Accept': 'application/json' }
                     })
                 ])
-                
+
                 clearTimeout(timeoutId)
 
                 // Handle courses response

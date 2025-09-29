@@ -47,7 +47,8 @@ export default function Header() {
     pathname === "/user-profile" && (
       searchParams?.get("tab") === "certificates" ||
       searchParams?.get("tab") === "live-classes" ||
-      searchParams?.get("tab") === "my-courses"
+      searchParams?.get("tab") === "my-courses" ||
+      searchParams?.get("tab") === "enrolled-courses"
     );
 
   const { isAuthenticated, user } = useAuth();
@@ -153,7 +154,7 @@ export default function Header() {
             </Link>
             {isUserProfilePage ? (
               <>
-                <nav className="hidden lg:flex space-x-6">
+                <nav className="hidden md:flex space-x-6">
                   {menuItems.map((item) => (
                     <Link
                       key={item.name}
@@ -169,8 +170,8 @@ export default function Header() {
                   {/* My Learning Button */}
                   {isAuthenticated && (
                     <Link
-                      href="/user-profile?tab=live-classes"
-                      className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      href="/user-profile?tab=my-courses"
+                      className="hidden md:flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
                       <span className="font-medium">My Learning</span>
                     </Link>
@@ -178,7 +179,7 @@ export default function Header() {
 
                   {/* Profile Dropdown - Only show on main profile page, not on tabs */}
                   {isAuthenticated && !isUserProfileTabPage && (
-                    <div className="relative hidden lg:block">
+                    <div className="relative hidden md:block">
                       <button
                         onClick={() =>
                           setIsProfileDropdownOpen(!isProfileDropdownOpen)
@@ -227,7 +228,7 @@ export default function Header() {
                     </div>
                   )}
                   <Cart headerState="visible" />
-                  <div className="lg:hidden">
+                  <div className="md:hidden">
                     <button
                       className="text-2xl text-gray-700"
                       onClick={toggleMobileMenu}
@@ -240,7 +241,7 @@ export default function Header() {
               </>
             ) : (
               <>
-                <nav className="hidden lg:flex space-x-8">
+                <nav className="hidden md:flex space-x-8">
                   {menuItems.map((item) => (
                     <Link
                       key={item.name}
@@ -252,13 +253,13 @@ export default function Header() {
                     </Link>
                   ))}
                 </nav>
-                <div className="hidden lg:block">
+                <div className="hidden md:block">
                   <div className="hidden md:flex items-center space-x-4">
                     {isAuthenticated ? (
                       <>
                         {/* My Learning Button */}
                         <Link
-                          href="/user-profile?tab=live-classes"
+                          href="/user-profile?tab=my-courses"
                           className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                         >
                           <span className="font-medium">My Learning</span>
@@ -338,10 +339,10 @@ export default function Header() {
                     <Cart headerState={headerState} />
                   </div>
                 </div>
-                <div className="flex items-center lg:hidden gap-3 justify-center">
+                <div className="flex items-center md:hidden gap-3 justify-center">
                   <Cart headerState={headerState} />
                   <button
-                    className="lg:hidden text-2xl"
+                    className="md:hidden text-2xl"
                     onClick={toggleMobileMenu}
                     aria-label="Toggle mobile menu"
                   >
@@ -366,7 +367,7 @@ export default function Header() {
           )}
         </AnimatePresence>
       </motion.header>
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <MobileBottomNav />
       </div>
     </>

@@ -19,29 +19,30 @@ export default function MobileBottomNav() {
 
   const loggedInNav = [
     { name: "Home", href: "/", icon: Home },
-    { name: "My Learning", href: "/user-profile?tab=live-classes", icon: BookOpen },
-    { name: "Courses", href: "/online-courses", icon: BookOpen },
+    { name: "My Learning", href: "/user-profile?tab=my-courses", icon: BookOpen },
     { name: "Account", href: "/user-profile", icon: User },
   ];
 
   const items = isAuthenticated ? loggedInNav : loggedOutNav;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.04)] h-20 border-t border-gray-200 lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.04)] h-20 border-t border-gray-200 md:hidden">
       <div className="flex h-full">
         {items.map((item) => {
           const Icon = item.icon;
           // Determine active state. Special-case user-profile and its tab param
           let isActive = pathname === item.href;
 
-          // If the item is My Learning, it should be active only when path is /user-profile and tab=live-classes
-          if (item.href === "/user-profile?tab=live-classes") {
-            isActive = pathname === "/user-profile" && searchParams?.get("tab") === "live-classes";
+          // If the item is My Learning, it should be active only when path is /user-profile and tab=my-courses
+          if (item.href === "/user-profile?tab=my-courses") {
+            const tab = searchParams?.get("tab");
+            isActive = pathname === "/user-profile" && (tab === "my-courses" || tab === "enrolled-courses");
           }
 
-          // If the item is Account, it should be active when path is /user-profile and tab is not live-classes (or missing)
+          // If the item is Account, it should be active when path is /user-profile and tab is not my-courses (or missing)
           if (item.href === "/user-profile") {
-            isActive = pathname === "/user-profile" && searchParams?.get("tab") !== "live-classes";
+            const tab = searchParams?.get("tab");
+            isActive = pathname === "/user-profile" && tab !== "my-courses" && tab !== "enrolled-courses";
           }
 
           return (

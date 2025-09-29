@@ -33,7 +33,7 @@ import {
 // Types
 import type { ApiResponseTh, Enrollment, UserSec, Purchase } from "@/type";
 import UserCertificates from "./UserCertificates";
-import MyLiveClasses from "./MyLiveClasses";
+// import MyLiveClasses from "./MyLiveClasses";
 import EnhancedCourseCard from "../../_components/EnhancedCourseCard";
 
 interface UserSubscription {
@@ -665,7 +665,7 @@ const UserProfile = () => {
           </div>
         </CardContent>
       </Card>
-      <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      {/* <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-6">
           <h3 className="text-lg font-medium mb-4 flex items-center">
             <Video className="h-5 w-5 mr-2 text-red-600" />
@@ -681,7 +681,7 @@ const UserProfile = () => {
             View Live Classes
           </Button>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 
@@ -699,7 +699,7 @@ const UserProfile = () => {
                 onValueChange={updateTab}
                 className="w-full"
               >
-                <TabsList className="w-full grid grid-cols-4 bg-white shadow-sm rounded-lg p-1">
+                <TabsList className="w-full grid grid-cols-3 bg-white shadow-sm rounded-lg p-1">
                   <TabsTrigger
                     value="dashboard"
                     className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
@@ -714,13 +714,13 @@ const UserProfile = () => {
                     <GraduationCap className="h-5 w-5" />
                     <span className="text-xs">Certificates</span>
                   </TabsTrigger>
-                  <TabsTrigger
+                  {/* <TabsTrigger
                     value="live-classes"
                     className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
                   >
                     <Video className="h-5 w-5" />
                     <span className="text-xs">Live</span>
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                   <TabsTrigger
                     value="my-courses"
                     className="flex flex-col items-center gap-1 py-2 px-1 rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white"
@@ -763,7 +763,7 @@ const UserProfile = () => {
                   <GraduationCap className="h-4 w-4 mr-2" />
                   Certificates
                 </Button>
-                <Button
+                {/* <Button
                   variant={activeTab === "live-classes" ? "default" : "ghost"}
                   className={`w-full justify-start font-medium ${activeTab === "live-classes"
                     ? "bg-red-600 hover:bg-red-700"
@@ -773,16 +773,16 @@ const UserProfile = () => {
                 >
                   <Video className="h-4 w-4 mr-2" />
                   Live Classes
-                </Button>
+                </Button> */}
                 <Button
                   variant={
-                    activeTab === "enrolled-courses" ? "default" : "ghost"
+                    activeTab === "my-courses" ? "default" : "ghost"
                   }
-                  className={`w-full justify-start font-medium ${activeTab === "enrolled-courses"
+                  className={`w-full justify-start font-medium ${activeTab === "my-courses"
                     ? "bg-red-600 hover:bg-red-700"
                     : "hover:bg-red-50 hover:text-red-600"
                     }`}
-                  onClick={() => updateTab("enrolled-courses")}
+                  onClick={() => updateTab("my-courses")}
                 >
                   <BookOpenIcon className="h-4 w-4 mr-2" />
                   Enrolled Courses
@@ -817,9 +817,9 @@ const UserProfile = () => {
                 <TabsContent value="certificates" className="mt-0">
                   <UserCertificates />
                 </TabsContent>
-                <TabsContent value="live-classes" className="mt-0">
+                {/* <TabsContent value="live-classes" className="mt-0">
                   <MyLiveClasses />
-                </TabsContent>
+                </TabsContent> */}
                 <TabsContent value="my-courses" className="mt-0">
                   <div className="space-y-8">
                     <EnrolledCoursesContent />
@@ -840,8 +840,8 @@ const UserProfile = () => {
               )}
 
               {activeTab === "certificates" && <UserCertificates />}
-              {activeTab === "live-classes" && <MyLiveClasses />}
-              {activeTab === "enrolled-courses" && <EnrolledCoursesContent />}
+              {/* {activeTab === "live-classes" && <MyLiveClasses />} */}
+              {activeTab === "my-courses" && <EnrolledCoursesContent />}
               {activeTab === "purchased-courses" && <PurchasedCoursesContent />}
             </div>
           </div>

@@ -53,7 +53,7 @@ export default function MobileMenu({
 
   return (
     <motion.div
-      className="fixed inset-0 bg-black/50 z-50 lg:hidden backdrop-blur-sm"
+      className="fixed inset-0 bg-black/50 z-50 md:hidden backdrop-blur-sm"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -128,7 +128,7 @@ export default function MobileMenu({
 
                 {/* My Learning Button */}
                 <Link
-                  href="/user-profile?tab=live-classes"
+                  href="/user-profile?tab=my-courses"
                   className="flex items-center justify-center space-x-2 bg-red-500 text-white hover:bg-red-600 text-xl font-medium py-3 px-4 rounded-lg transition-colors"
                   onClick={handleMenuItemClick}
                 >

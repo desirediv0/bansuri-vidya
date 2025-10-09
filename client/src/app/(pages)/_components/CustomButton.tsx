@@ -37,7 +37,7 @@ const CustomButton = ({
       <div className="absolute inset-0 flex items-center justify-center transform transition-all duration-300 ease-out group-hover:-translate-y-full">
         <div className="flex items-center gap-2">
           {icon}
-          <span>{primaryText}</span>
+          <span className="text-sm md:text-base">{primaryText}</span>
         </div>
       </div>
 
@@ -45,7 +45,7 @@ const CustomButton = ({
       <div className="absolute inset-0 flex items-center justify-center transform transition-all duration-300 ease-out translate-y-full group-hover:translate-y-0">
         <div className="flex items-center gap-2">
           {icon}
-          <span>{secondaryText}</span>
+          <span className="text-sm md:text-base">{secondaryText}</span>
         </div>
       </div>
     </>

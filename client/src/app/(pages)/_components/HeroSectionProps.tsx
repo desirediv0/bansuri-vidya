@@ -90,7 +90,7 @@ export function HeroSection({
           )}
           <div
             className={cn(
-              "space-y-4 md:space-y-6 pt-6 md:pt-8 z-10",
+              "space-y-3 md:space-y-6 pt-6 md:pt-8 z-10",
               variant === "home"
                 ? "w-full lg:w-1/2 lg:max-w-3xl text-center lg:text-left"
                 : "w-full max-w-3xl text-center"
@@ -107,10 +107,10 @@ export function HeroSection({
               "font-bold text-white leading-tight mt-10 md:mt-20",
               variant === "home"
                 ? "text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
-                : "text-3xl md:text-5xl lg:text-6xl"
+                : "text-2xl md:text-5xl lg:text-6xl"
             )}>{title}</h1>
             {description && (
-              <p className="mt-6 text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto lg:mx-0">{description}</p>
+              <p className="mt-6 text-sm sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto lg:mx-0">{description}</p>
             )}
             {buttons && (
               <motion.div
@@ -118,7 +118,7 @@ export function HeroSection({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                 className={cn(
-                  "mt-8 flex flex-wrap gap-5",
+                  "mt-8 flex flex-wrap gap-3 md:gap-5",
                   variant === "home"
                     ? "justify-center lg:justify-start"
                     : "justify-center"

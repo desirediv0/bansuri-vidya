@@ -24,9 +24,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   };
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg bg-white border border-red-100/50 rounded-lg">
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg bg-white border border-red-100/50 rounded-lg w-48 ">
       {/* Image Container with Overlay */}
-      <div className="relative h-32 overflow-hidden">
+      <div className="relative h-36  overflow-hidden">
         <Image
           src={getImageUrl(course.thumbnail)}
           alt={course.title}
@@ -43,14 +43,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
         )}
       </div>
 
-      <CardContent className="p-3 space-y-2">
+      <CardContent className="p-3 md:space-y-2">
         {/* Title */}
         <h3 className="text-sm font-semibold text-gray-900 line-clamp-1">
           {course.title}
         </h3>
 
         {/* Price Section */}
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline md:gap-2 flex-col md:flex-row">
           <span className="text-base font-bold text-red-600">
             {formatPrice(displayPrice)}
           </span>

@@ -307,7 +307,7 @@ function BuyPageContent({ courseSlugs }: { courseSlugs: string[] }) {
                 <p className="text-red-600 text-lg">{user.email}</p>
               </div>
             )}
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="gap-3 md:gap-4 flex items-center justify-start overflow-x-auto pb-4 mb-8 border-b border-red-100">
               {courses.map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}

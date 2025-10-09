@@ -4,7 +4,6 @@ import React from "react";
 
 export default function WhatsappFixdes() {
   return (
-    // <div>
     <Link
       href="https://api.whatsapp.com/send/?phone=%2B919971145671&text&type=phone_number&app_absent=0"
       target="_blank"
@@ -18,6 +17,5 @@ export default function WhatsappFixdes() {
         className="w-10 h-10"
       />
     </Link>
-    // </div>
   );
 }

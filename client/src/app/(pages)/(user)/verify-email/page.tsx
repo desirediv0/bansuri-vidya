@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, XCircle, RefreshCw, Mail } from "lucide-react";
+import { CheckCircle2, Loader2, RefreshCw, Mail } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 
@@ -86,7 +86,7 @@ function VerifyEmailContent() {
         toast.success("Email verified and logged in successfully!");
 
         const userRole = response.data.data.user.role;
-        const redirectPath = userRole === "ADMIN" ? "/dashboard" : "/user-profile";
+        const redirectPath = userRole === "ADMIN" ? "/dashboard" : "/user-profile/dashboard";
 
         setTimeout(() => {
           router.push(redirectPath);

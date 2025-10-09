@@ -14,7 +14,6 @@ import {
   Loader2,
   CheckCircle2,
   Video,
-  Copy,
   CreditCard,
   Book,
 } from "lucide-react";
@@ -26,7 +25,6 @@ import { useAuth } from "@/helper/AuthContext";
 import PurchaseDialog from "../components/PurchaseDialog";
 import RegistrationDialog from "../components/RegistrationDialog";
 import CourseAccessDialog from "../components/CourseAccessDialog";
-import { HeroSection } from "@/app/(pages)/_components/HeroSectionProps";
 import {
   Accordion,
   AccordionContent,
@@ -126,16 +124,6 @@ export default function ClassDetails() {
     }// SECOND PRIORITY: If user is registered, check isOnline status immediately (no approval needed for demo)
     if (userIsRegistered && showDemo) {
       const isOnline = classData?.apiFlags?.isOnline || classData?.isOnClassroom || false;
-
-      // Debug logging
-      console.log("Demo button state debug:", {
-        userIsRegistered,
-        showDemo,
-        isOnline,
-        "classData.apiFlags.isOnline": classData?.apiFlags?.isOnline,
-        "classData.isOnClassroom": classData?.isOnClassroom,
-        "classData.apiFlags": classData?.apiFlags
-      });
 
       return {
         type: "demo",
@@ -493,7 +481,7 @@ export default function ClassDetails() {
       );
 
       if (response.data.data) {
-        const { demoLink, demoPassword, demoMeetingId, classTitle, approvalStatus } = response.data.data;
+        const { demoLink, classTitle } = response.data.data;
 
         if (demoLink) {
           // Open demo link in new tab
@@ -853,7 +841,7 @@ export default function ClassDetails() {
                   <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10" />
                   <div className="relative p-6 pb-4">
                     {(() => {
-                      const { userIsRegistered, userHasAccess } = determineUserStatus();
+                      const { userHasAccess } = determineUserStatus();
 
                       if (userHasAccess) {
                         return (

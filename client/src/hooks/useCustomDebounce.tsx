@@ -17,16 +17,3 @@ export function useCustomDebounce<T>(value: T, delay: number = 500): T {
 
     return debouncedValue;
 }
-
-
-// // Search debouncing
-// const debouncedSearch = useCustomDebounce(searchQuery, 500);
-
-// // Form input debouncing
-// const debouncedFormValue = useCustomDebounce(formValue, 1000);
-
-// // API call debouncing
-// const debouncedApiParam = useCustomDebounce(apiParam, 300);
-
-// // Scroll event debouncing
-// const debouncedScrollPosition = useCustomDebounce(scrollPosition, 100);

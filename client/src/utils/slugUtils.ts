@@ -1,12 +1,4 @@
-/**
- * Utility functions for generating and handling URL slugs
- */
 
-/**
- * Generates a URL-friendly slug from a string
- * @param text The text to convert to a slug
- * @returns A URL-friendly slug
- */
 export const generateSlug = (text: string): string => {
   if (!text) return "";
 

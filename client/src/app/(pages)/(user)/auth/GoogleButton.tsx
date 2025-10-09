@@ -68,7 +68,7 @@ export default function GoogleButton({
             return;
           }
 
-          router.push("/user-profile");
+          router.push("/user-profile/dashboard");
         }
       } catch (error) {
         console.error("Google Auth Error:", error);

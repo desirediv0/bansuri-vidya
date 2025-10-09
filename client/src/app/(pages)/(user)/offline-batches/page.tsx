@@ -5,7 +5,6 @@ import LearningLanding from "../../_components/LearningLanding";
 import CourseHero from "../../_components/CourseHero";
 import TestimonialsSection from "../../_components/testimonial/testimonial-section";
 import TablaTanpura from "../../_components/TablaTanpura";
-import LearningStyle from "../../_components/courses/learningStyle";
 import { HeroSection } from "../../_components/HeroSectionProps";
 import { useState } from "react";
 import VideoDialog from "../../_components/VideoDialog";
@@ -67,9 +66,6 @@ export default function OfflineBatches() {
         <BatchCards />
       </section>
       <LearningLanding />
-      {/* <main className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
-        <LearningStyle />
-      </main> */}
       <div>
         <CourseHero />
       </div>

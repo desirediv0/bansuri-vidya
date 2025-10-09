@@ -9,7 +9,6 @@ import EnhancedCourseCard from "../../_components/EnhancedCourseCard";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -29,29 +28,6 @@ export default function CoursesSection() {
   const [sortBy, setSortBy] = useState("oldest");
 
   const debouncedSearch = useCustomDebounce(searchQuery, 500);
-
-  // const fetchCategories = async () => {
-  //     try {
-  //       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`);
-  //       if (!response.ok) throw new Error("Failed to fetch categories");
-  //       const data = await response.json();
-  //       if (data.success) {
-  //         setCategories(data.data);
-  //         // If market param exists, find and set matching category
-  //         if (marketParam) {
-  //           const matchingCategory = data.data.find(
-  //             (cat: { name: string }) =>
-  //               cat.name.toLowerCase() === marketParam.toLowerCase()
-  //           );
-  //           if (matchingCategory) {
-  //             setSelectedCategory(matchingCategory.id);
-  //           }
-  //         }
-  //       }
-  //     } catch (error) {
-  //       toast.error("Failed to load categories");
-  //     }
-  //   };
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -82,21 +58,13 @@ export default function CoursesSection() {
     }
   }, [currentPage, debouncedSearch, selectedCategory, sortBy, marketParam]);
 
-  useEffect(() => {
-    // fetchCategories();
-  }, [marketParam]);
 
   useEffect(() => {
     setIsLoading(true);
     fetchCourses();
   }, [fetchCourses]);
 
-  // const handleReset = () => {
-  //   setSearchQuery("");
-  //   setSelectedCategory("all");
-  //   setSortBy("oldest");
-  //   setCurrentPage(1);
-  // };
+
   return (
     <>
       {isLoading && <SkeletonCardGrid />}

@@ -7,7 +7,6 @@ import LearningLanding from "../_components/LearningLanding";
 import CourseHero from "../_components/CourseHero";
 import TestimonialsSection from "../_components/testimonial/testimonial-section";
 import TablaTanpura from "../_components/TablaTanpura";
-import LearningStyle from "../_components/courses/learningStyle";
 import { useState } from "react";
 import VideoDialog from "../_components/VideoDialog";
 import { scrollToSection } from "../_components/smoothScroll";
@@ -62,9 +61,7 @@ export default function Home() {
         videoUrl="https://www.youtube.com/watch?v=vT8gQHlPTK4"
       />
       <LearningLanding />
-      {/* <main id="courses-section" className="min-h-screen bg-[#F3F8F8] px-5 pb-6">
-        <LearningStyle />
-      </main> */}
+
       <CourseHero />
       <TestimonialsSection />
       <TablaTanpura />

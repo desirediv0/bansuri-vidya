@@ -28,58 +28,6 @@ export interface BatchData {
 }
 
 export const batchesData: BatchData[] = [
-    // {
-    //     id: "1",
-    //     title: "C Natural Flute - Beginners",
-    //     type: "LIVE",
-    //     fluteType: "C Natural Flute",
-    //     level: "BEGINNERS",
-    //     batches: [
-    //         {
-    //             number: 1,
-    //             times: [{ day: "Saturday", time: "5-6pm" }]
-    //         },
-    //         {
-    //             number: 2,
-    //             times: [{ day: "Wednesday", time: "7-8pm" }]
-    //         }
-    //     ],
-    //     image: "/c1.jpg",
-    //     slug: "c-natural-beginners-live",
-    //     description: "Start your flute journey with our beginner-friendly C Natural Flute class. Perfect for those with no prior experience."
-    // },
-    // {
-    //     id: "2",
-    //     title: "G Natural Base Flute - Intermediate",
-    //     type: "LIVE",
-    //     fluteType: "G Natural Base Flute",
-    //     level: "INTERMEDIATE",
-    //     batches: [
-    //         {
-    //             number: 1,
-    //             times: [{ day: "Sunday", time: "12:30pm" }]
-    //         }
-    //     ],
-    //     image: "/c1.jpg",
-    //     slug: "g-natural-intermediate-live",
-    //     description: "Take your flute skills to the next level with our intermediate G Natural Base Flute classes."
-    // },
-    // {
-    //     id: "3",
-    //     title: "E Base Flute - Expert",
-    //     type: "LIVE",
-    //     fluteType: "E Base Flute",
-    //     level: "EXPERT",
-    //     batches: [
-    //         {
-    //             number: 2,
-    //             times: [{ day: "Saturday", time: "6pm" }]
-    //         }
-    //     ],
-    //     image: "/c1.jpg",
-    //     slug: "e-base-expert-live",
-    //     description: "Advance your flute mastery with our expert-level E Base Flute class. For experienced players only."
-    // },
     {
         id: "1",
         title: "C Natural Flute - Beginners",
@@ -280,55 +228,6 @@ export default function BatchCards() {
             </div>
         }>
             <div>
-                {/* <div className="flex justify-center mb-12">
-                    <div className="inline-flex rounded-md shadow-sm" role="group">
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('all')}
-                            className={`px-5 py-3 text-sm font-medium border border-[${primaryColor}] rounded-l-lg focus:z-10 focus:ring-2 focus:ring-[${primaryColor}] transition-all ${activeTab === 'all'
-                                ? `bg-[${primaryColor}] text-white`
-                                : `text-[${primaryColor}] bg-white hover:bg-[${primaryLight}]`
-                                }`}
-                            style={{
-                                borderColor: primaryColor,
-                                backgroundColor: activeTab === 'all' ? primaryColor : 'white',
-                                color: activeTab === 'all' ? 'white' : primaryColor
-                            }}
-                        >
-                            All Batches
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('live')}
-                            className={`px-5 py-3 text-sm font-medium border-y border-[${primaryColor}] focus:z-10 focus:ring-2 focus:ring-[${primaryColor}] transition-all ${activeTab === 'live'
-                                ? `bg-[${primaryColor}] text-white`
-                                : `text-[${primaryColor}] bg-white hover:bg-[${primaryLight}]`
-                                }`}
-                            style={{
-                                borderColor: primaryColor,
-                                backgroundColor: activeTab === 'live' ? primaryColor : 'white',
-                                color: activeTab === 'live' ? 'white' : primaryColor
-                            }}
-                        >
-                            Live Classes
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('offline')}
-                            className={`px-5 py-3 text-sm font-medium border border-[${primaryColor}] rounded-r-lg focus:z-10 focus:ring-2 focus:ring-[${primaryColor}] transition-all ${activeTab === 'offline'
-                                ? `bg-[${primaryColor}] text-white`
-                                : `text-[${primaryColor}] bg-white hover:bg-[${primaryLight}]`
-                                }`}
-                            style={{
-                                borderColor: primaryColor,
-                                backgroundColor: activeTab === 'offline' ? primaryColor : 'white',
-                                color: activeTab === 'offline' ? 'white' : primaryColor
-                            }}
-                        >
-                            Offline Classes
-                        </button>
-                    </div>
-                </div> */}
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"

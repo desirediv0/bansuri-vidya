@@ -109,6 +109,21 @@ export default function MobileMenu({
           >
             {isAuthenticated ? (
               <>
+                <Link
+                  href="/user-profile/dashboard"
+                  className="text-white/90 hover:text-[#ba1c33] hover:translate-x-2 text-2xl font-medium tracking-wide transition-all duration-300 block"
+                  onClick={handleMenuItemClick}
+                >
+
+                  <span>Profile</span>
+                </Link>
+                <Link
+                  href="/user-profile/certificates"
+                  className="text-white/90 hover:text-[#ba1c33] hover:translate-x-2 text-2xl font-medium tracking-wide transition-all duration-300 block"
+                  onClick={handleMenuItemClick}
+                >
+                  <span>Certificates</span>
+                </Link>
                 {/* User Info with Name and Initials */}
                 <div className="flex items-center space-x-3 p-4 bg-white/10 rounded-lg">
                   {user?.name ? (
@@ -126,23 +141,17 @@ export default function MobileMenu({
                   )}
                 </div>
 
+
                 {/* My Learning Button */}
                 <Link
-                  href="/user-profile?tab=my-courses"
+                  href="/user-profile/my-courses"
                   className="flex items-center justify-center space-x-2 bg-red-500 text-white hover:bg-red-600 text-xl font-medium py-3 px-4 rounded-lg transition-colors"
                   onClick={handleMenuItemClick}
                 >
                   <span>My Learning</span>
                 </Link>
 
-                <Link
-                  href="/user-profile"
-                  className="flex items-center space-x-2 text-white/90 hover:text-[#ba1c33] text-xl font-medium"
-                  onClick={handleMenuItemClick}
-                >
-                  <User className="h-5 w-5" />
-                  <span>Profile</span>
-                </Link>
+
                 <button
                   onClick={() => {
                     handleLogout();

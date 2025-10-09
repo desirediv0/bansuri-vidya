@@ -304,42 +304,6 @@ export default function BatchDetailPage() {
                                     </svg>
                                     Contact via WhatsApp
                                 </motion.button>
-
-
-
-                                {/* <motion.div
-                                    className="bg-[#fff9e6] p-5 rounded-lg border border-[#ffe58f] mt-6"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 1 }}
-                                >
-                                    <h3 className="font-semibold text-[#d48806] mb-3 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                                        Important Instructions:
-                                    </h3>
-                                    <ul className="text-sm text-[#d48806] space-y-2">
-                                        <li className="flex items-start">
-                                            <span className="inline-block w-1.5 h-1.5 bg-[#d48806] rounded-full mt-2 mr-2"></span>
-                                            Keep your Video's ON during the class.
-                                        </li>
-                                        <li className="flex items-start">
-                                            <span className="inline-block w-1.5 h-1.5 bg-[#d48806] rounded-full mt-2 mr-2"></span>
-                                            Camera focus should be on Flute with hands position.
-                                        </li>
-                                        <li className="flex items-start">
-                                            <span className="inline-block w-1.5 h-1.5 bg-[#d48806] rounded-full mt-2 mr-2"></span>
-                                            Keep the Original Sound ON in zoom meeting.
-                                        </li>
-                                        <li className="flex items-start">
-                                            <span className="inline-block w-1.5 h-1.5 bg-[#d48806] rounded-full mt-2 mr-2"></span>
-                                            Keep the notebook and pen ready.
-                                        </li>
-                                        <li className="flex items-start">
-                                            <span className="inline-block w-1.5 h-1.5 bg-[#d48806] rounded-full mt-2 mr-2"></span>
-                                            You will get recording of every class which you can access for 1 month.
-                                        </li>
-                                    </ul>
-                                </motion.div> */}
                             </motion.div>
                         </div>
                     </div>

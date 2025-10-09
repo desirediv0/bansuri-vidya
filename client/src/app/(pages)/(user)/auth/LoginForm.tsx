@@ -58,7 +58,7 @@ export default function LoginForm({
 
         if (userResponse.data && userResponse.data.success) {
           const user = userResponse.data.data.user;
-          let redirectPath = "/user-profile";
+          let redirectPath = "/user-profile/dashboard";
 
           // First check if there's a redirect URL
           if (redirect) {

@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { Award } from "lucide-react";
 import CustomButton from "./CustomButton";
-import { motion } from "framer-motion";
 import { AnimatedText } from "./AnimatedText";
 
 export default function LearningLanding() {
@@ -47,32 +46,6 @@ export default function LearningLanding() {
               className="w-fit"
               href="/about"
             />
-
-            {/* <div className="flex items-center gap-4">
-              <div className="flex -space-x-3">
-                <Image
-                  src="/lm-2.webp"
-                  alt="Instructor 1"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-full border-2 border-gray-200 object-cover"
-                />
-                <Image
-                  src="/lm-1.webp"
-                  alt="Instructor 2"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-full border-2 border-gray-200 object-cover bg-white"
-                />
-              </div>
-              <p className="text-sm text-[#4B5563]">
-                Online courses from{" "}
-                <span className="underline decoration-[#ba1c33] decoration-2">
-                  experts
-                </span>
-                .
-              </p>
-            </div> */}
           </div>
 
           {/* Right Column */}
@@ -100,17 +73,10 @@ export default function LearningLanding() {
                     01
                   </div>
                   <div className="relative z-10">
-                    {/* <AnimatedText
-                      text="Preserving the Art of Bansuri"
-                      className="text-xl font-semibold text-[var(--custom-green-11)]"
-                    /> */}
+
                     <p className="text-xl font-semibold text-[var(--custom-green-11)]">Preserving the Art of Bansuri</p>
                     <div className="mt-2 h-1 w-12 bg-[#ba1c33]" />
-                    {/* <AnimatedText
-                      text="The Bansuri has been a symbol of divine artistry, and our mission is to pass this heritage to the next generation."
-                      className="mt-4 text-[#4B5563]"
-                      delay={0.3}
-                    /> */}
+
                     <p className="mt-4 text-[#4B5563]">The Bansuri has been a symbol of divine artistry, and our mission is to pass this heritage to the next generation.</p>
                   </div>
                 </div>
@@ -132,18 +98,11 @@ export default function LearningLanding() {
                     02
                   </div>
                   <div className="relative z-10">
-                    {/* <AnimatedText
-                      text="Pocket friendly"
-                      className="text-xl font-semibold text-[var(--custom-green-11)]"
-                    /> */}
+
                     <p className="text-xl font-semibold text-[var(--custom-green-11)]">Blending Tradition with Modern Learning</p>
 
                     <div className="mt-2 h-1 w-12 bg-[#ba1c33]" />
-                    {/* <AnimatedText
-                      text="eLearning allows learners to quickly and more easily complete their training."
-                      className="mt-4 text-[#4B5563]"
-                      delay={0.3}
-                    /> */}
+
                     <p className="mt-4 text-[#4B5563]">Whether you are a beginner or an advanced learner, our approach caters to all levels and aspirations.</p>
                   </div>
                 </div>
@@ -164,18 +123,11 @@ export default function LearningLanding() {
                     03
                   </div>
                   <div className="relative z-10">
-                    {/* <AnimatedText
-                      text="Expert Instructor"
-                      className="text-xl font-semibold text-[var(--custom-green-11)]"
-                    /> */}
+
                     <p className="text-xl font-semibold text-[var(--custom-green-11)]">Inspiring a Lifelong Love for Music</p>
 
                     <div className="mt-2 h-1 w-12 bg-[#ba1c33]" />
-                    {/* <AnimatedText
-                      text="eLearning allows learners to quickly and more easily complete their training."
-                      className="mt-4 text-[#4B5563]"
-                      delay={0.3}
-                    /> */}
+
                     <p className="mt-4 text-[#4B5563]">We aim to do more than teach the Bansuri—we inspire a deep, lifelong connection with music.</p>
                   </div>
                 </div>

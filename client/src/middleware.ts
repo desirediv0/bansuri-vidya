@@ -20,7 +20,7 @@ const ROUTES = {
   ],
   auth: ["/auth", "/login", "/register"],
   admin: ["/dashboard", "/admin"],
-  user: ["/user-profile", "/my-courses", "/settings"],
+  user: ["/user-profile", "/my-courses", "/settings", "/certificates", "/user-profile/dashboard", "/user-profile/my-courses", "/user-profile/certificates"],
 } as const;
 
 export async function middleware(request: NextRequest) {
@@ -85,13 +85,13 @@ export async function middleware(request: NextRequest) {
       }
 
       // Otherwise use default redirects
-      return redirect(user.role === "ADMIN" ? "/dashboard" : "/user-profile");
+      return redirect(user.role === "ADMIN" ? "/dashboard" : "/user-profile/dashboard");
     }
 
     // Admin routes - strict admin check
     if (isAdminRoute()) {
       if (user.role !== "ADMIN") {
-        return redirect("/user-profile");
+        return redirect("/user-profile/dashboard");
       }
       return NextResponse.next();
     }

@@ -33,18 +33,17 @@ export default function Header() {
   const searchParams = useSearchParams();
 
   const isUserProfilePage =
-    pathname === "/user-profile" ||
+    pathname === "/user-profile/dashboard" ||
+    pathname.startsWith("/user-profile/") ||
     pathname === "/buy" ||
     (pathname.startsWith("/courses/") && pathname.split("/").length > 3) ||
     pathname === "/reset-password" ||
     pathname === "/verify-email";
 
-  // Check if we're on main user profile page (not on tabs)
-  const isMainUserProfilePage = pathname === "/user-profile";
 
   // Check if we're on user profile tab pages where dropdown should be hidden
   const isUserProfileTabPage =
-    pathname === "/user-profile" && (
+    pathname === "/user-profile/dashboard" && (
       searchParams?.get("tab") === "certificates" ||
       searchParams?.get("tab") === "live-classes" ||
       searchParams?.get("tab") === "my-courses" ||
@@ -170,7 +169,7 @@ export default function Header() {
                   {/* My Learning Button */}
                   {isAuthenticated && (
                     <Link
-                      href="/user-profile?tab=my-courses"
+                      href="/user-profile/my-courses"
                       className="hidden md:flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
                       <span className="font-medium">My Learning</span>
@@ -207,7 +206,7 @@ export default function Header() {
                             className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
                           >
                             <Link
-                              href="/user-profile"
+                              href="/user-profile/dashboard"
                               className="block px-4 py-2 text-gray-800 hover:bg-red-50"
                               onClick={() => setIsProfileDropdownOpen(false)}
                             >
@@ -259,7 +258,7 @@ export default function Header() {
                       <>
                         {/* My Learning Button */}
                         <Link
-                          href="/user-profile?tab=my-courses"
+                          href="/user-profile/my-courses"
                           className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                         >
                           <span className="font-medium">My Learning</span>
@@ -295,11 +294,18 @@ export default function Header() {
                                 className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2"
                               >
                                 <Link
-                                  href="/user-profile"
+                                  href="/user-profile/dashboard"
                                   className="block px-4 py-2 text-gray-800 hover:bg-red-50"
                                   onClick={() => setIsProfileDropdownOpen(false)}
                                 >
                                   Profile
+                                </Link>
+                                <Link
+                                  href="/user-profile/certificates"
+                                  className="block px-4 py-2 text-gray-800 hover:bg-red-50"
+                                  onClick={() => setIsProfileDropdownOpen(false)}
+                                >
+                                  Certificates
                                 </Link>
                                 <button
                                   onClick={() => {

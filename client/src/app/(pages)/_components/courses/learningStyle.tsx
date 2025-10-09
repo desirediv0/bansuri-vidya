@@ -43,20 +43,12 @@ export default function LearningStyle() {
                     backgroundRepeat: "no-repeat",
                 }}
             />
-            {/* <Image
-                          src="/l-2.png"
-                          alt="Decorative Image 2"
-                          width={150}
-                          height={150}
-                          className="absolute top-1/2 -right-56 -translate-y-1/2 h-auto w-80 rotate-[-55deg] opacity-5"
-                        /> */}
 
             <div className="max-w-7xl mx-auto px-4 py-12 overflow-x-hidden relative z-10 overflow-y-hidden">
                 <LayoutGroup>
                     <div className="flex flex-col items-center space-y-8">
 
                         <div className="flex flex-col w-full gap-6">
-                            {/* <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-6"> */}
 
                             <div className="flex w-fit items-center gap-2 px-4 py-2">
                                 <div className="flex p-4 items-center justify-center rounded-full bg-[#ba1c33]">

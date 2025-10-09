@@ -69,18 +69,8 @@ export default function TestimonialsSection() {
               />
 
               <p className="text-gray-300 text-base sm:text-lg">
-              We take pride in the impact we have on our students' lives. View heartfelt experiences shared by students, who have been part of our journey.
+                We take pride in the impact we have on our students' lives. View heartfelt experiences shared by students, who have been part of our journey.
               </p>
-              {/* <div className="flex items-center gap-6">
-                <div className="text-white">
-                  <span className="text-4xl sm:text-5xl md:text-6xl font-bold">99%</span>
-                </div>
-                <p className="text-gray-400 text-sm sm:text-base">
-                  Student's complete
-                  <br />
-                  course successfully.
-                </p>
-              </div> */}
             </div>
           </div>
 
@@ -154,9 +144,7 @@ export default function TestimonialsSection() {
                       <h3 className="font-semibold text-lg sm:text-xl text-gray-900">
                         {testimonials[currentIndex].name}
                       </h3>
-                      {/* <p className="text-gray-500 text-sm sm:text-base">
-                        {testimonials[currentIndex].role}
-                      </p> */}
+
                     </div>
                   </div>
                 </div>
@@ -190,32 +178,6 @@ export default function TestimonialsSection() {
             </div>
           </div>
         </div>
-
-        {/* Company Logos */}
-        {/* <motion.div
-          className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {companyLogos.map((logo) => (
-            <motion.div
-              key={logo.name}
-              whileHover={{ scale: 1.05 }}
-              className="flex justify-center group"
-            >
-              <div className="relative w-32 h-20">
-                <Image
-                  src={logo.image}
-                  alt={logo.name}
-                  fill
-                  className="object-contain brightness-0 invert opacity-70 group-hover:opacity-100 transition-all duration-300"
-                  sizes="(max-width: 768px) 100px, 150px"
-                />
-              </div>
-            </motion.div>
-          ))}
-        </motion.div> */}
       </div>
     </div>
   );

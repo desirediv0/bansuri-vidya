@@ -28,8 +28,8 @@ const usefullLinks = [
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
   { name: "Contact Us", href: "/contact" },
-  { name: "All Courses", href: "/courses" },
-  { name: "My Account", href: "/login" },
+  { name: "All Courses", href: "/online-courses" },
+
 ];
 
 function Footer() {

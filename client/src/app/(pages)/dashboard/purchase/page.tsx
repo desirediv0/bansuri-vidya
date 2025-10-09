@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  CalendarIcon,
   Download,
   TrendingUp,
   Users,
@@ -41,7 +40,6 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { useAuth } from "@/helper/AuthContext";
-import { cn } from "@/lib/utils";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { Badge } from "@/components/ui/badge";

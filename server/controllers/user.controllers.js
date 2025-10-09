@@ -745,6 +745,7 @@ export const googleAuth = asyncHandler(async (req, res) => {
       );
     }
 
+
     // If no user exists or user exists with google provider
     if (!user) {
       let uniqueSlug = createSlug(name);
@@ -1017,7 +1018,7 @@ export const ImportDataFromExcel = asyncHandler(async (req, res) => {
           continue;
         }
 
-        // Check if user already exists
+
         const existingUser = await prisma.user.findFirst({
           where: { email: row.email },
         });
@@ -1055,7 +1056,6 @@ export const ImportDataFromExcel = asyncHandler(async (req, res) => {
           };
         }
 
-        // Create user
         const newUser = await prisma.user.create({
           data: {
             name: row.name,

@@ -17,58 +17,14 @@ import { AnimatedText } from "./AnimatedText";
 
 export default function CourseHero() {
   const [openId, setOpenId] = useState<string | null>("1");
-  // const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  // const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-  //   const rect = e.currentTarget.getBoundingClientRect();
-  //   const x = (e.clientX - rect.left) / rect.width;
-  //   const y = (e.clientY - rect.top) / rect.height;
-  //   setMousePosition({ x, y });
-  // };
-
-  // const calculateTilt = () => {
-  //   const tiltX = (mousePosition.y - 0.5) * 20;
-  //   const tiltY = (mousePosition.x - 0.5) * -20;
-  //   return `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-  // };
 
   return (
     <div>
       <div className="min-h-screen p-8 md:p-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Column */}
-          {/* <motion.div
-            className="relative w-full aspect-square"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setMousePosition({ x: 0, y: 0 })}
-            style={{
-              transform: calculateTilt(),
-              // transformStyle: "preserve-3d",
-              transition: "transform 0.3s ease-out",
-            }}
-          >
-            
-            <motion.div
-              className="relative z-20 overflow-hidden aspect-square"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              style={{ transform: "translateZ(100px)" }}
-            >
-              <Image
-                src="/about.png"
-                fill
-                alt="Course instructor"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
-                priority
-                
-              />
-            </motion.div>
-          </motion.div> */}
           <div className="">
             <Image src="/about.png" width={700} height={700} alt="Pt. Manjeet Singh"
-            className="mx-auto" 
+              className="mx-auto"
             />
           </div>
 

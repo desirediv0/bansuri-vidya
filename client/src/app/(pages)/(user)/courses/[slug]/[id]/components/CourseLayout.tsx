@@ -279,7 +279,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
           toast.success(
             "🎉 Congratulations! You've completed the entire course!"
           );
-          router.push("/user-profile");
+          router.push("/user-profile/my-courses");
         } else {
           const nextChapter = getNextChapter();
           if (nextChapter) {
@@ -420,9 +420,8 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
       <div className="flex flex-1 overflow-hidden">
         {isDesktop ? (
           <div
-            className={`${
-              isSidebarOpen ? "w-[300px]" : "w-0"
-            } transition-all duration-300 ease-in-out overflow-hidden border-r shadow-xl bg-white`}
+            className={`${isSidebarOpen ? "w-[300px]" : "w-0"
+              } transition-all duration-300 ease-in-out overflow-hidden border-r shadow-xl bg-white`}
           >
             <ScrollArea className="h-full">{SidebarContent}</ScrollArea>
           </div>
@@ -434,10 +433,10 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
           </Sheet>
         )}
 
-        <div className="flex flex-col flex-1 overflow-hidden mt-20">
-          <ScrollArea className="flex-1">
+        <div className="flex flex-col flex-1 overflow-hidden min-h-0">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="p-4 space-y-4">
-              <div className="flex justify-between items-center mb-4">
+              {/* <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-800">
                   {selectedChapter?.title || "Course"}
                 </h2>
@@ -452,16 +451,30 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                     {isSidebarOpen ? "Hide" : "Show"} Content
                   </span>
                 </Button>
-              </div>
+              </div> */}
 
-              <div className="relative">
+              <div className="relative  mt-10">
+
+                <div className="w-full flex items-center justify-end p-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleSidebar}
+                    className="bg-white/80 hover:bg-white backdrop-blur-sm z-10"
+                  >
+                    {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+                    <span className="ml-2 ">
+                      {isSidebarOpen ? "Hide" : "Show"} Content
+                    </span>
+                  </Button>
+                </div>
                 <VideoPlayer
                   videoUrl={videoUrl}
                   isLoading={isVideoLoading}
                   onProgress={handleVideoProgress}
-                  onDuration={() => {}}
+                  onDuration={() => { }}
                   onEnded={handleVideoEnded}
-                  className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out aspect-video`}
+                  className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out aspect-[16/9] max-h-[80vh]`}
                   initialProgress={chapterProgress?.watchedTime || 0}
                   isCompleted={chapterProgress?.isCompleted || false}
                   chapterId={selectedChapter?.id || ""}

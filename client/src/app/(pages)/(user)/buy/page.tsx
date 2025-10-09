@@ -234,7 +234,7 @@ function BuyPageContent({ courseSlugs }: { courseSlugs: string[] }) {
 
             if (res.data.success) {
               toast.success("Payment successful!");
-              router.push("/user-profile");
+              router.push("/user-profile/my-courses");
             } else {
               throw new Error(
                 res.data.message || "Payment verification failed"
@@ -298,7 +298,7 @@ function BuyPageContent({ courseSlugs }: { courseSlugs: string[] }) {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl border border-red-100">
           <div className="p-6 md:p-8 lg:p-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-8">Your Cart</h1>
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-8">Your Cart</h1>
             {user && (
               <div className="mb-8 p-6 bg-red-50 rounded-xl border border-red-200">
                 <h2 className="text-2xl font-semibold text-red-800 mb-2">

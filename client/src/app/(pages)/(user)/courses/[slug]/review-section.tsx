@@ -52,7 +52,7 @@ export const ReviewSection = ({ courseId, isEnrolled, hasPurchased, userId }: Re
 
     useEffect(() => {
         fetchReviews()
-    }, [courseId]) // Added 'api' to dependencies
+    }, [courseId])
 
     const averageRating = reviews.length
         ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)

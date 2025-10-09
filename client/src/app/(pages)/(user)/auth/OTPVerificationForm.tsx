@@ -66,7 +66,7 @@ export default function OTPVerificationForm({
                 } else if (liveClassId) {
                     router.push(`/live-class/${liveClassId}`);
                 } else {
-                    router.push("/user-profile");
+                    router.push("/user-profile/dashboard");
                 }
             }
         } catch (error: any) {

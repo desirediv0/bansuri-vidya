@@ -211,11 +211,19 @@ const Cart: React.FC<{ headerState: string }> = ({ headerState }) => {
                                                         </p>
                                                         <div className="flex justify-between items-center">
                                                             <div className="flex flex-col">
-                                                                <span className="text-lg font-bold text-red-600">
-                                                                    {formatPrice(item.course.price)}
-                                                                </span>
-                                                                {item.course.salePrice !== undefined && item.course.salePrice > 0 && (
-                                                                    <span className="text-sm text-gray-500 line-through">
+                                                                {/* If salePrice exists and is less than price, show salePrice primary and original struck-through */}
+                                                                {item.course.salePrice !== undefined && item.course.salePrice > 0 && item.course.salePrice < item.course.price ? (
+                                                                    <>
+                                                                        <span className="text-lg font-bold text-red-600">
+                                                                            {formatPrice(item.course.salePrice)}
+                                                                        </span>
+                                                                        <span className="text-sm text-gray-500 line-through">
+                                                                            {formatPrice(item.course.price)}
+                                                                        </span>
+                                                                    </>
+                                                                ) : (
+                                                                    // Otherwise show the regular price
+                                                                    <span className="text-lg font-bold text-red-600">
                                                                         {formatPrice(item.course.price)}
                                                                     </span>
                                                                 )}

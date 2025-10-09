@@ -15,7 +15,7 @@ export default function ClientProviders({
   return (
     <Suspense fallback={<div><Loader /></div>}>
       <GoogleAuthProvider>
-        <Suspense fallback={<div><Loader /></div>}>
+        <Suspense fallback={<div></div>}>
           <AuthProvider>
             {children}
             <TrackingScripts />

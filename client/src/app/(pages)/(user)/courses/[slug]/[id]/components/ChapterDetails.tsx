@@ -294,7 +294,7 @@ const ChapterDetails: React.FC<ChapterDetailsProps> = ({ chapter }) => {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-8 space-y-6">
+      <CardContent className="p-4 md:p-8 space-y-6">
         <div className="border-l-4 border-red-200 pl-4 py-2 bg-red-50/50 rounded-r-md">
           <p className="text-gray-700 leading-relaxed text-base font-inter">{chapter.description}</p>
         </div>

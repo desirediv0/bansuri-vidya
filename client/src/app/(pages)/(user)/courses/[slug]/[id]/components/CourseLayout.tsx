@@ -453,7 +453,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                 </Button>
               </div> */}
 
-              <div className="relative  mt-10">
+              <div className="relative  mt-12">
 
                 <div className="w-full flex items-center justify-end p-1">
                   <Button
@@ -474,7 +474,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                   onProgress={handleVideoProgress}
                   onDuration={() => { }}
                   onEnded={handleVideoEnded}
-                  className={`w-full bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out aspect-[16/9] max-h-[80vh]`}
+                  className={`w-full bg-white rounded overflow-hidden shadow-md transition-all duration-300 ease-in-out aspect-[16/9] max-h-[80vh]`}
                   initialProgress={chapterProgress?.watchedTime || 0}
                   isCompleted={chapterProgress?.isCompleted || false}
                   chapterId={selectedChapter?.id || ""}
@@ -500,7 +500,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                 </Button>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6 mt-4">
+              <div className="bg-white rounded-lg shadow-md mt-4">
                 <ChapterDetails chapter={selectedChapter} />
               </div>
             </div>

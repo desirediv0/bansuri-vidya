@@ -436,22 +436,6 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
         <div className="flex flex-col flex-1 overflow-hidden min-h-0">
           <ScrollArea className="flex-1 min-h-0">
             <div className="p-4 space-y-4">
-              {/* <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                  {selectedChapter?.title || "Course"}
-                </h2>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleSidebar}
-                  className="bg-white/80 hover:bg-white backdrop-blur-sm"
-                >
-                  {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-                  <span className="ml-2 hidden md:inline">
-                    {isSidebarOpen ? "Hide" : "Show"} Content
-                  </span>
-                </Button>
-              </div> */}
 
               <div className="relative  mt-12">
 

@@ -23,7 +23,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         {shouldShowHeader && <Header />}
-        <div className="pb-10 md:pb-20 lg:pb-0">{children}</div>
+        <div>{children}</div>
         {shouldShowFooter && <Footer />}
         <WhatsappFixdes />
       </div>

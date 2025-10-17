@@ -203,6 +203,25 @@ export default function EnhancedCourseCard({
               </Badge>
             )}
           </div>
+          {/* Paid/Free + Enrolled Overlay (top-right) */}
+          <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+            {isFree ? (
+              <Badge variant="secondary" className="text-xs backdrop-blur-sm">
+                <Gift className="w-3 h-3 mr-1" /> Free
+              </Badge>
+            ) : (
+              <Badge variant="default" className="text-xs backdrop-blur-sm">
+                Paid
+              </Badge>
+            )}
+
+
+            {hidePrice && (
+              <Badge className="bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs border-0">
+                <Check className="w-3 h-3 mr-1" /> Enrolled
+              </Badge>
+            )}
+          </div>
 
           {/* Expiration Badge */}
           {hidePrice && expiryDate && (
@@ -217,8 +236,8 @@ export default function EnhancedCourseCard({
                   <Badge
                     variant={daysLeft < 7 ? "destructive" : "outline"}
                     className={`backdrop-blur-sm ${daysLeft < 7
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-blue-100 text-blue-800"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-blue-100 text-blue-800"
                       }`}
                   >
                     <Clock className="w-3.5 h-3.5 mr-1" /> {daysLeft} days left
@@ -272,8 +291,8 @@ export default function EnhancedCourseCard({
                   <Badge
                     variant="secondary"
                     className={`${isExpired
-                        ? "bg-red-100 text-red-800"
-                        : "bg-gradient-to-r from-blue-600 to-blue-800 text-white"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gradient-to-r from-blue-600 to-blue-800 text-white"
                       } border-0`}
                   >
                     {isExpired ? (
@@ -303,8 +322,8 @@ export default function EnhancedCourseCard({
                   {expiryDate && (
                     <span
                       className={`${isExpired
-                          ? "text-red-600 font-semibold"
-                          : "text-gray-500"
+                        ? "text-red-600 font-semibold"
+                        : "text-gray-500"
                         }`}
                     >
                       {isExpired ? "Expired on: " : "Valid until: "}

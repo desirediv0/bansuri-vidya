@@ -24,6 +24,7 @@ import {
 
 import type { ApiResponseTh, Enrollment, UserSec, Purchase } from "@/type";
 import UserCertificates from "../UserCertificates";
+import Link from "next/link";
 
 interface UserSubscription {
     type: "ONLINE" | "OFFLINE";
@@ -401,13 +402,15 @@ export default function DashboardPage() {
                     </h3>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                            <span className="text-gray-600">Enrolled Courses</span>
+                            <Link href={"/user-profile/my-courses"} className="text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                                Enrolled Courses
+                            </Link>
                             <Badge variant="outline" className="bg-red-50 text-red-700 font-medium">
                                 {enrollments.length}
                             </Badge>
                         </div>
                         <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                            <span className="text-gray-600">Purchased Courses</span>
+                            <Link href={"/user-profile/my-courses"} className="text-gray-600 bg-gray-50 px-2 py-1 rounded">Purchased Courses</Link>
                             <Badge variant="outline" className="bg-red-50 text-red-700 font-medium">
                                 {purchases.length}
                             </Badge>

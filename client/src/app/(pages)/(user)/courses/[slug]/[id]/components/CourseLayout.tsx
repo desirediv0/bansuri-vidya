@@ -504,7 +504,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
 
                   <TabsContent value="chapters" className="mt-3">
                     <div className="bg-white rounded-lg shadow-sm">
-                      <ScrollArea className="h-64">
+                      <ScrollArea className="h-80">
                         {SidebarContent}
                       </ScrollArea>
                     </div>

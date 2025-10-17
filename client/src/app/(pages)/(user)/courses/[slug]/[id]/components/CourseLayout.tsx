@@ -15,6 +15,7 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/helper/AuthContext";
 import PurchaseDialog from "../PurchaseDialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMediaQuery } from "./use-media";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -433,25 +434,28 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
           </Sheet>
         )}
 
+
         <div className="flex flex-col flex-1 overflow-hidden min-h-0">
           <ScrollArea className="flex-1 min-h-0">
             <div className="p-4 space-y-4">
 
               <div className="relative  mt-12">
 
-                <div className="w-full flex items-center justify-end p-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={toggleSidebar}
-                    className="bg-white/80 hover:bg-white backdrop-blur-sm z-10"
-                  >
-                    {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-                    <span className="ml-2 ">
-                      {isSidebarOpen ? "Hide" : "Show"} Content
-                    </span>
-                  </Button>
-                </div>
+                {isDesktop && (
+                  <div className="w-full flex items-center justify-end p-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleSidebar}
+                      className="bg-white/80 hover:bg-white backdrop-blur-sm z-10"
+                    >
+                      {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+                      <span className="ml-2 ">
+                        {isSidebarOpen ? "Hide" : "Show"} Content
+                      </span>
+                    </Button>
+                  </div>
+                )}
                 <VideoPlayer
                   videoUrl={videoUrl}
                   isLoading={isVideoLoading}
@@ -484,8 +488,46 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                 </Button>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md mt-4">
+              {/* Desktop: keep existing ChapterDetails card */}
+              <div className="bg-white rounded-lg shadow-md mt-4 hidden md:block">
                 <ChapterDetails chapter={selectedChapter} />
+              </div>
+
+              {/* Mobile: show tabs (Chapters / Description / Resources) instead of sidebar sheet or ChapterDetails iframe */}
+              <div className="mt-4 md:hidden">
+                <Tabs defaultValue="chapters">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="chapters" className="text-sm">Chapters</TabsTrigger>
+                    <TabsTrigger value="description" className="text-sm">Description</TabsTrigger>
+                    <TabsTrigger value="resources" className="text-sm">Resources</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="chapters" className="mt-3">
+                    <div className="bg-white rounded-lg shadow-sm p-2">
+                      <ScrollArea className="h-64">
+                        {SidebarContent}
+                      </ScrollArea>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="description" className="mt-3">
+                    <div className="bg-white rounded-lg shadow-sm p-4">
+                      <h3 className="text-base font-semibold text-gray-800 mb-2">{selectedChapter?.title || 'Chapter'}</h3>
+                      <p className="text-gray-700 text-sm leading-relaxed">{selectedChapter?.description || 'No description available.'}</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="resources" className="mt-3">
+                    <div className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+                      {/* Resources: only downloads on mobile */}
+                      {selectedChapter ? (
+                        <MobileResources chapter={selectedChapter} />
+                      ) : (
+                        <p className="text-sm text-gray-600">No resources available.</p>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </ScrollArea>
@@ -494,7 +536,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
             variant="outline"
             size="sm"
             onClick={toggleSidebar}
-            className={`fixed z-50 h-10 px-2 bg-white/95 backdrop-blur-sm hover:bg-gradient-to-r hover:from-[#fce7ff] hover:to-[#fff1eb] border border-[#610981]/20 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out group left-0 top-[70%] -translate-y-1/2 rounded-r-lg`}
+            className={`fixed z-50 h-10 px-2 bg-white/95 backdrop-blur-sm hover:bg-gradient-to-r hover:from-[#fce7ff] hover:to-[#fff1eb] border border-[#610981]/20 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out group left-0 top-[70%] -translate-y-1/2 rounded-r-lg md:block hidden`}
           >
             {isSidebarOpen ? (
               <ChevronLeft className="h-5 w-5 text-[#610981] group-hover:scale-110 transition-transform duration-200" />
@@ -523,3 +565,48 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
 };
 
 export default CourseLayout;
+
+// MobileResources component — small helper for mobile tab resources section
+const STORAGE_BASE_URL = "https://desirediv-storage.blr1.digitaloceanspaces.com/";
+
+function formatMediaUrl(url?: string | null) {
+  if (!url || url === "null" || url === null) return null;
+  if (url.startsWith(STORAGE_BASE_URL)) return url;
+  if (url.startsWith('/')) return `${STORAGE_BASE_URL}${url.slice(1)}`;
+  return `${STORAGE_BASE_URL}${url}`;
+}
+
+function MobileResources({ chapter }: { chapter: any }) {
+  const pdfUrl = chapter?.pdfUrl ? formatMediaUrl(chapter.pdfUrl) : null;
+  const audioUrl = chapter?.audioUrl ? formatMediaUrl(chapter.audioUrl) : null;
+
+  return (
+    <div className="flex flex-col">
+      {pdfUrl ? (
+        <a
+          href={pdfUrl}
+          download
+          className="block w-full text-left px-4 py-2 rounded-md bg-gray-50 hover:bg-gray-100 text-sm text-gray-800 border"
+          rel="noopener noreferrer"
+        >
+          Download PDF
+        </a>
+      ) : null}
+
+      {audioUrl ? (
+        <a
+          href={audioUrl}
+          download
+          className="block w-full text-left mt-2 px-4 py-2 rounded-md bg-gray-50 hover:bg-gray-100 text-sm text-gray-800 border"
+          rel="noopener noreferrer"
+        >
+          Download Audio
+        </a>
+      ) : null}
+
+      {!pdfUrl && !audioUrl && (
+        <p className="text-sm text-gray-600">No downloadable resources for this chapter.</p>
+      )}
+    </div>
+  );
+}

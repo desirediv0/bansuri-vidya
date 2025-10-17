@@ -469,11 +469,11 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                 />
               </div>
 
-              <div className="mt-4 flex justify-between items-center">
+              <div className="mt-2 md:mt-4 flex justify-between items-center">
                 <Button
                   onClick={handlePreviousChapter}
                   disabled={!getPreviousChapter()}
-                  className="bg-gray-800 text-white hover:bg-gray-900"
+                  className="bg-gray-800 text-white hover:bg-gray-900 text-xs md:text-sm"
                 >
                   <ChevronLeft className="h-5 w-5 mr-2" />
                   Previous
@@ -481,7 +481,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                 <Button
                   onClick={handleNextChapter}
                   disabled={!getNextChapter()}
-                  className="bg-gray-800 text-white hover:bg-gray-900"
+                  className="bg-gray-800 text-white hover:bg-gray-900 text-xs md:text-sm"
                 >
                   Next
                   <ChevronRight className="h-5 w-5 ml-2" />
@@ -503,7 +503,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                   </TabsList>
 
                   <TabsContent value="chapters" className="mt-3">
-                    <div className="bg-white rounded-lg shadow-sm p-2">
+                    <div className="bg-white rounded-lg shadow-sm">
                       <ScrollArea className="h-64">
                         {SidebarContent}
                       </ScrollArea>
@@ -518,7 +518,7 @@ const CourseLayout: React.FC<CourseLayoutProps> = ({
                   </TabsContent>
 
                   <TabsContent value="resources" className="mt-3">
-                    <div className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+                    <div className="bg-white rounded-lg shadow-sm p-2 space-y-3">
                       {/* Resources: only downloads on mobile */}
                       {selectedChapter ? (
                         <MobileResources chapter={selectedChapter} />

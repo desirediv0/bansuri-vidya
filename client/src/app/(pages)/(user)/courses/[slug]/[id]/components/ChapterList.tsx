@@ -54,11 +54,11 @@ const ChapterList: React.FC<ChapterListProps> = ({
 
   return (
     <div className="h-full bg-white font-plus-jakarta-sans">
-      <div className="p-6 border-b bg-red-600 text-white relative md:mt-14">
-        <h2 className="text-2xl font-bold">Course Content</h2>
-        <div className="mt-2">
+      <div className="p-3 md:p-6 border-b bg-red-600 text-white relative md:mt-14 rounded-t-md">
+        <h2 className="text-lg md:text-2xl font-bold">Course Content</h2>
+        <div className="md:mt-2 mt-1">
           <Progress value={courseProgress} className="w-full bg-red-400" />
-          <p className="text-sm mt-1">{Math.round(courseProgress)}% Complete</p>
+          <p className="text-xs md:text-sm mt-1">{Math.round(courseProgress)}% Complete</p>
         </div>
       </div>
       <ScrollArea className="h-[calc(100vh-10rem)]">
@@ -103,11 +103,11 @@ const ChapterList: React.FC<ChapterListProps> = ({
                             className={cn(
                               "w-full justify-start p-3 h-auto font-inter transition-all duration-300 rounded-md",
                               selected &&
-                                "bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 text-red-700",
+                              "bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 text-red-700",
                               completed && !selected && "bg-green-50/50",
                               !selected && "hover:bg-gray-100",
                               !accessible &&
-                                "opacity-50 bg-gray-100 cursor-not-allowed",
+                              "opacity-50 bg-gray-100 cursor-not-allowed",
                               "group"
                             )}
                             onClick={() => onChapterClick(chapter)}

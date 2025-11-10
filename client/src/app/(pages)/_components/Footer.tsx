@@ -179,14 +179,7 @@ function Footer() {
                 </ul>
               </nav>
               <p className="text-gray-400 text-center md:text-left">
-                © 2025 – Bansuri Vidya Mandir™  . All Rights Reserved. Designed with ❤ by {" "}
-                <a
-                  href="https://desirediv.com"
-                  target="_blank"
-                  className="text-white hover:text-[#ba1c32] transition-colors"
-                >
-                  Desire Div
-                </a>
+                © 2025 – Bansuri Vidya Mandir™  . All Rights Reserved.
               </p>
             </div>
           </div>

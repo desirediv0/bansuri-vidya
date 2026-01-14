@@ -186,8 +186,8 @@ export default function ContactPage() {
 
           <div className="absolute bottom-0 right-0 p-6 md:p-8 bg-white rounded-tl-2xl max-w-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Bansuri Vidya Mandir</h2>
-            <p className="text-gray-600 mb-1">J-66 First Floor, near Metro Station, Block J</p>
-            <p className="text-gray-600 mb-4">Rajouri Garden, New Delhi, India</p>
+            <p className="text-gray-600 mb-1">19, Basement floor, Raja Garden</p>
+            <p className="text-gray-600 mb-4">Main Najafgarh Road, New Delhi 15</p>
 
             <div className="space-y-2">
               <p className="text-gray-600">

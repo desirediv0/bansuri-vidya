@@ -1,18 +1,13 @@
 "use client";
 
-import { ThumbsUp, Youtube } from "lucide-react";
 import CustomButton from "../_components/CustomButton";
 import { HeroSection } from "../_components/HeroSectionProps";
 import LearningLanding from "../_components/LearningLanding";
 import CourseHero from "../_components/CourseHero";
 import TestimonialsSection from "../_components/testimonial/testimonial-section";
 import TablaTanpura from "../_components/TablaTanpura";
-import { useState } from "react";
-import VideoDialog from "../_components/VideoDialog";
-import { scrollToSection } from "../_components/smoothScroll";
 
 export default function Home() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
     <>
@@ -26,39 +21,18 @@ export default function Home() {
         }}
         scale={200}
         buttons={
-          <>
-            <CustomButton
-              primaryText="Get Started"
-              secondaryText="Learn More"
-              icon={<ThumbsUp size={20} />}
-              onClick={() => scrollToSection("courses-section")}
-              className="!px-6 py-3 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white/10 transition-colors w-[200px]"
-            />
-            <button
-              onClick={() => setIsVideoOpen(true)}
-              className="group flex items-center justify-center text-white gap-1
-              hover:text-white/90 transition-all duration-300 relative
-              hover:-translate-x-2"
-            >
-              <Youtube
-                size={20}
-                className="transform transition-all duration-300 
-                group-hover:translate-x-[-2px]"
-              />
-              <span>How it works</span>
-            </button>
-          </>
+          <CustomButton
+            primaryText="Book Your Free Class Today"
+            secondaryText="Book Your Free Class Today"
+            onClick={() => window.open('https://calendly.com/manjeet1/30min', '_blank')}
+            className="!px-10 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white/10 transition-colors w-[300px] text-lg"
+          />
         }
         stats={[
           { number: "18+", label: "Years of Experience", endValue: 18 },
           { number: "3000+", label: "Students", endValue: 3000 },
           { number: "240+", label: "Google Reviews", endValue: 240 }
         ]}
-      />
-      <VideoDialog
-        isOpen={isVideoOpen}
-        onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://www.youtube.com/watch?v=vT8gQHlPTK4"
       />
       <LearningLanding />
 

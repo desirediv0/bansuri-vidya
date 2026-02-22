@@ -12,8 +12,8 @@ export default function Home() {
   return (
     <>
       <HeroSection
-        title="Your Journey to Flute Mastery Begins Here"
-        description="Embark on your journey to flute mastery with our pre-recorded courses, interactive live classes, and immersive offline batches designed to suit every learner's needs."
+        title="Start Flute Learning"
+        description="Always wanted to play the flute but didn’t know where to start? Try a free trial class and feel your first beautiful note today."
         variant="home"
         image={{
           src: "/rupak-sir.webp",

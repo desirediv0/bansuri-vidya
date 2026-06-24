@@ -5,7 +5,7 @@ import { AnimatedText } from "../AnimatedText";
 import { ArrowRight, Award } from "lucide-react";
 import Image from "next/image";
 import CustomButton from "../CustomButton";
-import CoursesSection from "../../(user)/online-courses/CoursesSection";
+import CourseCarousel from "./CourseCarousel";
 
 export default function OnlineCourseSection() {
   return (
@@ -54,8 +54,8 @@ export default function OnlineCourseSection() {
               </motion.h2>
             </div>
 
-            {/* Course Grid */}
-            <CoursesSection />
+            {/* Course Carousel */}
+            <CourseCarousel />
             <CustomButton
               primaryText="View All Courses"
               secondaryText="View All Courses"

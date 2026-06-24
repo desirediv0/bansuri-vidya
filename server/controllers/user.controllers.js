@@ -41,8 +41,45 @@ const updateUser = async (id, data) => {
   return await prisma.user.update({ where: { id }, data });
 };
 
-const sendVerificationEmail = async (user, token) => {
-  const verificationLink = `${process.env.BASE_URL}/verify-email?token=${token}&id=${user.id}`;
+const getFrontendUrl = (req) => {
+  if (req) {
+    const referer = req.headers.referer || req.headers.origin;
+    if (referer) {
+      try {
+        const url = new URL(referer);
+        if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+          return url.origin;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+  return process.env.BASE_URL || "https://bansurividyamandir.com";
+};
+
+const getCookieOptions = (req) => {
+  const cookieOptions = {
+    secure: true,
+    sameSite: "Strict",
+    path: "/",
+    expires: new Date(Date.now() + COOKIE_EXPIRY),
+  };
+
+  const host = req?.headers?.host || "";
+  const origin = req?.headers?.origin || "";
+  
+  if (!host.includes("localhost") && !host.includes("127.0.0.1") && !origin.includes("localhost") && !origin.includes("127.0.0.1")) {
+    cookieOptions.domain = "bansurividyamandir.com";
+  } else {
+    cookieOptions.sameSite = "Lax";
+  }
+  return cookieOptions;
+};
+
+const sendVerificationEmail = async (user, token, req) => {
+  const baseUrl = getFrontendUrl(req);
+  const verificationLink = `${baseUrl}/verify-email?token=${token}&id=${user.id}`;
   await SendEmail({
     email: user.email,
     emailType: "VERIFY",
@@ -50,8 +87,9 @@ const sendVerificationEmail = async (user, token) => {
   });
 };
 
-const sendResetPasswordEmail = async (user, token) => {
-  const resetPasswordLink = `${process.env.BASE_URL}/reset-password?token=${token}&id=${user.id}`;
+const sendResetPasswordEmail = async (user, token, req) => {
+  const baseUrl = getFrontendUrl(req);
+  const resetPasswordLink = `${baseUrl}/reset-password?token=${token}&id=${user.id}`;
   await SendEmail({
     email: user.email,
     emailType: "RESET",
@@ -189,13 +227,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     { name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }
   );
 
-  const cookieOptions = {
-    secure: true,
-    sameSite: "Strict",
-    domain: "bansurividyamandir.com",
-    path: "/",
-    expires: new Date(Date.now() + COOKIE_EXPIRY),
-  };
+  const cookieOptions = getCookieOptions(req);
 
   return res
     .status(200)
@@ -288,13 +320,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     { name: user.name, email: user.email, role: user.role }
   );
 
-  const cookieOptions = {
-    secure: true,
-    sameSite: "Strict",
-    domain: "bansurividyamandir.com",
-    path: "/",
-    expires: new Date(Date.now() + COOKIE_EXPIRY),
-  };
+  const cookieOptions = getCookieOptions(req);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
   res.cookie("accessToken", accessToken, cookieOptions);
@@ -328,7 +354,7 @@ export const reSendVerificationEmail = asyncHandler(async (req, res) => {
     verificationTokenExpiry: new Date(Date.now() + TOKEN_EXPIRY),
   });
 
-  await sendVerificationEmail(updatedUser, verificationToken);
+  await sendVerificationEmail(updatedUser, verificationToken, req);
 
   return res.status(200).json(
     new ApiResponsive(
@@ -364,7 +390,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     resetTokenExpiry: new Date(Date.now() + TOKEN_EXPIRY),
   });
 
-  await sendResetPasswordEmail(updatedUser, resetPasswordToken);
+  await sendResetPasswordEmail(updatedUser, resetPasswordToken, req);
 
   return res
     .status(200)
@@ -389,16 +415,14 @@ export const logoutUser = asyncHandler(async (req, res) => {
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("refreshToken", cookieOptions);
 
-  // Clear cookies for 'bansurividyamandir.com'
-  const subdomainOptions = {
-    domain: "bansurividyamandir.com",
+  // Clear cookies for local development host
+  const localCookieOptions = {
     path: "/",
     secure: true,
     sameSite: "Strict",
   };
-
-  res.clearCookie("accessToken", subdomainOptions);
-  res.clearCookie("refreshToken", subdomainOptions);
+  res.clearCookie("accessToken", localCookieOptions);
+  res.clearCookie("refreshToken", localCookieOptions);
 
   return res.status(200).json({ message: "User logged out successfully" });
 });
@@ -487,13 +511,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
     user.id
   );
 
-  const cookieOptions = {
-    secure: true,
-    sameSite: "Strict",
-    domain: "bansurividyamandir.com",
-    path: "/",
-    expires: new Date(Date.now() + COOKIE_EXPIRY),
-  };
+  const cookieOptions = getCookieOptions(req);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
   res.cookie("accessToken", accessToken, cookieOptions);
@@ -780,13 +798,7 @@ export const googleAuth = asyncHandler(async (req, res) => {
       { name: user.name, email: user.email, role: user.role }
     );
 
-    const cookieOptions = {
-      secure: true,
-      sameSite: "Strict",
-      domain: "bansurividyamandir.com",
-      path: "/",
-      expires: new Date(Date.now() + COOKIE_EXPIRY),
-    };
+    const cookieOptions = getCookieOptions(req);
 
     return res
       .status(200)

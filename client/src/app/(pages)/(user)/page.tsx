@@ -60,8 +60,8 @@ export default function Home() {
           { number: "240+", label: "Google Reviews", endValue: 240 }
         ]}
       />
-      <LearningLanding />
       <OnlineCourseSection />
+      <LearningLanding />
       <CourseHero />
 
       <TestimonialsSection />

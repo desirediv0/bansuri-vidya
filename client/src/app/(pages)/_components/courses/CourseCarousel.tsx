@@ -9,12 +9,11 @@ export default function CourseCarousel() {
   const [courses, setCourses] = useState<CourseDataNew[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
 
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/course/get-courses?page=1&limit=20`
+        `${process.env.NEXT_PUBLIC_API_URL}/course/get-courses?page=1&limit=20&sort=oldest`
       );
       if (!response.ok) throw new Error("Failed to fetch courses");
       const data = await response.json();
@@ -32,27 +31,6 @@ export default function CourseCarousel() {
   useEffect(() => {
     fetchCourses();
   }, []);
-
-  // Auto Scroll logic
-  useEffect(() => {
-    if (isLoading || courses.length === 0 || isPaused) return;
-
-    const interval = setInterval(() => {
-      if (containerRef.current) {
-        const container = containerRef.current;
-        const scrollAmount = 344; // Card width + gap
-        const maxScroll = container.scrollWidth - container.clientWidth;
-
-        if (container.scrollLeft >= maxScroll - 5) {
-          container.scrollTo({ left: 0, behavior: "smooth" });
-        } else {
-          container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-        }
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isLoading, courses, isPaused]);
 
   const scroll = (direction: "left" | "right") => {
     if (containerRef.current) {
@@ -80,25 +58,21 @@ export default function CourseCarousel() {
     return null;
   }
 
-  const displayCourses = [...courses, ...courses];
+  const displayCourses = courses;
 
   return (
-    <div 
-      className="relative w-full max-w-7xl mx-auto px-4 group/carousel"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
+    <div className="relative w-full max-w-7xl mx-auto px-4">
       {/* Navigation Buttons */}
       <button
         onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 border border-gray-100"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-opacity duration-300 border border-gray-100"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
 
       <button
         onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 border border-gray-100"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-opacity duration-300 border border-gray-100"
       >
         <ChevronRight className="w-6 h-6" />
       </button>

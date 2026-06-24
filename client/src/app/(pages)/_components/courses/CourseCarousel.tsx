@@ -84,21 +84,21 @@ export default function CourseCarousel() {
 
   return (
     <div 
-      className="relative w-full max-w-7xl mx-auto px-4 group"
+      className="relative w-full max-w-7xl mx-auto px-4 group/carousel"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Navigation Buttons */}
       <button
         onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-gray-100"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 border border-gray-100"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
 
       <button
         onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-gray-100"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 border border-gray-100"
       >
         <ChevronRight className="w-6 h-6" />
       </button>
@@ -113,7 +113,7 @@ export default function CourseCarousel() {
         }}
       >
         {displayCourses.map((course, idx) => (
-          <div key={`${course.id}-${idx}`} className="min-w-[320px] transition-transform duration-300 hover:scale-[1.02]">
+          <div key={`${course.id}-${idx}`} className="min-w-[320px] transition-transform duration-300 hover:scale-[1.02] h-[460px] flex">
             <EnhancedCourseCard course={course} />
           </div>
         ))}

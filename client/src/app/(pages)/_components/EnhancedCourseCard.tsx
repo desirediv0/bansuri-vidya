@@ -158,133 +158,137 @@ export default function EnhancedCourseCard({
   };
 
   return (
-    <div className={`block group ${isExpired ? "opacity-80" : ""}`}>
+    <div className={`block group ${isExpired ? "opacity-80" : ""} h-full w-full`}>
       <div
-        className={`relative w-full max-w-md mx-auto overflow-hidden bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full ${isExpired ? "border-2 border-red-200 bg-gray-50" : ""
+        className={`relative w-full max-w-md mx-auto overflow-hidden bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col justify-between ${isExpired ? "border-2 border-red-200 bg-gray-50" : ""
           }`}
       >
-        {/* Thumbnail with Overlay */}
-        <div className="relative h-48 overflow-hidden">
-          {isExpired && (
-            <div className="absolute top-0 right-0 z-10">
-              <div className="bg-red-600 text-white px-4 py-1 text-sm font-bold shadow-lg transform rotate-0">
-                EXPIRED
+        <div>
+          {/* Thumbnail with Overlay */}
+          <div className="relative h-48 overflow-hidden">
+            {isExpired && (
+              <div className="absolute top-0 right-0 z-10">
+                <div className="bg-red-600 text-white px-4 py-1 text-sm font-bold shadow-lg transform rotate-0">
+                  EXPIRED
+                </div>
               </div>
-            </div>
-          )}
-          <Image
-            src={getImageUrl(course.thumbnail)}
-            alt={course.title}
-            fill
-            className={`object-cover transition-transform duration-700 ${isExpired ? "" : "group-hover:scale-110"}`}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            )}
+            <Image
+              src={getImageUrl(course.thumbnail)}
+              alt={course.title}
+              fill
+              className={`object-cover transition-transform duration-700 ${isExpired ? "" : "group-hover:scale-110"}`}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Badges Container */}
-          <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-24px)]">
-            {course.isBestseller && (
-              <Badge className={`${BadgeStyles.bestseller} backdrop-blur-sm`}>
-                <Award className="w-3.5 h-3.5 mr-1" /> Bestseller
-              </Badge>
-            )}
-            {course.isTrending && (
-              <Badge className={`${BadgeStyles.trending} backdrop-blur-sm`}>
-                <TrendingUp className="w-3.5 h-3.5 mr-1" /> Trending
-              </Badge>
-            )}
-            {course.isPopular && (
-              <Badge className={`${BadgeStyles.popular} backdrop-blur-sm`}>
-                <Flame className="w-3.5 h-3.5 mr-1" /> Popular
-              </Badge>
-            )}
-            {course.isFeatured && (
-              <Badge className={`${BadgeStyles.featured} backdrop-blur-sm`}>
-                <Star className="w-3.5 h-3.5 mr-1" /> Featured
-              </Badge>
-            )}
-          </div>
-          {/* Paid/Free + Enrolled Overlay (top-right) */}
-          <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-            {isFree ? (
-              <Badge variant="secondary" className="text-xs backdrop-blur-sm">
-                <Gift className="w-3 h-3 mr-1" /> Free
-              </Badge>
-            ) : (
-              <Badge variant="default" className="text-xs backdrop-blur-sm">
-                Paid
-              </Badge>
-            )}
-
-
-            {hidePrice && (
-              <Badge className="bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs border-0">
-                <Check className="w-3 h-3 mr-1" /> Enrolled
-              </Badge>
-            )}
-          </div>
-
-          {/* Expiration Badge */}
-          {hidePrice && expiryDate && (
-            <div className="absolute bottom-3 right-3">
-              {isExpired ? (
-                <Badge variant="destructive" className="backdrop-blur-sm">
-                  <AlertTriangle className="w-3.5 h-3.5 mr-1" /> Expired
+            {/* Badges Container */}
+            <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-24px)]">
+              {course.isBestseller && (
+                <Badge className={`${BadgeStyles.bestseller} backdrop-blur-sm`}>
+                  <Award className="w-3.5 h-3.5 mr-1" /> Bestseller
                 </Badge>
-              ) : (
-                daysLeft !== null &&
-                daysLeft !== undefined && (
-                  <Badge
-                    variant={daysLeft < 7 ? "destructive" : "outline"}
-                    className={`backdrop-blur-sm ${daysLeft < 7
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-blue-100 text-blue-800"
-                      }`}
-                  >
-                    <Clock className="w-3.5 h-3.5 mr-1" /> {daysLeft} days left
-                  </Badge>
-                )
+              )}
+              {course.isTrending && (
+                <Badge className={`${BadgeStyles.trending} backdrop-blur-sm`}>
+                  <TrendingUp className="w-3.5 h-3.5 mr-1" /> Trending
+                </Badge>
+              )}
+              {course.isPopular && (
+                <Badge className={`${BadgeStyles.popular} backdrop-blur-sm`}>
+                  <Flame className="w-3.5 h-3.5 mr-1" /> Popular
+                </Badge>
+              )}
+              {course.isFeatured && (
+                <Badge className={`${BadgeStyles.featured} backdrop-blur-sm`}>
+                  <Star className="w-3.5 h-3.5 mr-1" /> Featured
+                </Badge>
               )}
             </div>
-          )}
+            {/* Paid/Free + Enrolled Overlay (top-right) */}
+            <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+              {isFree ? (
+                <Badge variant="secondary" className="text-xs backdrop-blur-sm">
+                  <Gift className="w-3 h-3 mr-1" /> Free
+                </Badge>
+              ) : (
+                <Badge variant="default" className="text-xs backdrop-blur-sm">
+                  Paid
+                </Badge>
+              )}
+
+
+              {hidePrice && (
+                <Badge className="bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs border-0">
+                  <Check className="w-3 h-3 mr-1" /> Enrolled
+                </Badge>
+              )}
+            </div>
+
+            {/* Expiration Badge */}
+            {hidePrice && expiryDate && (
+              <div className="absolute bottom-3 right-3">
+                {isExpired ? (
+                  <Badge variant="destructive" className="backdrop-blur-sm">
+                    <AlertTriangle className="w-3.5 h-3.5 mr-1" /> Expired
+                  </Badge>
+                ) : (
+                  daysLeft !== null &&
+                  daysLeft !== undefined && (
+                    <Badge
+                      variant={daysLeft < 7 ? "destructive" : "outline"}
+                      className={`backdrop-blur-sm ${daysLeft < 7
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-blue-100 text-blue-800"
+                        }`}
+                    >
+                      <Clock className="w-3.5 h-3.5 mr-1" /> {daysLeft} days left
+                    </Badge>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Content Section */}
+          <div className="p-4 space-y-3">
+            {/* Title */}
+            <h3
+              className={`text-lg font-bold text-gray-900 line-clamp-2 ${isExpired ? "text-gray-600" : "group-hover:text-red-600"
+                } transition-colors`}
+            >
+              {course.title}
+            </h3>
+
+            {/* Description */}
+            <div
+              className={`text-sm ${isExpired ? "text-gray-500" : "text-gray-600"} line-clamp-2`}
+            >
+              {parse(course.description ?? "")}
+            </div>
+
+            {/* Meta Tags */}
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant="outline"
+                className={`${isExpired ? "bg-gray-100" : "bg-gray-50/50"}`}
+              >
+                <BookOpen className="w-3.5 h-3.5 mr-1 text-gray-500" />
+                {course.language}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={`${isExpired ? "bg-gray-100" : "bg-gray-50/50"}`}
+              >
+                <Folder className="w-3.5 h-3.5 mr-1 text-gray-500" />
+                {course?.category?.name}
+              </Badge>
+            </div>
+          </div>
         </div>
 
-        {/* Content Section */}
-        <div className="p-4 space-y-4">
-          {/* Title */}
-          <h3
-            className={`text-lg font-bold text-gray-900 line-clamp-2 ${isExpired ? "text-gray-600" : "group-hover:text-red-600"
-              } transition-colors`}
-          >
-            {course.title}
-          </h3>
-
-          {/* Description */}
-          <div
-            className={`text-sm ${isExpired ? "text-gray-500" : "text-gray-600"} line-clamp-2`}
-          >
-            {parse(course.description ?? "")}
-          </div>
-
-          {/* Meta Tags */}
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="outline"
-              className={`${isExpired ? "bg-gray-100" : "bg-gray-50/50"}`}
-            >
-              <BookOpen className="w-3.5 h-3.5 mr-1 text-gray-500" />
-              {course.language}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={`${isExpired ? "bg-gray-100" : "bg-gray-50/50"}`}
-            >
-              <Folder className="w-3.5 h-3.5 mr-1 text-gray-500" />
-              {course?.category?.name}
-            </Badge>
-          </div>
-
-          {/* Price or Progress Section */}
-          <div className="pt-2">
+        {/* Price or Progress Section */}
+        <div className="p-4 pt-0">
+          <div className="pt-2 border-t border-gray-100">
             {hidePrice ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -351,32 +355,32 @@ export default function EnhancedCourseCard({
                 <Gift className="w-3.5 h-3.5 mr-1" /> Free Access
               </Badge>
             ) : (
-              <div className="flex items-center gap-3 flex-wrap">
-                {(course.salePrice ?? 0) > 0 ? (
-                  <>
-                    <span className="text-2xl font-bold text-gray-900">
-                      {formatPrice(course.salePrice ?? 0)}
-                    </span>
-                    <span className="text-base text-gray-400 line-through">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-baseline gap-2">
+                  {(course.salePrice ?? 0) > 0 ? (
+                    <>
+                      <span className="text-xl font-bold text-gray-900">
+                        {formatPrice(course.salePrice ?? 0)}
+                      </span>
+                      <span className="text-sm text-gray-400 line-through">
+                        {formatPrice(course.price)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xl font-bold text-gray-900">
                       {formatPrice(course.price)}
                     </span>
-                    <Badge className="bg-red-600 text-white border-0">
-                      Save{" "}
-                      {Math.round(
-                        ((course.price - (course.salePrice ?? 0)) /
-                          course.price) *
-                        100
-                      )}
-                      %
-                    </Badge>
-                  </>
-                ) : (
-                  <span className="text-2xl font-bold text-gray-900">
-                    {formatPrice(course.price)}
-                  </span>
-                )}
+                  )}
+                </div>
                 {/* Display validity information */}
-                <div>{showValidityInfo()}</div>
+                <div className="flex items-center gap-2">
+                  {(course.salePrice ?? 0) > 0 && (
+                    <Badge className="bg-red-600 text-white border-0 text-xs px-1.5 py-0.5">
+                      -{Math.round(((course.price - (course.salePrice ?? 0)) / course.price) * 100)}%
+                    </Badge>
+                  )}
+                  {showValidityInfo()}
+                </div>
               </div>
             )}
           </div>
@@ -386,7 +390,7 @@ export default function EnhancedCourseCard({
         {!isExpired && (
           <Link
             href={courseUrl}
-            className="absolute inset-0"
+            className="absolute inset-0 z-10"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >

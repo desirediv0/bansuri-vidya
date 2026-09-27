@@ -140,7 +140,7 @@ function Footer() {
               <h3 className="text-xl font-semibold text-white">Need help?</h3>
               <div className="space-y-2">
                 <p className="text-gray-400">Our Address</p>
-                <p className="text-white text-sm">19, Basement floor, Raja Garden, Main Najafgarh Road, New Delhi 15</p>
+                <p className="text-white text-sm">J-66, 2nd Floor, Rajouri Garden, New Delhi 110027 INDIA</p>
               </div>
               <div className="space-y-2">
                 <p className="text-gray-400">Call us directly?</p>

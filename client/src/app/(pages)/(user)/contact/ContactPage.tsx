@@ -175,7 +175,7 @@ export default function ContactPage() {
         >
           <div className="aspect-[16/9] md:aspect-[21/9] w-full relative  rounded-2xl overflow-hidden">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.41130395627!2d77.11961147527161!3d28.647400883405727!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d038d8ce0788f%3A0xae610d38e210b267!2sBansuri%20Vidya%20Mandir%20(Gurukul)!5e0!3m2!1sen!2sin!4v1741603651629!5m2!1sen!2sin"
+              src="https://www.google.com/maps?q=J-66%2C%202nd%20Floor%2C%20Rajouri%20Garden%2C%20New%20Delhi%20110027%2C%20India&output=embed"
               className="absolute inset-0 w-full h-full"
               style={{ border: 0 }}
               allowFullScreen
@@ -186,8 +186,8 @@ export default function ContactPage() {
 
           <div className="absolute bottom-0 right-0 p-6 md:p-8 bg-white rounded-tl-2xl max-w-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Bansuri Vidya Mandir</h2>
-            <p className="text-gray-600 mb-1">19, Basement floor, Raja Garden</p>
-            <p className="text-gray-600 mb-4">Main Najafgarh Road, New Delhi 15</p>
+            <p className="text-gray-600 mb-1">J-66, 2nd Floor, Rajouri Garden</p>
+            <p className="text-gray-600 mb-4">New Delhi 110027 INDIA</p>
 
             <div className="space-y-2">
               <p className="text-gray-600">
@@ -199,7 +199,7 @@ export default function ContactPage() {
             </div>
 
             <motion.a
-              href="https://maps.app.goo.gl/T4Fm3kA8V56xB2DB6"
+              href="https://www.google.com/maps/search/?api=1&query=J-66%2C%202nd%20Floor%2C%20Rajouri%20Garden%2C%20New%20Delhi%20110027%2C%20India"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-full mt-6 hover:bg-gray-700 transition-colors"
